@@ -79,13 +79,21 @@
     <None Include="..\Patches\**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CostCalculator.cs" />
     <Compile Include="DataContainers.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="ItemPanel.cs" />
     <Compile Include="ItemRequestWindow.cs" />
+    <Compile Include="ProviderThingTypes.cs" />
     <Compile Include="Table.cs" />
     <Compile Include="ItemRequests.cs" />
     <Compile Include="Panel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ThingDatabase.cs" />
+    <Compile Include="ThingEntry.cs" />
+    <Compile Include="ThingKey.cs" />
+    <Compile Include="ThingType.cs" />
+    <Compile Include="Widgets.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

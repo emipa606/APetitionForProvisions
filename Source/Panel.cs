@@ -4,16 +4,11 @@ using Verse;
 
 namespace ItemRequests
 {
-    // This class was originally created by edbmods
-    // for the mod EdB Prepare Carefully.
-    // https://github.com/edbmods/EdBPrepareCarefully
+    // This class was adapted from the class PanelBase
+    // from the mod EdB Prepare Carefully by edbmods
+    // https://github.com/edbmods/EdBPrepareCarefully/blob/develop/Source/PanelBase.cs
     public class Panel
     {
-        public static Color ColorText = new Color(0.80f, 0.80f, 0.80f);
-        public static Color ColorTextPanelHeader = new Color(207f / 255f, 207f / 255f, 207f / 255f);
-        public static Color ColorPanelBackground = new Color(36f / 255f, 37f / 255f, 38f / 255f);
-        public static Color ColorPanelBackgroundDarker = new Color(24f / 255f, 24f / 255f, 29f / 255f);
-
         public Rect HeaderLabelRect
         {
             get;
@@ -71,7 +66,7 @@ namespace ItemRequests
         }
         protected virtual void DrawPanelBackground()
         {
-            GUI.color = ColorPanelBackground;
+            GUI.color = Style.ColorPanelBackground;
             GUI.DrawTexture(PanelRect, BaseContent.WhiteTex);
             GUI.color = Color.white;
         }
@@ -94,7 +89,7 @@ namespace ItemRequests
         }
         protected virtual void DrawPanelContent()
         {
-            GUI.color = ColorTextPanelHeader;
+            GUI.color = Style.ColorTextPanelHeader;
 
             GUI.color = Color.white;
         }

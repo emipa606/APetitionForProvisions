@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Verse;
+using Verse.Sound;
 using RimWorld;
 using RimWorld.Planet;
 
@@ -27,7 +28,7 @@ namespace ItemRequests
         public Rect CancelButtonRect { get; protected set; }
         public Rect ConfirmButtonRect { get; protected set; }
         public Rect SingleButtonRect { get; protected set; }
-        protected ItemTable table = new ItemTable();
+        protected WidgetTable<ThingEntry> table = new WidgetTable<ThingEntry>();
 
         protected static readonly Vector2 AcceptButtonSize = new Vector2(160f, 40f);
         protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160f, 40f);
@@ -40,6 +41,7 @@ namespace ItemRequests
         {
             this.map = map;
             DetermineAvailableItems(faction);
+            CalcCachedCurrency();
             Resize();
         }
         protected void Resize()
@@ -134,7 +136,9 @@ namespace ItemRequests
             // Draws the $$ amount for both sides
             float rowWidth = inRect.width - 16f;
             Rect rowRect = new Rect(x, 58f, rowWidth, 30f);
-            DrawTradeableRow(rowRect, colonySilver, 1);
+
+            DrawAvailableColonyCurrency(rowRect, colonySilver);
+
             GUI.color = Color.gray;
             Widgets.DrawLineHorizontal(x, 87f, rowWidth);
 
@@ -169,15 +173,15 @@ namespace ItemRequests
 
 
             Rect resetButtonArea = new Rect(rect7.x - 10f - OtherBottomButtonSize.x, rect7.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
-            if (Widgets.ButtonText(resetButtonArea, "ResetButton".Translate(), true, false, true))
+            if (Widgets.ButtonText(resetButtonArea, "Reset", true, false, true))
             {
-                //SoundDefOf.Tick_Low.PlayOneShotOnCamera(null);
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera(null);
                 TradeSession.deal.Reset();
                 //this.CountToTransferChanged();
             }
 
             Rect cancelButtonArea = new Rect(rect7.xMax + 10f, rect7.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
-            if (Widgets.ButtonText(cancelButtonArea, "CancelButton".Translate(), true, false, true))
+            if (Widgets.ButtonText(cancelButtonArea, "Cancel", true, false, true))
             {
                 this.Close(true);
                 Event.current.Use();
@@ -225,6 +229,26 @@ namespace ItemRequests
                 y += 30f;
             }
             Widgets.EndScrollView();
+        }
+
+        public static void DrawAvailableColonyCurrency(Rect rect, int colonySilver)
+        {
+            Text.Font = GameFont.Small;
+            GUI.BeginGroup(rect);
+            float num = rect.width;
+
+            Rect rect6 = new Rect(num - 100f, 0f, 100f, rect.height);
+            Rect rect7 = new Rect(rect6.x - 75f, 0f, 75f, rect.height);
+            if (Mouse.IsOver(rect7))
+            {
+                Widgets.DrawHighlight(rect7);
+            }
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Rect rect8 = rect7;
+            rect8.xMin += 5f;
+            rect8.xMax -= 5f;
+            Widgets.Label(rect8, colonySilver.ToString());
+            TooltipHandler.TipRegion(rect7, "Colony Silver");
         }
 
         public static void DrawTradeableRow(Rect rect, Tradeable trade, int index)
@@ -334,7 +358,7 @@ namespace ItemRequests
             }
 
 
-            float priceFor = CalcRequestedItemPrice(action);  // trad.GetPriceFor(action);
+            float priceFor = CalcRequestedItemPrice(trad);
             string label = priceFor.ToStringMoney("F2");
             Rect rect2 = new Rect(rect);
             rect2.xMax -= 5f;
@@ -354,18 +378,18 @@ namespace ItemRequests
         private void CalcCachedCurrency()
         {
 
-            List<WorldObject> allWorldObjects = Find.WorldObjects.AllWorldObjects;
-            for (int l = 0; l < allWorldObjects.Count; l++)
-            {
-                if (allWorldObjects[l].Faction == Faction.OfPlayer)
-                {
-                    TradeRequestComp component2 = allWorldObjects[l].GetComponent<TradeRequestComp>();
-                    if (component2 != null && component2.ActiveRequest)
-                    {
-                        component2.Disable();
-                    }
-                }
-            }
+            //List<WorldObject> allWorldObjects = Find.WorldObjects.AllWorldObjects;
+            //for (int l = 0; l < allWorldObjects.Count; l++)
+            //{
+            //    if (allWorldObjects[l].Faction == Faction.OfPlayer)
+            //    {
+            //        TradeRequestComp component2 = allWorldObjects[l].GetComponent<TradeRequestComp>();
+            //        if (component2 != null && component2.ActiveRequest)
+            //        {
+            //            component2.Disable();
+            //        }
+            //    }
+            //}
 
             colonySilver = map.resourceCounter.Silver;
         }
@@ -430,6 +454,10 @@ namespace ItemRequests
         }
     }
 
+    // TODO:
+    // Create a window that appears after the request
+    // has been confirmed and caravan is on
+    // its way.
     public class RequestAcknowledgedWindow : Window
     {
         public override void DoWindowContents(Rect inRect)
