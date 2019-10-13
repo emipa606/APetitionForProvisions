@@ -72,14 +72,19 @@
       <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <None Include="..\About\**" />
+    <None Include="..\About\About.xml" />
+    <None Include="..\About\Preview.png" />
     <None Include="..\Defs\**" />
     <None Include="..\Languages\**" />
     <None Include="..\Patches\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NegotiationOption.cs" />
+    <Compile Include="DataContainers.cs" />
+    <Compile Include="ItemPanel.cs" />
+    <Compile Include="ItemRequestWindow.cs" />
+    <Compile Include="Table.cs" />
     <Compile Include="ItemRequests.cs" />
+    <Compile Include="Panel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
