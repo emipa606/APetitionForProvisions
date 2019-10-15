@@ -10,6 +10,7 @@ namespace ItemRequests
 {
     public class ItemRequestWindow : Window
     {
+        public Vector2 WindowSize { get; protected set; }
         public Vector2 ContentMargin { get; protected set; }
         public Rect ContentRect { get; protected set; }
         public Rect ScrollRect { get; protected set; }
@@ -28,8 +29,8 @@ namespace ItemRequests
         {
             this.map = map;
             this.faction = faction;
-            this.negotiator = negotiator;            
-            DetermineAvailableItems();
+            this.negotiator = negotiator;
+            DetermineRequestableItems();
             CalcCachedCurrency();
             Resize();
         }
@@ -39,13 +40,21 @@ namespace ItemRequests
             float HeaderHeight = 32;
             float FooterHeight = 40f;
             float WindowPadding = 18;
-            Vector2 WindowSize = new Vector2(700, 1000);
+            WindowSize = new Vector2(700, 900);
             Vector2 ContentSize = new Vector2(WindowSize.x - WindowPadding * 2 - ContentMargin.x * 2,
                 WindowSize.y - WindowPadding * 2 - ContentMargin.y * 2 - FooterHeight - HeaderHeight);
 
             ContentRect = new Rect(ContentMargin.x, ContentMargin.y + HeaderHeight, ContentSize.x, ContentSize.y);
 
             ScrollRect = new Rect(0, 0, ContentRect.width, ContentRect.height);
+        }
+
+        public override Vector2 InitialSize
+        {
+            get
+            {
+                return new Vector2(WindowSize.x, WindowSize.y);
+            }
         }
 
         public override void DoWindowContents(Rect inRect)
@@ -55,8 +64,8 @@ namespace ItemRequests
 
             inRect = inRect.AtZero();
             float x = ContentMargin.x;
-            float rowHeight = 58f;
-            Rect headerRowRect = new Rect(x, 0, inRect.width - x, rowHeight);
+            float headerRowHeight = 58f;
+            Rect headerRowRect = new Rect(x, 0, inRect.width - x, headerRowHeight);
 
             // Begin Header group
             GUI.BeginGroup(headerRowRect);
@@ -72,22 +81,22 @@ namespace ItemRequests
             Text.Anchor = TextAnchor.UpperRight;
             string tradingFactionName = faction.Name;
             if (Text.CalcSize(tradingFactionName).x > tradingFactionNameArea.width)
-            {                
+            {
                 tradingFactionName = tradingFactionName.Truncate(tradingFactionNameArea.width, null);
             }
             Widgets.Label(tradingFactionNameArea, tradingFactionName);
-            Text.Font = GameFont.Small;
 
             // Draw just below player faction name
+            Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
-            Rect negotiatorNameArea = new Rect(0, rowHeight / 2 - 2, headerRowRect.width / 2, headerRowRect.height / 2f);
+            Rect negotiatorNameArea = new Rect(0, headerRowHeight / 2 - 2, headerRowRect.width / 2, headerRowRect.height / 2f);
             Widgets.Label(negotiatorNameArea, "Negotiator".Translate() + ": " + negotiator.LabelShort);
 
             // Draw just below trader name
             Text.Anchor = TextAnchor.UpperRight;
-            Rect factionTechLevelArea = new Rect(headerRowRect.width / 2, rowHeight / 2 - 2, headerRowRect.width / 2, headerRowRect.height / 2f);
+            Rect factionTechLevelArea = new Rect(headerRowRect.width / 2, headerRowHeight / 2 - 2, headerRowRect.width / 2, headerRowRect.height / 2f);
             Widgets.Label(factionTechLevelArea, "Tech Level: " + faction.def.techLevel.ToString());
-                    
+
             // End Header group
             GUI.EndGroup();
 
@@ -95,7 +104,7 @@ namespace ItemRequests
 
             // Draws the $$ amount available
             float rowWidth = inRect.width - 16f;
-            Rect rowRect = new Rect(x, rowHeight, rowWidth, 30f);
+            Rect rowRect = new Rect(x, headerRowHeight, rowWidth, 30f);
 
             DrawAvailableColonyCurrency(rowRect, colonySilver);
 
@@ -104,14 +113,15 @@ namespace ItemRequests
 
             // ------------------------------------------------------------------------------------------------------ //
             // ------------------------------------------------------------------------------------------------------ //
-            
-            GUI.color = Color.white;
-            x = 30f;
 
-            Rect mainRect = new Rect(0, rowHeight + x, inRect.width, inRect.height - rowHeight - 38f - x - 20f);
+            GUI.color = Color.white;
+            float addedMainRectPadding = 30f;
+            float buttonHeight = 38f;
+
+            Rect mainRect = new Rect(x, headerRowHeight + addedMainRectPadding, inRect.width - x, inRect.height - headerRowHeight - buttonHeight - addedMainRectPadding - 20f);
             FillMainRect(mainRect);
             Rect confirmButtonRect = new Rect(inRect.width / 2f - AcceptButtonSize.x / 2, inRect.height - 55, AcceptButtonSize.x, AcceptButtonSize.y);
-            
+
             if (Widgets.ButtonText(confirmButtonRect, "Confirm", true, false, true))
             {
                 bool success;
@@ -164,9 +174,12 @@ namespace ItemRequests
             //  PROVIDE.
             // =====================
 
+            // TODO: Make filter for requestable items
+
             Text.Font = GameFont.Small;
-            float height = 6f + requestableItems.Count * 30f;
-            Rect contentRect = new Rect(0, 0, mainRect.width - 16, height);
+            float constScrollbarSize = 16;
+            float cumulativeContentHeight = 6f + requestableItems.Count * 30f;
+            Rect contentRect = new Rect(mainRect.x, 0, mainRect.width - constScrollbarSize, cumulativeContentHeight);
             float bottom = scrollPosition.y - 30f;
             float top = scrollPosition.y + mainRect.height;
             float y = 6f;
@@ -179,7 +192,7 @@ namespace ItemRequests
                 counter = i;
                 if (y > bottom && y < top)
                 {
-                    Rect rect = new Rect(0, y, contentRect.width, 30f);
+                    Rect rect = new Rect(mainRect.x, y, contentRect.width, 30f);
                     DrawTradeableRow(rect, requestableItems[i], counter, faction, negotiator);
                 }
                 y += 30f;
@@ -202,20 +215,13 @@ namespace ItemRequests
             Rect silverGraphicRect = new Rect(0, 0, silverIconWidth, rowRect.height);
             Widgets.ThingIcon(silverGraphicRect, ThingDefOf.Silver);
 
-            // Draw highlight if mouse is over the label "Silver"
-            Rect textRect = new Rect(silverIconWidth, 0, rowWidth - silverIconWidth - silverCountWidth, rowRect.height);
-            if (Mouse.IsOver(textRect))
-            {
-                Widgets.DrawHighlight(textRect);
-            }
-
             // Draw the label "Silver"
             Text.Anchor = TextAnchor.MiddleLeft;
             Rect textRectPadded = new Rect(silverIconWidth + 10, 0, 75, rowRect.height);
             textRectPadded.xMin += 5;
             textRectPadded.xMax -= 5;
             Widgets.Label(textRectPadded, "Silver");
-            
+
             // Draw the available silver for colony
             Text.Anchor = TextAnchor.MiddleCenter;
             Rect silverCountRect = new Rect(rowWidth - silverCountWidth, 0, silverCountWidth, rowRect.height);
@@ -226,8 +232,13 @@ namespace ItemRequests
             GUI.EndGroup();
         }
 
+        // Only draws first half of row (i.e. no interactable requesting on right side)
         public static void DrawTradeableRow(Rect rowRect, Tradeable trade, int index, Faction faction, Pawn negotiator)
         {
+            float iconNameAreaWidth = 300;
+            float priceTextAreaWidth = 100;
+            float colonyItemCountAreaWidth = 75;
+
             if (index % 2 == 1)
             {
                 Widgets.DrawLightHighlight(rowRect);
@@ -236,90 +247,56 @@ namespace ItemRequests
 
             // Begin Row group
             GUI.BeginGroup(rowRect);
-            float num = rowRect.width;
+            float x = 0; // starting from left
 
+            // Draw item icon and info icon
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Rect idRect = new Rect(x, 0, iconNameAreaWidth, rowRect.height);
+            TransferableUIUtility.DoExtraAnimalIcons(trade, rowRect, ref x);
+            TransferableUIUtility.DrawTransferableInfo(trade, idRect, Color.white);
 
-            // The player is not selling anything, so this
-            // area shouldn't be drawn
+            x += iconNameAreaWidth;
+            
+            // Draw the price for requesting the item
+            Rect priceTextArea = new Rect(x, 0, priceTextAreaWidth, rowRect.height);
+            DrawPrice(priceTextArea, trade, faction, negotiator);
+            x += priceTextAreaWidth;
 
-            //int traderItemCount = trade.CountHeldBy(Transactor.Trader);
-            //if (traderItemCount != 0)
-            //{
-            //    Rect rect2 = new Rect(num - 75, 0, 75, rect.height);
-            //    if (Mouse.IsOver(rect2))
-            //    {
-            //        Widgets.DrawHighlight(rect2);
-            //    }
-            //    Text.Anchor = TextAnchor.MiddleRight;
-            //    Rect rect3 = rect2;
-            //    rect3.xMin += 5f;
-            //    rect3.xMax -= 5f;
-            //    Widgets.Label(rect3, traderItemCount.ToStringCached());
-            //    TooltipHandler.TipRegion(rect2, "TraderCount".Translate());
-            //    Rect rect4 = new Rect(rect2.x - 100, 0, 100, rect.height);
-            //    Text.Anchor = TextAnchor.MiddleRight;
-            //    DrawPrice(rect4, trade, TradeAction.PlayerBuys);
-            //}
-
-
-            num -= 175f;
-
-            //Rect rect5 = new Rect(num - 240, 0, 240, rect.height);
-            //if (trade.TraderWillTrade)
-            //{
-            //    bool flash = Time.time - Dialog_Trade.lastCurrencyFlashTime < 1f && trade.IsCurrency;
-            //    TransferableUIUtility.DoCountAdjustInterface(rect5, trade, index, trade.GetMinimumToTransfer(), trade.GetMaximumToTransfer(), flash, null, false);
-            //}
-            //else
-            //{
-            //    TradeUI.DrawWillNotTradeIndication(rect5, trade);
-            //}
-
-            num -= 240f;
+            // Draw the number the colony currently has, if any
             int colonyItemCount = trade.CountHeldBy(Transactor.Colony);
             if (colonyItemCount != 0)
             {
-                Rect priceTextArea = new Rect(num - 100, 0, 100, rowRect.height);
-                Text.Anchor = TextAnchor.MiddleLeft;
-                DrawPrice(priceTextArea, trade, TradeAction.PlayerSells, faction, negotiator);
-                Rect colonyItemCountArea = new Rect(priceTextArea.x - 75, 0, 75, rowRect.height);
+                Rect colonyItemCountArea = new Rect(x, 0, colonyItemCountAreaWidth, rowRect.height);
                 if (Mouse.IsOver(colonyItemCountArea))
                 {
                     Widgets.DrawHighlight(colonyItemCountArea);
                 }
-                Text.Anchor = TextAnchor.MiddleLeft;
-                Rect rect8 = colonyItemCountArea;
-                rect8.xMin += 5f;
-                rect8.xMax -= 5f;
-                Widgets.Label(rect8, colonyItemCount.ToStringCached());
+                Rect paddedRect = colonyItemCountArea;
+                paddedRect.xMin += 5f;
+                paddedRect.xMax -= 5f;
+                Widgets.Label(paddedRect, colonyItemCount.ToStringCached());
                 TooltipHandler.TipRegion(colonyItemCountArea, "ColonyCount".Translate());
             }
 
-            num -= 175f;
-            TransferableUIUtility.DoExtraAnimalIcons(trade, rowRect, ref num);
-            Rect idRect = new Rect(0, 0, num, rowRect.height);
-            TransferableUIUtility.DrawTransferableInfo(trade, idRect, (!trade.TraderWillTrade) ? TradeUI.NoTradeColor : Color.white);
-            GenUI.ResetLabelAlign();
+            x += colonyItemCountAreaWidth;
 
             // End Row group
+            GenUI.ResetLabelAlign();
             GUI.EndGroup();
         }
 
-        private static void DrawPrice(Rect rect, Tradeable trad, TradeAction action, Faction faction, Pawn negotiator)
+        private static void DrawPrice(Rect rect, Tradeable trad, Faction faction, Pawn negotiator)
         {
-            if (trad.IsCurrency || !trad.TraderWillTrade)
-            {
-                return;
-            }
-
             rect = rect.Rounded();
             if (Mouse.IsOver(rect))
             {
                 Widgets.DrawHighlight(rect);
             }
 
-            TooltipHandler.TipRegion(rect, new TipSignal(() => trad.GetPriceTooltip(action), trad.GetHashCode() * 297));
-            switch (trad.PriceTypeFor(action))
+            PriceType priceType = GetPriceTypeFor(trad);
+            float finalPrice = CalcRequestedItemPrice(trad, faction, negotiator, priceType);
+            TooltipHandler.TipRegion(rect, new TipSignal(() => GetPriceTooltip(faction, negotiator, trad, priceType, finalPrice), trad.GetHashCode() * 297));
+            switch (priceType)
             {
                 case PriceType.VeryCheap:
                     GUI.color = new Color(0, 1, 0);
@@ -339,8 +316,7 @@ namespace ItemRequests
             }
 
 
-            float priceFor = CalcRequestedItemPrice(trad, faction, negotiator);
-            string label = priceFor.ToStringMoney("F2");
+            string label = finalPrice.ToStringMoney("F2");
             Rect priceTextArea = new Rect(rect);
             priceTextArea.xMax -= 5f;
             priceTextArea.xMin += 5f;
@@ -361,20 +337,123 @@ namespace ItemRequests
             colonySilver = map.resourceCounter.Silver;
         }
 
-        private static float CalcRequestedItemPrice(Tradeable item, Faction faction, Pawn negotiator)
+        private static PriceType GetPriceTypeFor(Tradeable trad)
+        {
+            ThingDef thingDef = trad.ThingDef;
+            if (thingDef == ThingDefOf.Silver)
+            {
+                return PriceType.Undefined;
+            }
+
+            // PriceTypeFor() in TraderKindDef
+            //for (int i = 0; i < this.stockGenerators.Count; i++)
+            //{
+            //    PriceType result;
+            //    if (this.stockGenerators[i].TryGetPriceType(thingDef, action, out result))
+            //    {
+            //        return result;
+            //    }
+            //}
+
+            return PriceType.Normal;
+        }
+
+        private static string GetPriceTooltip(Faction faction, Pawn negotiator, Tradeable trad, PriceType priceType, float priceFor)
+        {
+            if (!trad.HasAnyThing)
+            {
+                return string.Empty;
+            }
+
+            string text = "Price you'll pay upon delivery:";
+            text += "\n\n";
+            text = text + StatDefOf.MarketValue.LabelCap + ": " + trad.BaseMarketValue.ToStringMoney("F2");
+
+            string text2 = text;
+            
+            // TODO: Breadown the markup multiplier here for
+            // item rarity/dist to colony, etc.
+            text = string.Concat(new string[]
+            {
+                    text2,
+                    "\n  x ",
+                    1.6f.ToString("F2"),
+                    " (Requesting)"
+            });
+
+
+            if (priceType.PriceMultiplier() != 1f)
+            {
+                text2 = text;
+                text = string.Concat(new string[]
+                {
+                        text2,
+                        "\n  x ",
+                        priceType.PriceMultiplier().ToString("F2"),
+                        " (Faction tech level)"
+                });
+            }
+            if (Find.Storyteller.difficulty.tradePriceFactorLoss != 0f)
+            {
+                text2 = text;
+                text = string.Concat(new string[]
+                {
+                        text2,
+                        "\n  x ",
+                        (1f + Find.Storyteller.difficulty.tradePriceFactorLoss).ToString("F2"),
+                        " (",
+                        "DifficultyLevel".Translate(),
+                        ")"
+                });
+            }
+            text += "\n";
+            text2 = text;
+            text = string.Concat(new string[]
+            {
+                    text2,
+                    "\n",
+                    "YourNegotiatorBonus".Translate(),
+                    ": -",
+                    negotiator.GetStatValue(StatDefOf.TradePriceImprovement, true).ToStringPercent()
+            });
+
+            float priceGainSettlement = GetOfferPriceImprovementOffsetForFaction(faction, negotiator);
+            if (priceGainSettlement != 0f)
+            {
+                text2 = text;
+                text = string.Concat(new string[]
+                {
+                        text2,
+                        "\n",
+                        "TradeWithFactionBaseBonus".Translate(),
+                        ": -",
+                        priceGainSettlement.ToStringPercent()
+                });
+            }
+
+            text += "\n\n";
+            text = text + "FinalPrice".Translate() + ": " + priceFor.ToStringMoney("F2");
+            if (priceFor <= 0.01f)
+            {
+                text = text + " (" + "minimum".Translate() + ")";
+            }
+            return text;
+        }
+
+        private static float CalcRequestedItemPrice(Tradeable item, Faction faction, Pawn negotiator, PriceType priceType)
         {
             if (item.IsCurrency)
             {
                 return item.BaseMarketValue;
             }
 
-            float basePrice = item.PriceTypeFor(TradeAction.PlayerBuys).PriceMultiplier();
+            float basePrice = priceType.PriceMultiplier();
             float negotiatorBonus = negotiator.GetStatValue(StatDefOf.TradePriceImprovement, true);
             float settlementBonus = GetOfferPriceImprovementOffsetForFaction(faction, negotiator);
             float markupMultiplier = DetermineMarkupMultiplier();
             float total = TradeUtility.GetPricePlayerBuy(item.AnyThing, basePrice, negotiatorBonus, settlementBonus);
 
-            return total + (total * markupMultiplier);
+            return total * markupMultiplier;
         }
 
         private static float GetOfferPriceImprovementOffsetForFaction(Faction faction, Pawn negotiator)
@@ -389,18 +468,62 @@ namespace ItemRequests
             // - rarity of item
             // - distance of hailing colony from player colony
 
-            return 0.75f;
+            // standard requesting markup 1.6 (buying markup is 1.4 so 1.6 makes sense for a specific request)
+            return 1.6f;
         }
 
-        private void DetermineAvailableItems()
+        private void DetermineRequestableItems()
         {
             requestableItems.Clear();
+
+            List<SlotGroup> slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
+            Dictionary<string, int> thingCount = new Dictionary<string, int>();
+            slotGroups.ForEach(group =>
+            {
+                Log.Message("Reading group " + group.ToString());
+                // FALSE: this is a list of stacks, not amt in stack
+                // Assuming this is a list of all instantiated things, instead
+                // of just a list of the unique things stored
+                group.HeldThings.ToList().ForEach(thing => 
+                {
+                    Log.Message("  - " + thing.LabelCap + " x" + thing.stackCount.ToString());
+                    string key = thing.def.LabelCap;
+                    if (thingCount.ContainsKey(key))
+                    {
+                        thingCount[key] += thing.stackCount;
+                    } 
+                    else
+                    {
+                        thingCount[key] = thing.stackCount;
+                    }
+                });
+            });
+
             List<Thing> things = (from x in ThingDatabase.Instance.AllThings()
-                                  where hasMaximumTechLevel(x, faction.def.techLevel)
+                                  where hasMaximumTechLevel(x, faction.def.techLevel)                                  
                                   select x.thing).ToList();
-            things.ForEach(t => {
-                requestableItems.Add(new Tradeable(t, t));
-            });        
+
+            Log.Message("There are " + things.Count.ToString() + " requestable items to show");
+            things.ForEach(thing =>
+            {
+                Tradeable trad = new Tradeable(thing, thing);
+                if (!trad.IsCurrency)
+                {
+                    trad.thingsColony = new List<Thing>();
+                    string key = thing.def.LabelCap;
+                    if (thingCount.ContainsKey(key))
+                    {
+                        Log.Message("The colony has " + thingCount[key].ToString() + " " + thing.LabelCapNoCount + "s");
+                        // ???? will work ????
+                        for (int i = 0; i < thingCount[key]; ++i)
+                        {
+                            trad.thingsColony.Add(ThingMaker.MakeThing(thing.def, thing.Stuff));
+                        }
+                    }
+                    
+                    requestableItems.Add(trad);
+                }
+            });
         }
 
         private bool hasMaximumTechLevel(ThingEntry entry, TechLevel tLevel)

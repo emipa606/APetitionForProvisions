@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
-using System.Linq;
+using RimWorld;
+using Verse;
+using System.Reflection;
 
 namespace ItemRequests
 {
@@ -66,6 +68,16 @@ namespace ItemRequests
         public static bool Mouseover(this Rect rect)
         {
             return rect.Contains(Event.current.mousePosition);
+        }
+
+        public static void SetQuality(this Thing thing, QualityCategory quality)
+        {
+            MinifiedThing minifiedThing = thing as MinifiedThing;
+            CompQuality compQuality = (minifiedThing == null) ? thing.TryGetComp<CompQuality>() : minifiedThing.InnerThing.TryGetComp<CompQuality>();
+            if (compQuality != null)
+            {
+                typeof(CompQuality).GetField("qualityInt", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(compQuality, quality);
+            }
         }
     }
 
