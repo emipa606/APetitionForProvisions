@@ -80,7 +80,7 @@ namespace ItemRequests
                 Pawn pawn = thing as Pawn;
                 if (pawn.def.race.hasGenders)
                 {
-                    return "EdB.PC.Equipment.AnimalLabel".Translate(pawn.gender.GetLabel(), pawn.kindDef.label).CapitalizeFirst();
+                    return pawn.kindDef.label.CapitalizeFirst();
                 }
                 else
                 {
@@ -89,11 +89,11 @@ namespace ItemRequests
             }
         }
 
-        public EquipmentKey EquipmentKey
+        public ThingKey ThingKey
         {
             get
             {
-                return new EquipmentKey(def, stuffDef, gender);
+                return new ThingKey(def, stuffDef, gender);
             }
         }
 

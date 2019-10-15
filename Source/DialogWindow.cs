@@ -8,7 +8,7 @@ namespace ItemRequests
 {
     [HarmonyPatch(typeof(FactionDialogMaker))]
     [HarmonyPatch("FactionDialogFor")]
-    public static class Table
+    public static class DialogWindow
     {
         
         [HarmonyPostfix]
@@ -47,46 +47,43 @@ namespace ItemRequests
             }
 
             DiaOption tradeAcceptedOption = new DiaOption(text);
-            DiaNode requestItemNode = new DiaNode("TraderSent".Translate(faction.leader).CapitalizeFirst());
-            requestItemNode.options.Add(OKToRoot(faction,negotiator));
-            
-            
-            //faction.def.techLevel
-            
-            DiaNode diaNode2 = new DiaNode("ChooseTraderKind".Translate(faction.leader));
-            foreach (TraderKindDef localTk2 in from x in faction.def.caravanTraderKinds
-                                               where x.requestable
-                                               select x)
-            {
-                TraderKindDef localTk = localTk2;
-                DiaOption diaOption5 = new DiaOption(localTk.LabelCap);
-                diaOption5.action = delegate ()
-                {
-                    IncidentParms incidentParms = new IncidentParms();
-                    incidentParms.target = map;
-                    incidentParms.faction = faction;
-                    incidentParms.traderKind = localTk;
-                    incidentParms.forced = true;
-                    Find.Storyteller.incidentQueue.Add(IncidentDefOf.TraderCaravanArrival, Find.TickManager.TicksGame + 120000, incidentParms, 240000);
-                    faction.lastTraderRequestTick = Find.TickManager.TicksGame;
-                    Faction faction2 = faction;
-                    Faction ofPlayer = Faction.OfPlayer;
-                    int goodwillChange = -15;
-                    bool canSendMessage = false;
-                    string reason = "GoodwillChangedReason_RequestedTrader".Translate();
-                    faction2.TryAffectGoodwillWith(ofPlayer, goodwillChange, canSendMessage, true, reason, null);
-                };
-                diaOption5.link = requestItemNode;
-                diaNode2.options.Add(diaOption5);
-            }
+            //DiaNode requestItemNode = new DiaNode("TraderSent".Translate(faction.leader).CapitalizeFirst());
+            //requestItemNode.options.Add(OKToRoot(faction,negotiator));
+                        
+            //DiaNode diaNode2 = new DiaNode("ChooseTraderKind".Translate(faction.leader));
+            //foreach (TraderKindDef localTk2 in from x in faction.def.caravanTraderKinds
+            //                                   where x.requestable
+            //                                   select x)
+            //{
+            //    TraderKindDef localTk = localTk2;
+            //    DiaOption diaOption5 = new DiaOption(localTk.LabelCap);
+            //    diaOption5.action = delegate ()
+            //    {
+            //        IncidentParms incidentParms = new IncidentParms();
+            //        incidentParms.target = map;
+            //        incidentParms.faction = faction;
+            //        incidentParms.traderKind = localTk;
+            //        incidentParms.forced = true;
+            //        Find.Storyteller.incidentQueue.Add(IncidentDefOf.TraderCaravanArrival, Find.TickManager.TicksGame + 120000, incidentParms, 240000);
+            //        faction.lastTraderRequestTick = Find.TickManager.TicksGame;
+            //        Faction faction2 = faction;
+            //        Faction ofPlayer = Faction.OfPlayer;
+            //        int goodwillChange = -15;
+            //        bool canSendMessage = false;
+            //        string reason = "GoodwillChangedReason_RequestedTrader".Translate();
+            //        faction2.TryAffectGoodwillWith(ofPlayer, goodwillChange, canSendMessage, true, reason, null);
+            //    };
+            //    diaOption5.link = requestItemNode;
+            //    diaNode2.options.Add(diaOption5);
+            //}
 
-            DiaOption goBackOption = new DiaOption("GoBack".Translate());
-            goBackOption.linkLateBind = ResetToRoot(faction, negotiator);
-            diaNode2.options.Add(goBackOption);
+            //DiaOption goBackOption = new DiaOption("GoBack".Translate());
+            //goBackOption.linkLateBind = ResetToRoot(faction, negotiator);
+            //diaNode2.options.Add(goBackOption);
             //tradeAcceptedOption.link = diaNode2;
 
             tradeAcceptedOption.action = () => {
-                Find.WindowStack.Add(new ItemRequestWindow(map, faction));
+                Find.WindowStack.Add(new ItemRequestWindow(map, faction, negotiator));
             };
 
             return tradeAcceptedOption;

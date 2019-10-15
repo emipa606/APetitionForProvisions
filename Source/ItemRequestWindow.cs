@@ -1,192 +1,153 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
 using RimWorld;
-using RimWorld.Planet;
 
 namespace ItemRequests
 {
     public class ItemRequestWindow : Window
     {
         public Vector2 ContentMargin { get; protected set; }
-        public Vector2 WindowSize { get; protected set; }
-        public Vector2 ButtonSize { get; protected set; }
-        public Vector2 ContentSize { get; protected set; }
-        public Vector2 GenderSize { get; protected set; }
-        public string HeaderLabel { get; protected set; }
-        public float HeaderHeight { get; protected set; }
-        public float RowGroupHeaderHeight { get; protected set; }
-        public float FooterHeight { get; protected set; }
-        public float WindowPadding { get; protected set; }
         public Rect ContentRect { get; protected set; }
         public Rect ScrollRect { get; protected set; }
-        public Rect FooterRect { get; protected set; }
-        public Rect HeaderRect { get; protected set; }
-        public Rect CancelButtonRect { get; protected set; }
-        public Rect ConfirmButtonRect { get; protected set; }
-        public Rect SingleButtonRect { get; protected set; }
         protected WidgetTable<ThingEntry> table = new WidgetTable<ThingEntry>();
+        public Map map { get; protected set; }
 
-        protected static readonly Vector2 AcceptButtonSize = new Vector2(160f, 40f);
-        protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160f, 40f);
+        protected static readonly Vector2 AcceptButtonSize = new Vector2(160, 40f);
+        protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160, 40f);
         private List<Tradeable> requestableItems = new List<Tradeable>();
         private int colonySilver;
         private Vector2 scrollPosition = Vector2.zero;
-        public Map map { get; protected set; }
+        private Faction faction;
+        private Pawn negotiator;
 
-        public ItemRequestWindow(Map map, Faction faction)
+        public ItemRequestWindow(Map map, Faction faction, Pawn negotiator)
         {
             this.map = map;
-            DetermineAvailableItems(faction);
+            this.faction = faction;
+            this.negotiator = negotiator;            
+            DetermineAvailableItems();
             CalcCachedCurrency();
             Resize();
         }
         protected void Resize()
         {
-            float headerSize = 0;
-            headerSize = HeaderHeight;
-            if (HeaderLabel != null)
-            {
-                headerSize = HeaderHeight;
-            }
+            ContentMargin = new Vector2(10, 18);
+            float HeaderHeight = 32;
+            float FooterHeight = 40f;
+            float WindowPadding = 18;
+            Vector2 WindowSize = new Vector2(700, 1000);
+            Vector2 ContentSize = new Vector2(WindowSize.x - WindowPadding * 2 - ContentMargin.x * 2,
+                WindowSize.y - WindowPadding * 2 - ContentMargin.y * 2 - FooterHeight - HeaderHeight);
 
-            HeaderHeight = 32;
-            FooterHeight = 40f;
-            WindowPadding = 18;
-            ContentMargin = new Vector2(10f, 18f);
-            WindowSize = new Vector2(440f, 584f);
-            ButtonSize = new Vector2(140f, 40f);
-
-            ContentSize = new Vector2(WindowSize.x - WindowPadding * 2 - ContentMargin.x * 2,
-                WindowSize.y - WindowPadding * 2 - ContentMargin.y * 2 - FooterHeight - headerSize);
-
-            ContentRect = new Rect(ContentMargin.x, ContentMargin.y + headerSize, ContentSize.x, ContentSize.y);
+            ContentRect = new Rect(ContentMargin.x, ContentMargin.y + HeaderHeight, ContentSize.x, ContentSize.y);
 
             ScrollRect = new Rect(0, 0, ContentRect.width, ContentRect.height);
-
-            HeaderRect = new Rect(ContentMargin.x, ContentMargin.y, ContentSize.x, HeaderHeight);
-
-            FooterRect = new Rect(ContentMargin.x, ContentRect.y + ContentSize.y + 20,
-                ContentSize.x, FooterHeight);
-
-            GenderSize = new Vector2(48, 48);
-
-            SingleButtonRect = new Rect(ContentSize.x / 2 - ButtonSize.x / 2,
-                (FooterHeight / 2) - (ButtonSize.y / 2),
-                ButtonSize.x, ButtonSize.y);
-
-            CancelButtonRect = new Rect(0,
-                (FooterHeight / 2) - (ButtonSize.y / 2),
-                ButtonSize.x, ButtonSize.y);
-            ConfirmButtonRect = new Rect(ContentSize.x - ButtonSize.x,
-                (FooterHeight / 2) - (ButtonSize.y / 2),
-                ButtonSize.x, ButtonSize.y);
         }
 
         public override void DoWindowContents(Rect inRect)
         {
+            // Begin Window group
             GUI.BeginGroup(inRect);
 
             inRect = inRect.AtZero();
-            float x = inRect.width - 590f;
-            Rect position = new Rect(x, 0f, inRect.width - x, 58f);
+            float x = ContentMargin.x;
+            float rowHeight = 58f;
+            Rect headerRowRect = new Rect(x, 0, inRect.width - x, rowHeight);
 
-            // Start drawing top left (position)
-            GUI.BeginGroup(position);
+            // Begin Header group
+            GUI.BeginGroup(headerRowRect);
             Text.Font = GameFont.Medium;
 
             // Draw player faction name
-            // Left half of rect
-            Rect playerFactionNameArea = new Rect(0f, 0f, position.width / 2f, position.height);
+            Rect playerFactionNameArea = new Rect(0, 0, headerRowRect.width / 2, headerRowRect.height);
             Text.Anchor = TextAnchor.UpperLeft;
             Widgets.Label(playerFactionNameArea, Faction.OfPlayer.Name.Truncate(playerFactionNameArea.width, null));
 
             // Draw trader name
-            // Right half of rect
-            Rect traderNameArea = new Rect(position.width / 2f, 0f, position.width / 2f, position.height);
+            Rect tradingFactionNameArea = new Rect(headerRowRect.width / 2, 0, headerRowRect.width / 2, headerRowRect.height);
             Text.Anchor = TextAnchor.UpperRight;
-            string traderName = TradeSession.trader.TraderName;
-            if (Text.CalcSize(traderName).x > traderNameArea.width)
-            {
-                Text.Font = GameFont.Small;
-                traderName = traderName.Truncate(traderNameArea.width, null);
+            string tradingFactionName = faction.Name;
+            if (Text.CalcSize(tradingFactionName).x > tradingFactionNameArea.width)
+            {                
+                tradingFactionName = tradingFactionName.Truncate(tradingFactionNameArea.width, null);
             }
-            Widgets.Label(traderNameArea, traderName);
-
-
+            Widgets.Label(tradingFactionNameArea, tradingFactionName);
             Text.Font = GameFont.Small;
 
             // Draw just below player faction name
             Text.Anchor = TextAnchor.UpperLeft;
-            Rect rect3 = new Rect(0f, 27f, position.width / 2f, position.height / 2f);
-            Widgets.Label(rect3, "Negotiator".Translate() + ": " + TradeSession.playerNegotiator.LabelShort);
+            Rect negotiatorNameArea = new Rect(0, rowHeight / 2 - 2, headerRowRect.width / 2, headerRowRect.height / 2f);
+            Widgets.Label(negotiatorNameArea, "Negotiator".Translate() + ": " + negotiator.LabelShort);
 
             // Draw just below trader name
             Text.Anchor = TextAnchor.UpperRight;
-            Rect rect4 = new Rect(position.width / 2f, 27f, position.width / 2f, position.height / 2f);
-            Widgets.Label(rect4, TradeSession.trader.TraderKind.LabelCap);
-
+            Rect factionTechLevelArea = new Rect(headerRowRect.width / 2, rowHeight / 2 - 2, headerRowRect.width / 2, headerRowRect.height / 2f);
+            Widgets.Label(factionTechLevelArea, "Tech Level: " + faction.def.techLevel.ToString());
+                    
+            // End Header group
             GUI.EndGroup();
 
-            x = 0f;
+            x = headerRowRect.x;
 
-            // Draws the $$ amount for both sides
+            // Draws the $$ amount available
             float rowWidth = inRect.width - 16f;
-            Rect rowRect = new Rect(x, 58f, rowWidth, 30f);
+            Rect rowRect = new Rect(x, rowHeight, rowWidth, 30f);
 
             DrawAvailableColonyCurrency(rowRect, colonySilver);
 
             GUI.color = Color.gray;
-            Widgets.DrawLineHorizontal(x, 87f, rowWidth);
+            Widgets.DrawLineHorizontal(x, 87, rowWidth);
 
+            // ------------------------------------------------------------------------------------------------------ //
+            // ------------------------------------------------------------------------------------------------------ //
+            
             GUI.color = Color.white;
             x = 30f;
 
-            Rect mainRect = new Rect(0f, 58f + x, inRect.width, inRect.height - 58f - 38f - x - 20f);
+            Rect mainRect = new Rect(0, rowHeight + x, inRect.width, inRect.height - rowHeight - 38f - x - 20f);
             FillMainRect(mainRect);
-            Rect rect7 = new Rect(inRect.width / 2f - AcceptButtonSize.x / 2f, inRect.height - 55f, AcceptButtonSize.x, AcceptButtonSize.y);
-            if (Widgets.ButtonText(rect7, "Confirm", true, false, true))
+            Rect confirmButtonRect = new Rect(inRect.width / 2f - AcceptButtonSize.x / 2, inRect.height - 55, AcceptButtonSize.x, AcceptButtonSize.y);
+            
+            if (Widgets.ButtonText(confirmButtonRect, "Confirm", true, false, true))
             {
-                //Action action = delegate ()
-                //{
                 bool success;
+                // TODO: need to make custom trade session class
                 if (TradeSession.deal.TryExecute(out success))
                 {
                     if (success)
                     {
-                        //SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
+                        SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
                         Find.WindowStack.Add(new RequestAcknowledgedWindow());
-                        this.Close(false);
+                        Close(false);
                     }
                     else
                     {
-                        this.Close(true);
+                        Close(true);
                     }
                 }
-                //};
 
                 Event.current.Use();
             }
 
 
-            Rect resetButtonArea = new Rect(rect7.x - 10f - OtherBottomButtonSize.x, rect7.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
-            if (Widgets.ButtonText(resetButtonArea, "Reset", true, false, true))
+            Rect resetButtonRect = new Rect(confirmButtonRect.x - 10f - OtherBottomButtonSize.x, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
+            if (Widgets.ButtonText(resetButtonRect, "Reset", true, false, true))
             {
                 SoundDefOf.Tick_Low.PlayOneShotOnCamera(null);
-                TradeSession.deal.Reset();
-                //this.CountToTransferChanged();
+                //TradeSession.deal.Reset(); TODO: need to make custom trade session class
             }
 
-            Rect cancelButtonArea = new Rect(rect7.xMax + 10f, rect7.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
-            if (Widgets.ButtonText(cancelButtonArea, "Cancel", true, false, true))
+            Rect cancelButtonRect = new Rect(confirmButtonRect.xMax + 10, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
+            if (Widgets.ButtonText(cancelButtonRect, "Cancel", true, false, true))
             {
-                this.Close(true);
+                Close(true);
                 Event.current.Use();
             }
 
+            // End Window group
             GUI.EndGroup();
         }
 
@@ -202,64 +163,79 @@ namespace ItemRequests
             //  PROVIDE.
             // =====================
 
-
-            // TODO:
-            // requestableItems needs to become
-            // a list of items available
-            // to be requested.
-
             Text.Font = GameFont.Small;
             float height = 6f + requestableItems.Count * 30f;
-            Rect viewRect = new Rect(0f, 0f, mainRect.width - 16f, height);
+            Rect contentRect = new Rect(0, 0, mainRect.width - 16, height);
             float bottom = scrollPosition.y - 30f;
             float top = scrollPosition.y + mainRect.height;
             float y = 6f;
             int counter;
 
-            Widgets.BeginScrollView(mainRect, ref scrollPosition, viewRect, true);
+            Widgets.BeginScrollView(mainRect, ref scrollPosition, contentRect, true);
 
             for (int i = 0; i < requestableItems.Count; i++)
             {
                 counter = i;
                 if (y > bottom && y < top)
                 {
-                    Rect rect = new Rect(0f, y, viewRect.width, 30f);
-                    DrawTradeableRow(rect, requestableItems[i], counter);
+                    Rect rect = new Rect(0, y, contentRect.width, 30f);
+                    DrawTradeableRow(rect, requestableItems[i], counter, faction, negotiator);
                 }
                 y += 30f;
             }
+
             Widgets.EndScrollView();
         }
 
-        public static void DrawAvailableColonyCurrency(Rect rect, int colonySilver)
+        public static void DrawAvailableColonyCurrency(Rect rowRect, int colonySilver)
         {
-            Text.Font = GameFont.Small;
-            GUI.BeginGroup(rect);
-            float num = rect.width;
+            // Begin row
+            GUI.BeginGroup(rowRect);
 
-            Rect rect6 = new Rect(num - 100f, 0f, 100f, rect.height);
-            Rect rect7 = new Rect(rect6.x - 75f, 0f, 75f, rect.height);
-            if (Mouse.IsOver(rect7))
+            float rowWidth = rowRect.width;
+            float silverIconWidth = 25;
+            float silverCountWidth = 100;
+            Text.Font = GameFont.Small;
+
+            // Draw icon for silver
+            Rect silverGraphicRect = new Rect(0, 0, silverIconWidth, rowRect.height);
+            Widgets.ThingIcon(silverGraphicRect, ThingDefOf.Silver);
+
+            // Draw highlight if mouse is over the label "Silver"
+            Rect textRect = new Rect(silverIconWidth, 0, rowWidth - silverIconWidth - silverCountWidth, rowRect.height);
+            if (Mouse.IsOver(textRect))
             {
-                Widgets.DrawHighlight(rect7);
+                Widgets.DrawHighlight(textRect);
             }
+
+            // Draw the label "Silver"
             Text.Anchor = TextAnchor.MiddleLeft;
-            Rect rect8 = rect7;
-            rect8.xMin += 5f;
-            rect8.xMax -= 5f;
-            Widgets.Label(rect8, colonySilver.ToString());
-            TooltipHandler.TipRegion(rect7, "Colony Silver");
+            Rect textRectPadded = new Rect(silverIconWidth + 10, 0, 75, rowRect.height);
+            textRectPadded.xMin += 5;
+            textRectPadded.xMax -= 5;
+            Widgets.Label(textRectPadded, "Silver");
+            
+            // Draw the available silver for colony
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Rect silverCountRect = new Rect(rowWidth - silverCountWidth, 0, silverCountWidth, rowRect.height);
+            Widgets.Label(silverCountRect, colonySilver.ToString());
+            GenUI.ResetLabelAlign();
+
+            // Finish row
+            GUI.EndGroup();
         }
 
-        public static void DrawTradeableRow(Rect rect, Tradeable trade, int index)
+        public static void DrawTradeableRow(Rect rowRect, Tradeable trade, int index, Faction faction, Pawn negotiator)
         {
             if (index % 2 == 1)
             {
-                Widgets.DrawLightHighlight(rect);
+                Widgets.DrawLightHighlight(rowRect);
             }
             Text.Font = GameFont.Small;
-            GUI.BeginGroup(rect);
-            float num = rect.width;
+
+            // Begin Row group
+            GUI.BeginGroup(rowRect);
+            float num = rowRect.width;
 
 
             // The player is not selling anything, so this
@@ -268,7 +244,7 @@ namespace ItemRequests
             //int traderItemCount = trade.CountHeldBy(Transactor.Trader);
             //if (traderItemCount != 0)
             //{
-            //    Rect rect2 = new Rect(num - 75f, 0f, 75f, rect.height);
+            //    Rect rect2 = new Rect(num - 75, 0, 75, rect.height);
             //    if (Mouse.IsOver(rect2))
             //    {
             //        Widgets.DrawHighlight(rect2);
@@ -279,7 +255,7 @@ namespace ItemRequests
             //    rect3.xMax -= 5f;
             //    Widgets.Label(rect3, traderItemCount.ToStringCached());
             //    TooltipHandler.TipRegion(rect2, "TraderCount".Translate());
-            //    Rect rect4 = new Rect(rect2.x - 100f, 0f, 100f, rect.height);
+            //    Rect rect4 = new Rect(rect2.x - 100, 0, 100, rect.height);
             //    Text.Anchor = TextAnchor.MiddleRight;
             //    DrawPrice(rect4, trade, TradeAction.PlayerBuys);
             //}
@@ -287,7 +263,7 @@ namespace ItemRequests
 
             num -= 175f;
 
-            //Rect rect5 = new Rect(num - 240f, 0f, 240f, rect.height);
+            //Rect rect5 = new Rect(num - 240, 0, 240, rect.height);
             //if (trade.TraderWillTrade)
             //{
             //    bool flash = Time.time - Dialog_Trade.lastCurrencyFlashTime < 1f && trade.IsCurrency;
@@ -302,76 +278,80 @@ namespace ItemRequests
             int colonyItemCount = trade.CountHeldBy(Transactor.Colony);
             if (colonyItemCount != 0)
             {
-                Rect rect6 = new Rect(num - 100f, 0f, 100f, rect.height);
+                Rect priceTextArea = new Rect(num - 100, 0, 100, rowRect.height);
                 Text.Anchor = TextAnchor.MiddleLeft;
-                DrawPrice(rect6, trade, TradeAction.PlayerSells);
-                Rect rect7 = new Rect(rect6.x - 75f, 0f, 75f, rect.height);
-                if (Mouse.IsOver(rect7))
+                DrawPrice(priceTextArea, trade, TradeAction.PlayerSells, faction, negotiator);
+                Rect colonyItemCountArea = new Rect(priceTextArea.x - 75, 0, 75, rowRect.height);
+                if (Mouse.IsOver(colonyItemCountArea))
                 {
-                    Widgets.DrawHighlight(rect7);
+                    Widgets.DrawHighlight(colonyItemCountArea);
                 }
                 Text.Anchor = TextAnchor.MiddleLeft;
-                Rect rect8 = rect7;
+                Rect rect8 = colonyItemCountArea;
                 rect8.xMin += 5f;
                 rect8.xMax -= 5f;
                 Widgets.Label(rect8, colonyItemCount.ToStringCached());
-                TooltipHandler.TipRegion(rect7, "ColonyCount".Translate());
+                TooltipHandler.TipRegion(colonyItemCountArea, "ColonyCount".Translate());
             }
 
             num -= 175f;
-            TransferableUIUtility.DoExtraAnimalIcons(trade, rect, ref num);
-            Rect idRect = new Rect(0f, 0f, num, rect.height);
+            TransferableUIUtility.DoExtraAnimalIcons(trade, rowRect, ref num);
+            Rect idRect = new Rect(0, 0, num, rowRect.height);
             TransferableUIUtility.DrawTransferableInfo(trade, idRect, (!trade.TraderWillTrade) ? TradeUI.NoTradeColor : Color.white);
             GenUI.ResetLabelAlign();
+
+            // End Row group
             GUI.EndGroup();
         }
 
-        private static void DrawPrice(Rect rect, Tradeable trad, TradeAction action)
+        private static void DrawPrice(Rect rect, Tradeable trad, TradeAction action, Faction faction, Pawn negotiator)
         {
             if (trad.IsCurrency || !trad.TraderWillTrade)
             {
                 return;
             }
+
             rect = rect.Rounded();
             if (Mouse.IsOver(rect))
             {
                 Widgets.DrawHighlight(rect);
             }
+
             TooltipHandler.TipRegion(rect, new TipSignal(() => trad.GetPriceTooltip(action), trad.GetHashCode() * 297));
             switch (trad.PriceTypeFor(action))
             {
                 case PriceType.VeryCheap:
-                    GUI.color = new Color(0f, 1f, 0f);
+                    GUI.color = new Color(0, 1, 0);
                     break;
                 case PriceType.Cheap:
-                    GUI.color = new Color(0.5f, 1f, 0.5f);
+                    GUI.color = new Color(0.5f, 1, 0.5f);
                     break;
                 case PriceType.Normal:
                     GUI.color = Color.white;
                     break;
                 case PriceType.Expensive:
-                    GUI.color = new Color(1f, 0.5f, 0.5f);
+                    GUI.color = new Color(1, 0.5f, 0.5f);
                     break;
                 case PriceType.Exorbitant:
-                    GUI.color = new Color(1f, 0f, 0f);
+                    GUI.color = new Color(1, 0, 0);
                     break;
             }
 
 
-            float priceFor = CalcRequestedItemPrice(trad);
+            float priceFor = CalcRequestedItemPrice(trad, faction, negotiator);
             string label = priceFor.ToStringMoney("F2");
-            Rect rect2 = new Rect(rect);
-            rect2.xMax -= 5f;
-            rect2.xMin += 5f;
+            Rect priceTextArea = new Rect(rect);
+            priceTextArea.xMax -= 5f;
+            priceTextArea.xMin += 5f;
             if (Text.Anchor == TextAnchor.MiddleLeft)
             {
-                rect2.xMax += 300f;
+                priceTextArea.xMax += 300f;
             }
             if (Text.Anchor == TextAnchor.MiddleRight)
             {
-                rect2.xMin -= 300f;
+                priceTextArea.xMin -= 300f;
             }
-            Widgets.Label(rect2, label);
+            Widgets.Label(priceTextArea, label);
             GUI.color = Color.white;
         }
 
@@ -394,7 +374,7 @@ namespace ItemRequests
             colonySilver = map.resourceCounter.Silver;
         }
 
-        private static float CalcRequestedItemPrice(Tradeable item)
+        private static float CalcRequestedItemPrice(Tradeable item, Faction faction, Pawn negotiator)
         {
             if (item.IsCurrency)
             {
@@ -402,12 +382,18 @@ namespace ItemRequests
             }
 
             float basePrice = item.PriceTypeFor(TradeAction.PlayerBuys).PriceMultiplier();
-            float negotiatorBonus = TradeSession.playerNegotiator.GetStatValue(StatDefOf.TradePriceImprovement, true);
-            float settlementBonus = TradeSession.trader.TradePriceImprovementOffsetForPlayer;
+            float negotiatorBonus = negotiator.GetStatValue(StatDefOf.TradePriceImprovement, true);
+            float settlementBonus = GetOfferPriceImprovementOffsetForFaction(faction, negotiator);
             float markupMultiplier = DetermineMarkupMultiplier();
             float total = TradeUtility.GetPricePlayerBuy(item.AnyThing, basePrice, negotiatorBonus, settlementBonus);
 
             return total + (total * markupMultiplier);
+        }
+
+        private static float GetOfferPriceImprovementOffsetForFaction(Faction faction, Pawn negotiator)
+        {
+            // based on faction relations
+            return 0;
         }
 
         private static float DetermineMarkupMultiplier()
@@ -415,15 +401,14 @@ namespace ItemRequests
             // Price should be increased based on following factors:
             // - rarity of item
             // - distance of hailing colony from player colony
-            // - faction relation between colonies
 
             return 0.75f;
         }
 
-        private void DetermineAvailableItems(Faction fromFaction)
+        private void DetermineAvailableItems()
         {
             requestableItems.Clear();
-            switch (fromFaction.def.techLevel)
+            switch (faction.def.techLevel)
             {
                 case TechLevel.Animal:
                 case TechLevel.Neolithic:

@@ -80,12 +80,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CostCalculator.cs" />
-    <Compile Include="DataContainers.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ItemPanel.cs" />
     <Compile Include="ItemRequestWindow.cs" />
     <Compile Include="ProviderThingTypes.cs" />
-    <Compile Include="Table.cs" />
+    <Compile Include="DialogWindow.cs" />
     <Compile Include="ItemRequests.cs" />
     <Compile Include="Panel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

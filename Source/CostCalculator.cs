@@ -112,57 +112,57 @@ namespace ItemRequests
             cheapApparel.Add("Apparel_Jacket");
         }
 
-        public void Calculate(CostDetails cost, List<CustomPawn> pawns, List<EquipmentSelection> equipment, List<SelectedAnimal> animals)
-        {
-            cost.Clear(pawns.Where(pawn => pawn.Type == CustomPawnType.Colonist).Count());
+        //public void Calculate(CostDetails cost, List<CustomPawn> pawns, List<EquipmentSelection> equipment, List<SelectedAnimal> animals)
+        //{
+        //    cost.Clear(pawns.Where(pawn => pawn.Type == CustomPawnType.Colonist).Count());
 
-            int i = 0;
-            foreach (var pawn in pawns)
-            {
-                if (pawn.Type == CustomPawnType.Colonist)
-                {
-                    CalculatePawnCost(cost.colonistDetails[i++], pawn);
-                }
-            }
-            foreach (var e in equipment)
-            {
-                cost.equipment += CalculateEquipmentCost(e);
-            }
-            cost.ComputeTotal();
-        }
+        //    int i = 0;
+        //    foreach (var pawn in pawns)
+        //    {
+        //        if (pawn.Type == CustomPawnType.Colonist)
+        //        {
+        //            CalculatePawnCost(cost.colonistDetails[i++], pawn);
+        //        }
+        //    }
+        //    foreach (var e in equipment)
+        //    {
+        //        cost.equipment += CalculateEquipmentCost(e);
+        //    }
+        //    cost.ComputeTotal();
+        //}
 
-        public void CalculatePawnCost(ColonistCostDetails cost, CustomPawn pawn)
+        public void CalculatePawnCost(ColonistCostDetails cost, Pawn pawn)
         {
             cost.Clear();
-            cost.name = pawn.NickName;
+            cost.name = pawn.Name.ToString();
 
             // Start with the market value plus a bit of a mark-up.
-            cost.marketValue = pawn.Pawn.MarketValue;
+            cost.marketValue = pawn.MarketValue;
             cost.marketValue += 300;
 
             // Calculate passion cost.  Each passion above 8 makes all passions
             // cost more.  Minor passion counts as one passion.  Major passion
             // counts as 3.
-            double skillCount = pawn.currentPassions.Keys.Count();
+            //double skillCount = pawn.currentPassions.Keys.Count();
             double passionLevelCount = 0;
             double passionLevelCost = 20;
-            double passionateSkillCount = 0;
-            foreach (SkillDef def in pawn.currentPassions.Keys)
-            {
-                Passion passion = pawn.currentPassions[def];
-                int level = pawn.GetSkillLevel(def);
+            //double passionateSkillCount = 0;
+            //foreach (SkillDef def in pawn.currentPassions.Keys)
+            //{
+            //    Passion passion = pawn.currentPassions[def];
+            //    int level = pawn.GetSkillLevel(def);
 
-                if (passion == Passion.Major)
-                {
-                    passionLevelCount += 3.0;
-                    passionateSkillCount += 1.0;
-                }
-                else if (passion == Passion.Minor)
-                {
-                    passionLevelCount += 1.0;
-                    passionateSkillCount += 1.0;
-                }
-            }
+            //    if (passion == Passion.Major)
+            //    {
+            //        passionLevelCount += 3.0;
+            //        passionateSkillCount += 1.0;
+            //    }
+            //    else if (passion == Passion.Minor)
+            //    {
+            //        passionLevelCount += 1.0;
+            //        passionateSkillCount += 1.0;
+            //    }
+            //}
             double levelCost = passionLevelCost;
             if (passionLevelCount > 8)
             {
@@ -172,108 +172,108 @@ namespace ItemRequests
             cost.marketValue += levelCost * passionLevelCount;
 
             // Calculate trait cost.
-            if (pawn.TraitCount > Constraints.MaxVanillaTraits)
-            {
-                int extraTraitCount = pawn.TraitCount - Constraints.MaxVanillaTraits;
-                double extraTraitCost = 100;
-                for (int i = 0; i < extraTraitCount; i++)
-                {
-                    cost.marketValue += extraTraitCost;
-                    extraTraitCost = Math.Ceiling(extraTraitCost * 2.5);
-                }
-            }
+            //if (pawn.TraitCount > Constraints.MaxVanillaTraits)
+            //{
+            //    int extraTraitCount = pawn.TraitCount - Constraints.MaxVanillaTraits;
+            //    double extraTraitCost = 100;
+            //    for (int i = 0; i < extraTraitCount; i++)
+            //    {
+            //        cost.marketValue += extraTraitCost;
+            //        extraTraitCost = Math.Ceiling(extraTraitCost * 2.5);
+            //    }
+            //}
 
             // Calculate cost of worn apparel.
-            foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn))
-            {
-                if (layer.Apparel)
-                {
-                    var def = pawn.GetAcceptedApparel(layer);
-                    if (def == null)
-                    {
-                        continue;
-                    }
-                    EquipmentKey key = new EquipmentKey();
-                    key.ThingDef = def;
-                    key.StuffDef = pawn.GetSelectedStuff(layer);
-                    ThingEntry record = PrepareCarefully.Instance.EquipmentDatabase.Find(key);
-                    if (record == null)
-                    {
-                        continue;
-                    }
-                    EquipmentSelection selection = new EquipmentSelection(record, 1);
-                    double c = CalculateEquipmentCost(selection);
-                    if (def != null)
-                    {
-                        // TODO: Discounted materials should be based on the faction, not hard-coded.
-                        // TODO: Should we continue with the discounting?
-                        if (key.StuffDef != null)
-                        {
-                            if (key.StuffDef.defName == "Synthread")
-                            {
-                                if (freeApparel.Contains(key.ThingDef.defName))
-                                {
-                                    c = 0;
-                                }
-                                else if (cheapApparel.Contains(key.ThingDef.defName))
-                                {
-                                    c = c * 0.15d;
-                                }
-                            }
-                        }
-                    }
-                    cost.apparel += c;
-                }
-            }
+            //foreach (var layer in PrepareCarefully.Instance.Providers.PawnLayers.GetLayersForPawn(pawn))
+            //{
+            //    if (layer.Apparel)
+            //    {
+            //        var def = pawn.GetAcceptedApparel(layer);
+            //        if (def == null)
+            //        {
+            //            continue;
+            //        }
+            //        EquipmentKey key = new EquipmentKey();
+            //        key.ThingDef = def;
+            //        key.StuffDef = pawn.GetSelectedStuff(layer);
+            //        ThingEntry record = PrepareCarefully.Instance.EquipmentDatabase.Find(key);
+            //        if (record == null)
+            //        {
+            //            continue;
+            //        }
+            //        EquipmentSelection selection = new EquipmentSelection(record, 1);
+            //        double c = CalculateEquipmentCost(selection);
+            //        if (def != null)
+            //        {
+            //            // TODO: Discounted materials should be based on the faction, not hard-coded.
+            //            // TODO: Should we continue with the discounting?
+            //            if (key.StuffDef != null)
+            //            {
+            //                if (key.StuffDef.defName == "Synthread")
+            //                {
+            //                    if (freeApparel.Contains(key.ThingDef.defName))
+            //                    {
+            //                        c = 0;
+            //                    }
+            //                    else if (cheapApparel.Contains(key.ThingDef.defName))
+            //                    {
+            //                        c = c * 0.15d;
+            //                    }
+            //                }
+            //            }
+            //        }
+            //        cost.apparel += c;
+            //    }
+            //}
 
             // Calculate cost for any materials needed for implants.
-            OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
-            foreach (Implant option in pawn.Implants)
-            {
+            //OptionsHealth healthOptions = PrepareCarefully.Instance.Providers.Health.GetOptions(pawn);
+            //foreach (Implant option in pawn.Implants)
+            //{
 
-                // Check if there are any ancestor parts that override the selection.
-                UniqueBodyPart uniquePart = healthOptions.FindBodyPartsForRecord(option.BodyPartRecord);
-                if (uniquePart == null)
-                {
-                    Log.Warning("Prepare Carefully could not find body part record when computing the cost of an implant: " + option.BodyPartRecord.def.defName);
-                    continue;
-                }
-                if (pawn.AtLeastOneImplantedPart(uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; })))
-                {
-                    continue;
-                }
+            //    // Check if there are any ancestor parts that override the selection.
+            //    UniqueBodyPart uniquePart = healthOptions.FindBodyPartsForRecord(option.BodyPartRecord);
+            //    if (uniquePart == null)
+            //    {
+            //        Log.Warning("Prepare Carefully could not find body part record when computing the cost of an implant: " + option.BodyPartRecord.def.defName);
+            //        continue;
+            //    }
+            //    if (pawn.AtLeastOneImplantedPart(uniquePart.Ancestors.Select((UniqueBodyPart p) => { return p.Record; })))
+            //    {
+            //        continue;
+            //    }
 
-                //  Figure out the cost of the part replacement based on its recipe's ingredients.
-                if (option.recipe != null)
-                {
-                    RecipeDef def = option.recipe;
-                    foreach (IngredientCount amount in def.ingredients)
-                    {
-                        int count = 0;
-                        double totalCost = 0;
-                        bool skip = false;
-                        foreach (ThingDef ingredientDef in amount.filter.AllowedThingDefs)
-                        {
-                            if (ingredientDef.IsMedicine)
-                            {
-                                skip = true;
-                                break;
-                            }
-                            count++;
-                            ThingEntry entry = PrepareCarefully.Instance.EquipmentDatabase.LookupThingEntry(new EquipmentKey(ingredientDef, null));
-                            if (entry != null)
-                            {
-                                totalCost += entry.cost * (double)amount.GetBaseCount();
-                            }
-                        }
-                        if (skip || count == 0)
-                        {
-                            continue;
-                        }
-                        cost.bionics += (int)(totalCost / (double)count);
-                    }
-                }
-            }
+            //    //  Figure out the cost of the part replacement based on its recipe's ingredients.
+            //    if (option.recipe != null)
+            //    {
+            //        RecipeDef def = option.recipe;
+            //        foreach (IngredientCount amount in def.ingredients)
+            //        {
+            //            int count = 0;
+            //            double totalCost = 0;
+            //            bool skip = false;
+            //            foreach (ThingDef ingredientDef in amount.filter.AllowedThingDefs)
+            //            {
+            //                if (ingredientDef.IsMedicine)
+            //                {
+            //                    skip = true;
+            //                    break;
+            //                }
+            //                count++;
+            //                ThingEntry entry = PrepareCarefully.Instance.EquipmentDatabase.LookupThingEntry(new EquipmentKey(ingredientDef, null));
+            //                if (entry != null)
+            //                {
+            //                    totalCost += entry.cost * (double)amount.GetBaseCount();
+            //                }
+            //            }
+            //            if (skip || count == 0)
+            //            {
+            //                continue;
+            //            }
+            //            cost.bionics += (int)(totalCost / (double)count);
+            //        }
+            //    }
+            //}
 
             cost.apparel = Math.Ceiling(cost.apparel);
             cost.bionics = Math.Ceiling(cost.bionics);
@@ -285,12 +285,12 @@ namespace ItemRequests
             cost.ComputeTotal();
         }
 
-        public double CalculateEquipmentCost(EquipmentSelection equipment)
+        public double CalculateThingCost(ThingKey thingKey)
         {
-            ThingEntry entry = PrepareCarefully.Instance.EquipmentDatabase.LookupThingEntry(equipment.Key);
+            ThingEntry entry = ThingDatabase.Instance.LookupThingEntry(thingKey);
             if (entry != null)
             {
-                return (double)equipment.Count * entry.cost;
+                return entry.cost;
             }
             else
             {
@@ -325,12 +325,7 @@ namespace ItemRequests
                 }
                 else
                 {
-                    // TODO:
-                    // Should look at ThingMaker.MakeThing() to decide which validations we need to do
-                    // before calling that method.  That method doesn't do null checks everywhere, so we
-                    // may need to do those validations ourselves to avoid null pointer exceptions.
-                    // Should re-evaluate for each new release and then update the todo comment with the next
-                    // alpha version.
+
                     if (def.thingClass == null)
                     {
                         Log.Warning("Trying to calculate the cost of a ThingDef with null thingClass: " + def.defName);
@@ -344,10 +339,7 @@ namespace ItemRequests
 
                     try
                     {
-                        // TODO: Creating an instance of a thing may not be the best way to calculate
-                        // its market value.  It may be considered a relatively expensive operation,
-                        // especially when a lot of mods are enabled.  There may be a lower-level set of
-                        // methods in the vanilla codebase that could be called.  Should investigate.
+
                         Thing thing = ThingMaker.MakeThing(def, stuffDef);
                         if (thing == null)
                         {
