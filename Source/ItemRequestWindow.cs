@@ -19,6 +19,8 @@ namespace ItemRequests
 
         protected static readonly Vector2 AcceptButtonSize = new Vector2(160, 40f);
         protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160, 40f);
+        private static float RightAlignOffset;
+        private static float RightContentSize;
         private List<Tradeable> requestableItems = new List<Tradeable>();
         private int colonySilver;
         private Vector2 scrollPosition = Vector2.zero;
@@ -30,8 +32,10 @@ namespace ItemRequests
             this.map = map;
             this.faction = faction;
             this.negotiator = negotiator;
+            this.colonySilver = map.resourceCounter.Silver;
+            RequestSession.SetupWith(faction, negotiator);
+
             DetermineRequestableItems();
-            CalcCachedCurrency();
             Resize();
         }
         protected void Resize()
@@ -40,13 +44,16 @@ namespace ItemRequests
             float HeaderHeight = 32;
             float FooterHeight = 40f;
             float WindowPadding = 18;
-            WindowSize = new Vector2(700, 900);
+            WindowSize = new Vector2(800, 1000);
             Vector2 ContentSize = new Vector2(WindowSize.x - WindowPadding * 2 - ContentMargin.x * 2,
                 WindowSize.y - WindowPadding * 2 - ContentMargin.y * 2 - FooterHeight - HeaderHeight);
 
             ContentRect = new Rect(ContentMargin.x, ContentMargin.y + HeaderHeight, ContentSize.x, ContentSize.y);
 
             ScrollRect = new Rect(0, 0, ContentRect.width, ContentRect.height);
+
+            RightContentSize = 200;
+            RightAlignOffset = WindowSize.x - WindowPadding - ContentMargin.x - RightContentSize;
         }
 
         public override Vector2 InitialSize
@@ -64,9 +71,73 @@ namespace ItemRequests
 
             inRect = inRect.AtZero();
             float x = ContentMargin.x;
-            float headerRowHeight = 58f;
+            float headerRowHeight = 80f;
             Rect headerRowRect = new Rect(x, 0, inRect.width - x, headerRowHeight);
+            DrawWindowHeader(headerRowRect, headerRowHeight);
 
+            x = headerRowRect.x;
+            
+            // Draws the $$ amount available
+            float rowWidth = inRect.width - 16f;
+            Rect rowRect = new Rect(x, headerRowHeight, rowWidth, 30f);
+            DrawAvailableColonyCurrency(rowRect, colonySilver);
+
+            GUI.color = Color.gray;
+            Widgets.DrawLineHorizontal(x, headerRowHeight + rowRect.height - 2, rowWidth);
+
+            // ------------------------------------------------------------------------------------------------------ //
+            // ------------------------------------------------------------------------------------------------------ //
+
+            GUI.color = Color.white;
+            float addedMainRectPadding = 30f;
+            float buttonHeight = 38f;
+            Rect mainRect = new Rect(x, headerRowHeight + addedMainRectPadding, inRect.width - x, inRect.height - headerRowHeight - buttonHeight - addedMainRectPadding - 20f);
+            DrawTradeableContent(mainRect);
+
+            Rect confirmButtonRect = new Rect(inRect.width - AcceptButtonSize.x, inRect.height - AcceptButtonSize.y, AcceptButtonSize.x, AcceptButtonSize.y);
+            if (Widgets.ButtonText(confirmButtonRect, "Confirm", true, false, true))
+            {
+                bool success;
+                // TODO: need to make custom trade session class
+                if (RequestSession.deal.TryExecute(colonySilver, out success))
+                {
+                    if (success)
+                    {
+                        SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
+                        Find.WindowStack.Add(new RequestAcknowledgedWindow());
+                        Close(false);
+                    }
+                    else
+                    {
+                        Close(true);
+                    }
+                    RequestSession.Close();
+                }
+
+                Event.current.Use();
+            }
+            
+            Rect resetButtonRect = new Rect(rowRect.x + confirmButtonRect.x + 30, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
+            if (Widgets.ButtonText(resetButtonRect, "Reset", true, false, true))
+            {
+                SoundDefOf.Tick_Low.PlayOneShotOnCamera(null);
+                RequestSession.deal.Reset();
+            }
+
+            Rect cancelButtonRect = new Rect(rowRect.x, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
+            if (Widgets.ButtonText(cancelButtonRect, "Cancel", true, false, true))
+            {
+                Close(true);
+                RequestSession.Close();
+                Event.current.Use();
+            }
+
+            // End Window group
+            GUI.EndGroup();
+        }
+
+        private void DrawWindowHeader(Rect headerRowRect, float headerRowHeight)
+        {
             // Begin Header group
             GUI.BeginGroup(headerRowRect);
             Text.Font = GameFont.Medium;
@@ -87,82 +158,59 @@ namespace ItemRequests
             Widgets.Label(tradingFactionNameArea, tradingFactionName);
 
             // Draw just below player faction name
+            float amountRequestedTextHeight = 20;
+            float secondRowY = (headerRowHeight - amountRequestedTextHeight) / 2;
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
-            Rect negotiatorNameArea = new Rect(0, headerRowHeight / 2 - 2, headerRowRect.width / 2, headerRowRect.height / 2f);
+            Rect negotiatorNameArea = new Rect(0, secondRowY - 2, headerRowRect.width / 2, secondRowY);
             Widgets.Label(negotiatorNameArea, "Negotiator".Translate() + ": " + negotiator.LabelShort);
 
             // Draw just below trader name
             Text.Anchor = TextAnchor.UpperRight;
-            Rect factionTechLevelArea = new Rect(headerRowRect.width / 2, headerRowHeight / 2 - 2, headerRowRect.width / 2, headerRowRect.height / 2f);
+            Rect factionTechLevelArea = new Rect(headerRowRect.width / 2, secondRowY - 2, headerRowRect.width / 2, secondRowY);
             Widgets.Label(factionTechLevelArea, "Tech Level: " + faction.def.techLevel.ToString());
 
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Rect clarificationTextArea = new Rect(RightAlignOffset, headerRowHeight - amountRequestedTextHeight, RightContentSize, amountRequestedTextHeight);
+            Widgets.Label(clarificationTextArea, "Amount requested");
+
+
             // End Header group
+            GenUI.ResetLabelAlign();
             GUI.EndGroup();
 
-            x = headerRowRect.x;
+        }
 
-            // Draws the $$ amount available
-            float rowWidth = inRect.width - 16f;
-            Rect rowRect = new Rect(x, headerRowHeight, rowWidth, 30f);
+        public static void DrawAvailableColonyCurrency(Rect rowRect, int colonySilver)
+        {
+            // Begin row
+            GUI.BeginGroup(rowRect);
+            float silverIconWidth = 25;
+            Text.Font = GameFont.Small;
 
-            DrawAvailableColonyCurrency(rowRect, colonySilver);
+            // Draw icon for silver
+            Rect silverGraphicRect = new Rect(0, 0, silverIconWidth, rowRect.height);
+            Widgets.ThingIcon(silverGraphicRect, ThingDefOf.Silver);
 
-            GUI.color = Color.gray;
-            Widgets.DrawLineHorizontal(x, 87, rowWidth);
+            // Draw the label "Silver"
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Rect textRectPadded = new Rect(silverIconWidth + 10, 0, 75, rowRect.height);
+            textRectPadded.xMin += 5;
+            textRectPadded.xMax -= 5;
+            Widgets.Label(textRectPadded, "Silver");
 
-            // ------------------------------------------------------------------------------------------------------ //
-            // ------------------------------------------------------------------------------------------------------ //
+            // Draw the available silver for colony
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Rect silverCountRect = new Rect(RightAlignOffset, 0, RightContentSize, rowRect.height);
+            Widgets.Label(silverCountRect, colonySilver.ToString());
+            GenUI.ResetLabelAlign();
 
-            GUI.color = Color.white;
-            float addedMainRectPadding = 30f;
-            float buttonHeight = 38f;
-
-            Rect mainRect = new Rect(x, headerRowHeight + addedMainRectPadding, inRect.width - x, inRect.height - headerRowHeight - buttonHeight - addedMainRectPadding - 20f);
-            FillMainRect(mainRect);
-            Rect confirmButtonRect = new Rect(inRect.width / 2f - AcceptButtonSize.x / 2, inRect.height - 55, AcceptButtonSize.x, AcceptButtonSize.y);
-
-            if (Widgets.ButtonText(confirmButtonRect, "Confirm", true, false, true))
-            {
-                bool success;
-                // TODO: need to make custom trade session class
-                if (TradeSession.deal.TryExecute(out success))
-                {
-                    if (success)
-                    {
-                        SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
-                        Find.WindowStack.Add(new RequestAcknowledgedWindow());
-                        Close(false);
-                    }
-                    else
-                    {
-                        Close(true);
-                    }
-                }
-
-                Event.current.Use();
-            }
-
-
-            Rect resetButtonRect = new Rect(confirmButtonRect.x - 10f - OtherBottomButtonSize.x, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
-            if (Widgets.ButtonText(resetButtonRect, "Reset", true, false, true))
-            {
-                SoundDefOf.Tick_Low.PlayOneShotOnCamera(null);
-                //TradeSession.deal.Reset(); TODO: need to make custom trade session class
-            }
-
-            Rect cancelButtonRect = new Rect(confirmButtonRect.xMax + 10, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
-            if (Widgets.ButtonText(cancelButtonRect, "Cancel", true, false, true))
-            {
-                Close(true);
-                Event.current.Use();
-            }
-
-            // End Window group
+            // Finish row
             GUI.EndGroup();
         }
 
-        private void FillMainRect(Rect mainRect)
+        private void DrawTradeableContent(Rect mainRect)
         {
 
 
@@ -201,43 +249,15 @@ namespace ItemRequests
             Widgets.EndScrollView();
         }
 
-        public static void DrawAvailableColonyCurrency(Rect rowRect, int colonySilver)
-        {
-            // Begin row
-            GUI.BeginGroup(rowRect);
 
-            float rowWidth = rowRect.width;
-            float silverIconWidth = 25;
-            float silverCountWidth = 100;
-            Text.Font = GameFont.Small;
-
-            // Draw icon for silver
-            Rect silverGraphicRect = new Rect(0, 0, silverIconWidth, rowRect.height);
-            Widgets.ThingIcon(silverGraphicRect, ThingDefOf.Silver);
-
-            // Draw the label "Silver"
-            Text.Anchor = TextAnchor.MiddleLeft;
-            Rect textRectPadded = new Rect(silverIconWidth + 10, 0, 75, rowRect.height);
-            textRectPadded.xMin += 5;
-            textRectPadded.xMax -= 5;
-            Widgets.Label(textRectPadded, "Silver");
-
-            // Draw the available silver for colony
-            Text.Anchor = TextAnchor.MiddleCenter;
-            Rect silverCountRect = new Rect(rowWidth - silverCountWidth, 0, silverCountWidth, rowRect.height);
-            Widgets.Label(silverCountRect, colonySilver.ToString());
-            GenUI.ResetLabelAlign();
-
-            // Finish row
-            GUI.EndGroup();
-        }
 
         // Only draws first half of row (i.e. no interactable requesting on right side)
         public static void DrawTradeableRow(Rect rowRect, Tradeable trade, int index, Faction faction, Pawn negotiator)
         {
-            float iconNameAreaWidth = 300;
+            float iconNameAreaWidth = 350;
             float priceTextAreaWidth = 100;
-            float colonyItemCountAreaWidth = 75;
+            float colonyItemCountAreaWidth = 100;
+            float countAdjustInterfaceWidth = 200;
 
             if (index % 2 == 1)
             {
@@ -279,6 +299,22 @@ namespace ItemRequests
             }
 
             x += colonyItemCountAreaWidth;
+
+            Rect countAdjustInterfaceRect = new Rect(RightAlignOffset, 0, RightContentSize, rowRect.height);
+            //DrawItemRequestInteractiveInterface(countAdjustInterfaceRect, trade, index, trade.GetMinimumToTransfer(), int.MaxValue, false, false);
+
+            Rect interactiveNumericFieldArea = new Rect(countAdjustInterfaceRect.center.x - 45f, countAdjustInterfaceRect.center.y - 12.5f, 90f, 25f).Rounded();
+            Rect paddedNumericFieldArea = interactiveNumericFieldArea.ContractedBy(2f);
+            paddedNumericFieldArea.xMax -= 15f;
+            paddedNumericFieldArea.xMin += 16f;
+            int countToTransfer = trade.CountToTransfer;
+            string editBuffer = trade.EditBuffer;
+            Widgets.TextFieldNumeric(paddedNumericFieldArea, ref countToTransfer, ref editBuffer, -1, float.MaxValue);
+            trade.AdjustTo(countToTransfer);
+
+
+
+            x += countAdjustInterfaceWidth;
 
             // End Row group
             GenUI.ResetLabelAlign();
@@ -330,11 +366,6 @@ namespace ItemRequests
             }
             Widgets.Label(priceTextArea, label);
             GUI.color = Color.white;
-        }
-
-        private void CalcCachedCurrency()
-        {
-            colonySilver = map.resourceCounter.Silver;
         }
 
         private static PriceType GetPriceTypeFor(Tradeable trad)
@@ -506,19 +537,22 @@ namespace ItemRequests
             Log.Message("There are " + things.Count.ToString() + " requestable items to show");
             things.ForEach(thing =>
             {
+                thing.stackCount = 1000;
                 Tradeable trad = new Tradeable(thing, thing);
                 if (!trad.IsCurrency)
                 {
-                    trad.thingsColony = new List<Thing>();
+                    trad.thingsColony = new List<Thing>();                    
                     string key = thing.def.LabelCap;
                     if (thingCount.ContainsKey(key))
                     {
                         Log.Message("The colony has " + thingCount[key].ToString() + " " + thing.LabelCapNoCount + "s");
-                        // ???? will work ????
-                        for (int i = 0; i < thingCount[key]; ++i)
-                        {
-                            trad.thingsColony.Add(ThingMaker.MakeThing(thing.def, thing.Stuff));
-                        }
+                        //for (int i = 0; i < thingCount[key]; ++i)
+                        //{
+                        //    trad.thingsColony.Add();
+                        //}
+                        Thing colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
+                        colonyThing.stackCount = thingCount[key];
+                        trad.thingsColony.Add(colonyThing);
                     }
                     
                     requestableItems.Add(trad);
