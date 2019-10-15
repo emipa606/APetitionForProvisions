@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -357,20 +358,6 @@ namespace ItemRequests
 
         private void CalcCachedCurrency()
         {
-
-            //List<WorldObject> allWorldObjects = Find.WorldObjects.AllWorldObjects;
-            //for (int l = 0; l < allWorldObjects.Count; l++)
-            //{
-            //    if (allWorldObjects[l].Faction == Faction.OfPlayer)
-            //    {
-            //        TradeRequestComp component2 = allWorldObjects[l].GetComponent<TradeRequestComp>();
-            //        if (component2 != null && component2.ActiveRequest)
-            //        {
-            //            component2.Disable();
-            //        }
-            //    }
-            //}
-
             colonySilver = map.resourceCounter.Silver;
         }
 
@@ -408,34 +395,18 @@ namespace ItemRequests
         private void DetermineAvailableItems()
         {
             requestableItems.Clear();
-            switch (faction.def.techLevel)
-            {
-                case TechLevel.Animal:
-                case TechLevel.Neolithic:
-                    // for each item of this tech level, add to list
-                    // requestableItems.Add()
-                    break;
+            List<Thing> things = (from x in ThingDatabase.Instance.AllThings()
+                                  where hasMaximumTechLevel(x, faction.def.techLevel)
+                                  select x.thing).ToList();
+            things.ForEach(t => {
+                requestableItems.Add(new Tradeable(t, t));
+            });        
+        }
 
-                case TechLevel.Medieval:
-
-                    break;
-
-                case TechLevel.Industrial:
-
-                    break;
-
-                case TechLevel.Spacer:
-
-                    break;
-
-                case TechLevel.Ultra:
-                case TechLevel.Archotech:
-
-                    break;
-
-                default:
-                    break;
-            }
+        private bool hasMaximumTechLevel(ThingEntry entry, TechLevel tLevel)
+        {
+            int lvl = (int)entry.def.techLevel;
+            return lvl <= (int)tLevel;
         }
     }
 

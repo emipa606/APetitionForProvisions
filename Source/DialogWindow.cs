@@ -104,4 +104,18 @@ namespace ItemRequests
             return () => FactionDialogMaker.FactionDialogFor(negotiator, faction);
         }
     }
+
+
+    [HarmonyPatch(typeof(Dialog_Negotiation))]
+    [HarmonyPatch("DoWindowContents")]
+    public static class NodeTreeExtension
+    {
+        [HarmonyPostfix]
+        public static void InitDatabase()
+        {
+            // Start loading the database when the Dialog_NodeTree 
+            // window opens for the first time
+            ThingDatabase.Instance.LoadFrame();
+        }
+    }
 }

@@ -50,6 +50,8 @@ namespace ItemRequests
 
         private ThingDatabase()
         {
+            Log.Message("Initializing ThingDatabase...");
+
             types.Add(TypeResources);
             types.Add(TypeFood);
             types.Add(TypeWeapons);
@@ -168,7 +170,7 @@ namespace ItemRequests
                     NextPhase();
                     return;
                 }
-                if (AddStuffToEquipmentLists(LoadingProgress.enumerator.Current))
+                if (AddStuffToThingLists(LoadingProgress.enumerator.Current))
                 {
                     LoadingProgress.stuffCount++;
                 }
@@ -186,7 +188,7 @@ namespace ItemRequests
                     NextPhase();
                     return;
                 }
-                if (AddThingToEquipmentLists(LoadingProgress.enumerator.Current))
+                if (AddThingToThingLists(LoadingProgress.enumerator.Current))
                 {
                     LoadingProgress.thingCount++;
                 }
@@ -217,11 +219,11 @@ namespace ItemRequests
 
         public void PreloadDefinition(ThingDef def)
         {
-            AddStuffToEquipmentLists(def);
-            AddThingToEquipmentLists(def);
+            AddStuffToThingLists(def);
+            AddThingToThingLists(def);
         }
 
-        protected bool AddStuffToEquipmentLists(ThingDef def)
+        protected bool AddStuffToThingLists(ThingDef def)
         {
             if (def == null)
             {
@@ -241,7 +243,7 @@ namespace ItemRequests
             }
         }
 
-        protected bool AddThingToEquipmentLists(ThingDef def)
+        protected bool AddThingToThingLists(ThingDef def)
         {
             try
             {
@@ -514,6 +516,11 @@ namespace ItemRequests
             });
         }
 
+        public IEnumerable<ThingEntry> AllThings()
+        {
+            return entries.Values;
+        }
+
         public List<ThingEntry> Resources
         {
             get
@@ -638,20 +645,6 @@ namespace ItemRequests
                 return null;
             }
         }
-
-        /*
-        public ThingEntry this[ThingKey key] {
-            get {
-                ThingEntry result;
-                if (entries.TryGetValue(key, out result)) {
-                    return result;
-                }
-                else {
-                    return null;
-                }
-            }
-        }
-        */
 
         public ThingEntry AddThingDefWithStuff(ThingDef def, ThingDef stuff, ThingType type)
         {
@@ -859,6 +852,10 @@ namespace ItemRequests
                 }
             }
 
+            if (result.thing == null)
+            {
+                result.thing = ThingMaker.MakeThing(def, stuffDef);
+            }
             return result;
         }
 
