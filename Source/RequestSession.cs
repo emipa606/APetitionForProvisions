@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 using RimWorld;
 using Verse;
 
@@ -30,17 +30,27 @@ namespace ItemRequests
 
     public class RequestDeal
     {
-        public float TotalRequestedValue { get; private set; }
-        private List<Tradeable> requestedItems;
+        // TODO: This may need to be looked at once filters are implemented
+        private Dictionary<int, RequestItem> requestedItems;
+        public float TotalRequestedValue
+        {
+            get
+            {
+                float val = 0;
+                foreach (RequestItem item in requestedItems.Values)
+                {
+                    val += item.price * item.amount;
+                }
+                return val;
+            }
+        }
         public RequestDeal()
         {
-            TotalRequestedValue = 0;
-            requestedItems = new List<Tradeable>();
+            requestedItems = new Dictionary<int, RequestItem>();
         }
 
         public void Reset()
         {
-            TotalRequestedValue = 0;
             requestedItems.Clear();
         }
 
@@ -62,9 +72,9 @@ namespace ItemRequests
 
             requestSucceeded = false;
             float num = 0f;
-            foreach (Tradeable tradeable in requestedItems)
+            foreach (RequestItem item in requestedItems.Values)
             {
-                if (tradeable.ActionToDo != TradeAction.None)
+                if (item.tradeable.ActionToDo != TradeAction.None)
                 {
                     requestSucceeded = true;
                 }
@@ -93,11 +103,49 @@ namespace ItemRequests
             RequestSession.negotiator.mindState.inspirationHandler.EndInspiration(InspirationDefOf.Inspired_Trade);
             return true;
         }
-    
-        public void AddRequestedItem(Tradeable tradeable, float forPrice)
+
+        public void AdjustRequestedItem(int indexKey, Tradeable tradeable, int numRequested, float price)
         {
-            requestedItems.Add(tradeable);
-            TotalRequestedValue += forPrice;
+            if (requestedItems.ContainsKey(indexKey))
+            {
+                int amount = Mathf.Max(numRequested, 0);
+                if (amount == 0)
+                {
+                    requestedItems.Remove(indexKey);
+                    Log.Message("Colony just removed request for " + tradeable.ThingDef.LabelCap);
+                }
+                else if (amount == requestedItems[indexKey].amount)
+                {
+                    return;
+                }
+                else
+                {
+                    requestedItems[indexKey] = new RequestItem
+                    {
+                        tradeable = tradeable,
+                        amount = amount,
+                        price = price
+                    };
+                    Log.Message("Colony just adjusted request for " + tradeable.ThingDef.LabelCap + " to " + numRequested + " for " + price.ToStringMoney("F2") + " each");
+                }
+            }
+            else if (numRequested > 0)
+            {
+                requestedItems[indexKey] = new RequestItem
+                {
+                    tradeable = tradeable,
+                    amount = numRequested,
+                    price = price
+                };
+                Log.Message("Colony just requested " + tradeable.ThingDef.LabelCap + " x" + numRequested + " for " + price.ToStringMoney("F2") + " each");
+            }
+        }
+
+        private class RequestItem
+        {
+            public Tradeable tradeable;
+            public int amount;
+            public float price;
         }
     }
 }
