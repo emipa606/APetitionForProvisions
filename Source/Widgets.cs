@@ -658,8 +658,29 @@ namespace ItemRequests
     // This class was taken from the class WidgetDropdown
     // from the mod EdB Prepare Carefully by edbmods
     // https://github.com/edbmods/EdBPrepareCarefully/blob/develop/Source/WidgetDropdown.cs
+
+    [StaticConstructorOnStartup]
     public static class WidgetDropdown
     {
+        static Texture2D TextureButtonBGAtlas;
+        static Texture2D TextureButtonBGAtlasClick;
+        static Texture2D TextureButtonBGAtlasMouseover;
+        static Texture2D TextureDropdownIndicator;
+
+        static WidgetDropdown()
+        {
+            LoadTextures();
+        }
+
+        private static void LoadTextures()
+        {
+            TextureButtonBGAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBG", true);
+            TextureButtonBGAtlasMouseover = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGMouseover", true);
+            TextureButtonBGAtlasClick = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGClick", true);
+            TextureDropdownIndicator = ContentFinder<Texture2D>.Get("ItemRequests/DropdownIndicator", true);
+        }
+
+
         public static bool Button(Rect rect, string label)
         {
             return Button(rect, label, true, false, true);
@@ -669,21 +690,21 @@ namespace ItemRequests
             TextAnchor anchor = Text.Anchor;
             Color color = GUI.color;
 
-            //if (drawBackground)
-            //{
-            //    Texture2D atlas = Textures.TextureButtonBGAtlas;
-            //    if (Mouse.IsOver(rect))
-            //    {
-            //        atlas = Textures.TextureButtonBGAtlasMouseover;
-            //        if (Input.GetMouseButton(0))
-            //        {
-            //            atlas = Textures.TextureButtonBGAtlasClick;
-            //        }
-            //    }
-            //    Widgets.DrawAtlas(rect, atlas);
-            //    Rect indicator = new Rect(rect.xMax - 21, rect.MiddleY() - 4, 11, 8);
-            //    GUI.DrawTexture(indicator, Textures.TextureDropdownIndicator);
-            //}
+            if (drawBackground)
+            {
+                Texture2D atlas = TextureButtonBGAtlas;
+                if (Mouse.IsOver(rect))
+                {
+                    atlas = TextureButtonBGAtlasMouseover;
+                    if (Input.GetMouseButton(0))
+                    {
+                        atlas = TextureButtonBGAtlasClick;
+                    }
+                }
+                Widgets.DrawAtlas(rect, atlas);
+                Rect indicator = new Rect(rect.xMax - 21, rect.MiddleY() - 4, 11, 8);
+                GUI.DrawTexture(indicator, TextureDropdownIndicator);
+            }
 
             if (doMouseoverSound)
             {

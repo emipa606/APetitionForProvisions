@@ -82,12 +82,9 @@
     <Compile Include="CostCalculator.cs" />
     <Compile Include="RequestSession.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="ItemPanel.cs" />
     <Compile Include="ItemRequestWindow.cs" />
-    <Compile Include="ProviderThingTypes.cs" />
     <Compile Include="DialogWindow.cs" />
     <Compile Include="ItemRequests.cs" />
-    <Compile Include="Panel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThingDatabase.cs" />
     <Compile Include="ThingEntry.cs" />

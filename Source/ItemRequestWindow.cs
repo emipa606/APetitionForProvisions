@@ -10,24 +10,35 @@ namespace ItemRequests
 {
     public class ItemRequestWindow : Window
     {
+        // For being a sub class of Window
         public Vector2 WindowSize { get; protected set; }
         public Vector2 ContentMargin { get; protected set; }
         public Rect ContentRect { get; protected set; }
         public Rect ScrollRect { get; protected set; }
-        public Map map { get; protected set; }
+        private Vector2 scrollPosition = Vector2.zero;
 
+        // For UI Items
         protected WidgetTable<ThingEntry> table = new WidgetTable<ThingEntry>();
         protected static readonly Vector2 AcceptButtonSize = new Vector2(160, 40f);
         protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160, 40f);
 
-        private static float RightAlignOffset;
-        private static float RightContentSize;
-        private List<Tradeable> requestableItems = new List<Tradeable>();
+        // For reference (set in constructor)
         private int colonySilver;
-        private Vector2 scrollPosition = Vector2.zero;
         private Faction faction;
         private Pawn negotiator;
+        private Map map;
 
+        // For listing the items
+        private List<Tradeable> requestableItems = new List<Tradeable>();
+        private List<SlotGroup> slotGroups;
+        private Dictionary<string, int> colonyItemCount = new Dictionary<string, int>();
+        private ThingType thingTypeFilter = ThingType.Resources;
+        private ThingDef  stuffTypeFilter = null;
+        private HashSet<ThingDef> stuffFilterSet = new HashSet<ThingDef>();
+
+        // For UI layout
+        private float rightAlignOffset;
+        private float rightContentSize;
         private const float iconNameAreaWidth = 350;
         private const float priceTextAreaWidth = 100;
         private const float colonyItemCountAreaWidth = 100;
@@ -35,14 +46,35 @@ namespace ItemRequests
         private const float countAdjustInterfaceWidth = 200;
         private const string colonyCountTooltipText = "The amount your colony currently has stored.";
 
+
         public ItemRequestWindow(Map map, Faction faction, Pawn negotiator)
         {
             this.map = map;
             this.faction = faction;
             this.negotiator = negotiator;
             this.colonySilver = map.resourceCounter.Silver;
-            RequestSession.SetupWith(faction, negotiator);
+            
+            // Find all items in stockpiles and store in list
+            slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
+            slotGroups.ForEach(group =>
+            {
+                Log.Message("Reading group " + group.ToString());
+                group.HeldThings.ToList().ForEach(thing =>
+                {
+                    Log.Message("  - " + thing.LabelCapNoCount + " x" + thing.stackCount.ToString());
+                    string key = thing.def.LabelCap;
+                    if (colonyItemCount.ContainsKey(key))
+                    {
+                        colonyItemCount[key] += thing.stackCount;
+                    }
+                    else
+                    {
+                        colonyItemCount[key] = thing.stackCount;
+                    }
+                });
+            });
 
+            RequestSession.SetupWith(faction, negotiator);
             DetermineRequestableItems();
             Resize();
         }
@@ -60,8 +92,8 @@ namespace ItemRequests
 
             ScrollRect = new Rect(0, 0, ContentRect.width, ContentRect.height);
 
-            RightContentSize = 200;
-            RightAlignOffset = WindowSize.x - WindowPadding - ContentMargin.x - RightContentSize;
+            rightContentSize = 200;
+            rightAlignOffset = WindowSize.x - WindowPadding - ContentMargin.x - rightContentSize;
         }
 
         public override Vector2 InitialSize
@@ -139,16 +171,74 @@ namespace ItemRequests
             Rect factionTechLevelArea = new Rect(headerRowRect.width / 2, secondRowY - 2, headerRowRect.width / 2, secondRowY);
             Widgets.Label(factionTechLevelArea, "Tech Level: " + faction.def.techLevel.ToString());
 
+
+            // Draw the filter dropdowns
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Rect filterDropdownArea = new Rect(0, headerRowHeight - amountRequestedTextHeight, headerRowRect.width - rightContentSize, amountRequestedTextHeight);
+            DrawFilterDropdowns(filterDropdownArea);
+
+            // Draw the amount requested text
+            GUI.color = new Color(1f, 1f, 1f, 0.6f);
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.MiddleCenter;
-            Rect clarificationTextArea = new Rect(RightAlignOffset, headerRowHeight - amountRequestedTextHeight, RightContentSize, amountRequestedTextHeight);
+            Rect clarificationTextArea = new Rect(rightAlignOffset, headerRowHeight - amountRequestedTextHeight, rightContentSize, amountRequestedTextHeight);
             Widgets.Label(clarificationTextArea, "Amount requested");
 
 
             // End Header group
+            GUI.color = Color.white;
             GenUI.ResetLabelAlign();
             GUI.EndGroup();
 
+        }
+
+        public void DrawFilterDropdowns(Rect rectArea)
+        {
+            Rect filterLabelArea = rectArea;
+            filterLabelArea.width = 80;
+            Widgets.Label(filterLabelArea, "Filters:");
+
+            // Draw the thing type filter
+            float filterDropdownHeight = 27;
+            float filterDropdownWidth = 130;
+            Text.Anchor = TextAnchor.UpperLeft;
+            Rect thingFilterDropdownArea = new Rect(filterLabelArea.width + 20, rectArea.y - 6, filterDropdownWidth, filterDropdownHeight);
+            if (WidgetDropdown.Button(thingFilterDropdownArea, thingTypeFilter.ToString(), true, false, true))
+            {
+                var thingTypes = Enum.GetValues(typeof(ThingType));
+                List<FloatMenuOption> filterOptions = new List<FloatMenuOption>();
+                foreach (ThingType type in thingTypes)
+                {
+                    filterOptions.Add(new FloatMenuOption(type.ToString(), () => {
+                        thingTypeFilter = type;
+                        DetermineRequestableItems();
+                        UpdateAvailableMaterials();
+                    }, MenuOptionPriority.Default, null, null, 0, null, null));
+                }
+                Find.WindowStack.Add(new FloatMenu(filterOptions, null, false));
+            }
+
+            // Draw the stuff filter
+            Rect stuffFilterDropdownArea = thingFilterDropdownArea;
+            stuffFilterDropdownArea.x += thingFilterDropdownArea.width + 10;
+            string stuffFilterLabel = stuffTypeFilter == null ? "All" : stuffTypeFilter.LabelCap;
+            if (WidgetDropdown.Button(stuffFilterDropdownArea, stuffFilterLabel, true, false, true))
+            {
+                List<FloatMenuOption> stuffFilterOptions = new List<FloatMenuOption>();
+                stuffFilterOptions.Add(new FloatMenuOption("All", () => {
+                    stuffTypeFilter = null;
+                    DetermineRequestableItems();
+                }, MenuOptionPriority.Default, null, null, 0, null, null));
+
+                foreach (ThingDef item in stuffFilterSet.OrderBy((ThingDef def) => { return def.LabelCap; }))
+                {
+                    stuffFilterOptions.Add(new FloatMenuOption(item.LabelCap, () => {
+                        stuffTypeFilter = item;
+                        DetermineRequestableItems();
+                    }, MenuOptionPriority.Default, null, null, 0, null, null));
+                }
+                Find.WindowStack.Add(new FloatMenu(stuffFilterOptions, null, false));
+            }
         }
 
         public void DrawAvailableColonyCurrency(Rect rowRect, int colonySilver)
@@ -190,7 +280,7 @@ namespace ItemRequests
                 GUI.color = Color.yellow;
                 tooltipString += "\n\nCaution: You can still request these items, but you don't currently have enough silver to pay for them when they arrive.";
             }
-            Rect requestedAmountArea = new Rect(RightAlignOffset, 0, RightContentSize, rowRect.height);
+            Rect requestedAmountArea = new Rect(rightAlignOffset, 0, rightContentSize, rowRect.height);
             Widgets.Label(requestedAmountArea, RequestSession.deal.TotalRequestedValue.ToStringMoney("F2"));
             TooltipHandler.TipRegion(requestedAmountArea, tooltipString);
 
@@ -322,7 +412,7 @@ namespace ItemRequests
             x += colonyItemCountAreaWidth;
 
             // Draw the input box to select number of requests
-            Rect countAdjustInterfaceRect = new Rect(RightAlignOffset, 0, RightContentSize, rowRect.height);
+            Rect countAdjustInterfaceRect = new Rect(rightAlignOffset, 0, rightContentSize, rowRect.height);
             Rect interactiveNumericFieldArea = new Rect(countAdjustInterfaceRect.center.x - 45f, countAdjustInterfaceRect.center.y - 12.5f, 90f, 25f).Rounded();
             Rect paddedNumericFieldArea = interactiveNumericFieldArea.ContractedBy(2f);
             paddedNumericFieldArea.xMax -= 15f;
@@ -531,58 +621,46 @@ namespace ItemRequests
         private void DetermineRequestableItems()
         {
             requestableItems.Clear();
-
-            List<SlotGroup> slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
-            Dictionary<string, int> thingCount = new Dictionary<string, int>();
-            slotGroups.ForEach(group =>
-            {
-                Log.Message("Reading group " + group.ToString());
-                // FALSE: this is a list of stacks, not amt in stack
-                // Assuming this is a list of all instantiated things, instead
-                // of just a list of the unique things stored
-                group.HeldThings.ToList().ForEach(thing =>
-                {
-                    Log.Message("  - " + thing.LabelCap + " x" + thing.stackCount.ToString());
-                    string key = thing.def.LabelCap;
-                    if (thingCount.ContainsKey(key))
-                    {
-                        thingCount[key] += thing.stackCount;
-                    }
-                    else
-                    {
-                        thingCount[key] = thing.stackCount;
-                    }
-                });
-            });
-
-            List<Thing> things = (from x in ThingDatabase.Instance.AllThings()
+            List<Thing> things = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter)
                                   where hasMaximumTechLevel(x, faction.def.techLevel)
                                   select x.thing).ToList();
 
-            Log.Message("There are " + things.Count.ToString() + " requestable items to show");
             things.ForEach(thing =>
             {
-                thing.stackCount = 1000;
+                thing.stackCount = int.MaxValue;
                 Tradeable trad = new Tradeable(thing, thing);
-                if (!trad.IsCurrency)
+                bool madeOfRightStuff = stuffTypeFilter == null || thing.Stuff == stuffTypeFilter;
+                if (!trad.IsCurrency && madeOfRightStuff)
                 {
                     trad.thingsColony = new List<Thing>();
                     string key = thing.def.LabelCap;
-                    if (thingCount.ContainsKey(key))
+                    if (colonyItemCount.ContainsKey(key))
                     {
-                        Log.Message("The colony has " + thingCount[key].ToString() + " " + thing.LabelCapNoCount + "s");
-                        //for (int i = 0; i < thingCount[key]; ++i)
-                        //{
-                        //    trad.thingsColony.Add();
-                        //}
                         Thing colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
-                        colonyThing.stackCount = thingCount[key];
+                        colonyThing.stackCount = colonyItemCount[key];
                         trad.thingsColony.Add(colonyThing);
                     }
-
                     requestableItems.Add(trad);
                 }
             });
+
+            Log.Message("There are " + requestableItems.Count.ToString() + " requestable items to show for filter " + thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
+        }
+
+        protected void UpdateAvailableMaterials()
+        {
+            stuffFilterSet.Clear();
+            foreach (Tradeable item in requestableItems)
+            {
+                if (item.StuffDef != null)
+                {
+                    stuffFilterSet.Add(item.StuffDef);
+                }
+            }
+            if (stuffTypeFilter != null && !stuffFilterSet.Contains(stuffTypeFilter))
+            {
+                stuffTypeFilter = null;
+            }
         }
 
         private bool hasMaximumTechLevel(ThingEntry entry, TechLevel tLevel)
@@ -590,6 +668,7 @@ namespace ItemRequests
             int lvl = (int)entry.def.techLevel;
             return lvl <= (int)tLevel;
         }
+
     }
 
     // TODO:

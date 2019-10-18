@@ -20,17 +20,7 @@ namespace ItemRequests
         protected List<ThingDef> stuff = new List<ThingDef>();
         protected HashSet<ThingDef> stuffLookup = new HashSet<ThingDef>();
         protected CostCalculator costs = new CostCalculator();
-        protected List<ThingType> types = new List<ThingType>();
-
-        protected ThingType TypeResources = new ThingType("Resources");
-        protected ThingType TypeFood = new ThingType("Food");
-        protected ThingType TypeWeapons = new ThingType("Weapons");
-        protected ThingType TypeApparel = new ThingType("Apparel");
-        protected ThingType TypeMedical = new ThingType("Medical");
-        protected ThingType TypeBuildings = new ThingType("Buildings");
-        protected ThingType TypeAnimals = new ThingType("Animals");
-        protected ThingType TypeDiscard = new ThingType("Discard", "");
-        protected ThingType TypeUncategorized = new ThingType("Uncategorized", "");
+        //protected List<ThingType> types = new List<ThingType>();
 
         protected ThingCategoryDef thingCategorySweetMeals = null;
         protected ThingCategoryDef thingCategoryMeatRaw = null;
@@ -51,15 +41,7 @@ namespace ItemRequests
         private ThingDatabase()
         {
             Log.Message("Initializing ThingDatabase...");
-
-            types.Add(TypeResources);
-            types.Add(TypeFood);
-            types.Add(TypeWeapons);
-            types.Add(TypeApparel);
-            types.Add(TypeMedical);
-            types.Add(TypeBuildings);
-            types.Add(TypeAnimals);
-
+            
             thingCategorySweetMeals = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("SweetMeals");
             thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
         }
@@ -208,15 +190,7 @@ namespace ItemRequests
                 return null;
             }
         }
-
-        public IEnumerable<ThingType> ThingTypes
-        {
-            get
-            {
-                return types;
-            }
-        }
-
+        
         public void PreloadDefinition(ThingDef def)
         {
             AddStuffToThingLists(def);
@@ -250,7 +224,7 @@ namespace ItemRequests
                 if (def != null)
                 {
                     ThingType type = ClassifyThingDef(def);
-                    if (type != null && type != TypeDiscard)
+                    if (type != ThingType.Other)
                     {
                         AddThingDef(def, type);
                         return true;
@@ -285,51 +259,28 @@ namespace ItemRequests
 
         public ThingType ClassifyThingDef(ThingDef def)
         {
-            if (def.mote != null)
-            {
-                return TypeDiscard;
-            }
-            if (def.isUnfinishedThing)
-            {
-                return TypeDiscard;
-            }
-            if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Corpses))
-            {
-                return TypeDiscard;
-            }
-            if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Chunks))
-            {
-                return TypeDiscard;
-            }
-            if (def.IsBlueprint)
-            {
-                return TypeDiscard;
-            }
-            if (def.IsFrame)
-            {
-                return TypeDiscard;
-            }
+
             if (BelongsToCategory(def, "Toy"))
             {
-                return TypeResources;
+                return ThingType.Resources;
             }
             if (def.weaponTags != null && def.weaponTags.Count > 0 && def.IsWeapon)
             {
-                return TypeWeapons;
+                return ThingType.Weapons;
             }
             if (BelongsToCategoryContaining(def, "Weapon"))
             {
-                return TypeWeapons;
+                return ThingType.Weapons;
             }
 
             if (def.IsApparel && !def.destroyOnDrop)
             {
-                return TypeApparel;
+                return ThingType.Apparel;
             }
 
             if (BelongsToCategory(def, "Foods"))
             {
-                return TypeFood;
+                return ThingType.Food;
             }
 
             // Ingestibles
@@ -339,30 +290,30 @@ namespace ItemRequests
                 {
                     if (BelongsToCategory(def, thingCategorySweetMeals))
                     {
-                        return TypeFood;
+                        return ThingType.Food;
                     }
                     if (FoodTypeIsClassifiedAsFood(def))
                     {
-                        return TypeFood;
+                        return ThingType.Food;
                     }
                 }
-                return TypeMedical;
+                return ThingType.Medical;
             }
             if (def.ingestible != null)
             {
                 if (BelongsToCategory(def, thingCategoryMeatRaw))
                 {
-                    return TypeFood;
+                    return ThingType.Food;
                 }
                 if (def.ingestible.drugCategory == DrugCategory.Medical)
                 {
-                    return TypeMedical;
+                    return ThingType.Medical;
                 }
                 if (def.ingestible.preferability == FoodPreferability.DesperateOnly)
                 {
-                    return TypeResources;
+                    return ThingType.Resources;
                 }
-                return TypeFood;
+                return ThingType.Food;
             }
 
             if (def.CountAsResource)
@@ -370,54 +321,54 @@ namespace ItemRequests
                 // Ammunition should be counted under the weapons category
                 if (HasTradeTag(def, "CE_Ammo"))
                 {
-                    return TypeWeapons;
+                    return ThingType.Weapons;
                 }
                 if (def.IsShell)
                 {
-                    return TypeWeapons;
+                    return ThingType.Weapons;
                 }
 
-                return TypeResources;
+                return ThingType.Resources;
             }
 
             if (def.building != null && def.Minifiable)
             {
-                return TypeBuildings;
+                return ThingType.Buildings;
             }
 
             if (def.race != null && def.race.Animal == true)
             {
-                return TypeAnimals;
+                return ThingType.Animals;
             }
 
             if (def.category == ThingCategory.Item)
             {
                 if (def.defName.StartsWith("MechSerum"))
                 {
-                    return TypeMedical;
+                    return ThingType.Medical;
                 }
                 // Body parts should be medical
                 if (BelongsToCategoryStartingWith(def, "BodyParts"))
                 {
-                    return TypeMedical;
+                    return ThingType.Medical;
                 }
                 // EPOE parts should be medical
                 if (BelongsToCategoryContaining(def, "Prostheses"))
                 {
-                    return TypeMedical;
+                    return ThingType.Medical;
                 }
                 if (BelongsToCategory(def, "GlitterworldParts"))
                 {
-                    return TypeMedical;
+                    return ThingType.Medical;
                 }
                 if (BelongsToCategoryEndingWith(def, "Organs"))
                 {
-                    return TypeMedical;
+                    return ThingType.Medical;
                 }
-                return TypeResources;
+                return ThingType.Resources;
             }
 
-            return null;
+            return ThingType.Other;
         }
 
         private HashSet<string> categoryLookup = new HashSet<string>();
@@ -526,7 +477,7 @@ namespace ItemRequests
             get
             {
                 List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == TypeResources;
+                    return e.type == ThingType.Resources;
                 });
                 result.Sort((ThingEntry a, ThingEntry b) => {
                     return a.Label.CompareTo(b.Label);
@@ -540,7 +491,7 @@ namespace ItemRequests
             get
             {
                 List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == TypeFood;
+                    return e.type == ThingType.Food;
                 });
                 result.Sort((ThingEntry a, ThingEntry b) => {
                     return a.Label.CompareTo(b.Label);
@@ -554,7 +505,7 @@ namespace ItemRequests
             get
             {
                 List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == TypeWeapons;
+                    return e.type == ThingType.Weapons;
                 });
                 result.Sort((ThingEntry a, ThingEntry b) => {
                     return a.Label.CompareTo(b.Label);
@@ -568,7 +519,7 @@ namespace ItemRequests
             get
             {
                 List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == TypeApparel;
+                    return e.type == ThingType.Apparel;
                 });
                 result.Sort((ThingEntry a, ThingEntry b) => {
                     return a.Label.CompareTo(b.Label);
@@ -582,7 +533,7 @@ namespace ItemRequests
             get
             {
                 List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == TypeAnimals;
+                    return e.type == ThingType.Animals;
                 });
                 result.Sort((ThingEntry a, ThingEntry b) => {
                     return a.Label.CompareTo(b.Label);
@@ -596,7 +547,7 @@ namespace ItemRequests
             get
             {
                 List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == TypeMedical;
+                    return e.type == ThingType.Medical;
                 });
                 result.Sort((ThingEntry a, ThingEntry b) => {
                     return a.Label.CompareTo(b.Label);
@@ -610,7 +561,7 @@ namespace ItemRequests
             get
             {
                 List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == TypeBuildings;
+                    return e.type == ThingType.Buildings;
                 });
                 result.Sort((ThingEntry a, ThingEntry b) => {
                     return a.Label.CompareTo(b.Label);
@@ -624,7 +575,7 @@ namespace ItemRequests
             get
             {
                 List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == TypeUncategorized;
+                    return e.type == ThingType.Other;
                 });
                 result.Sort((ThingEntry a, ThingEntry b) => {
                     return a.Label.CompareTo(b.Label);
@@ -648,11 +599,6 @@ namespace ItemRequests
 
         public ThingEntry AddThingDefWithStuff(ThingDef def, ThingDef stuff, ThingType type)
         {
-            if (type == null)
-            {
-                Log.Warning("Could not add unclassified thing: " + def);
-                return null;
-            }
             ThingKey key = new ThingKey(def, stuff);
             ThingEntry entry = CreateThingEntry(def, stuff, type);
             if (entry != null)
