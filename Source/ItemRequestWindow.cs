@@ -30,11 +30,10 @@ namespace ItemRequests
 
         // For listing the items
         private List<Tradeable> requestableItems = new List<Tradeable>();
-        private List<SlotGroup> slotGroups;
+        private HashSet<ThingDef> stuffFilterSet = new HashSet<ThingDef>();
         private Dictionary<string, int> colonyItemCount = new Dictionary<string, int>();
         private ThingType thingTypeFilter = ThingType.Resources;
-        private ThingDef  stuffTypeFilter = null;
-        private HashSet<ThingDef> stuffFilterSet = new HashSet<ThingDef>();
+        private ThingDef stuffTypeFilter = null;
 
         // For UI layout
         private float rightAlignOffset;
@@ -53,15 +52,15 @@ namespace ItemRequests
             this.faction = faction;
             this.negotiator = negotiator;
             this.colonySilver = map.resourceCounter.Silver;
-            
-            // Find all items in stockpiles and store in list
-            slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
+
+            // Find all items in stockpiles and store counts in dictionary
+            List<SlotGroup> slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
             slotGroups.ForEach(group =>
             {
-                Log.Message("Reading group " + group.ToString());
+                //Log.Message("Reading " + group.ToString());
                 group.HeldThings.ToList().ForEach(thing =>
                 {
-                    Log.Message("  - " + thing.LabelCapNoCount + " x" + thing.stackCount.ToString());
+                    //Log.Message("  - " + thing.LabelCapNoCount + " x" + thing.stackCount.ToString());
                     string key = thing.def.LabelCap;
                     if (colonyItemCount.ContainsKey(key))
                     {
@@ -109,6 +108,7 @@ namespace ItemRequests
             // Begin Window group
             GUI.BeginGroup(inRect);
 
+            // Draw the names of negotiator and factions
             inRect = inRect.AtZero();
             float x = ContentMargin.x;
             float headerRowHeight = 80f;
@@ -125,12 +125,14 @@ namespace ItemRequests
             GUI.color = Color.gray;
             Widgets.DrawLineHorizontal(x, headerRowHeight + rowRect.height - 2, rowWidth);
 
+            // Draw the main scroll view area
             GUI.color = Color.white;
             float addedMainRectPadding = 30f;
             float buttonHeight = 38f;
-            Rect mainRect = new Rect(x, headerRowHeight + addedMainRectPadding, inRect.width - x, inRect.height - headerRowHeight - buttonHeight - addedMainRectPadding - 20f);
-            DrawTradeableContent(mainRect);
+            Rect mainArea = new Rect(x, headerRowHeight + addedMainRectPadding, inRect.width - x, inRect.height - headerRowHeight - buttonHeight - addedMainRectPadding - 20f);
+            DrawTradeableContent(mainArea);
 
+            // Draw the buttons at bottom
             DrawButtons(inRect, rowRect);
 
             // End Window group
@@ -209,11 +211,15 @@ namespace ItemRequests
                 List<FloatMenuOption> filterOptions = new List<FloatMenuOption>();
                 foreach (ThingType type in thingTypes)
                 {
-                    filterOptions.Add(new FloatMenuOption(type.ToString(), () => {
-                        thingTypeFilter = type;
-                        DetermineRequestableItems();
-                        UpdateAvailableMaterials();
-                    }, MenuOptionPriority.Default, null, null, 0, null, null));
+                    filterOptions.Add(new FloatMenuOption(type.ToString(), () =>
+                    {
+                        if (thingTypeFilter != type)
+                        {
+                            thingTypeFilter = type;
+                            DetermineRequestableItems();
+                            UpdateAvailableMaterials();
+                        }
+                    }));
                 }
                 Find.WindowStack.Add(new FloatMenu(filterOptions, null, false));
             }
@@ -225,17 +231,25 @@ namespace ItemRequests
             if (WidgetDropdown.Button(stuffFilterDropdownArea, stuffFilterLabel, true, false, true))
             {
                 List<FloatMenuOption> stuffFilterOptions = new List<FloatMenuOption>();
-                stuffFilterOptions.Add(new FloatMenuOption("All", () => {
-                    stuffTypeFilter = null;
-                    DetermineRequestableItems();
-                }, MenuOptionPriority.Default, null, null, 0, null, null));
+                stuffFilterOptions.Add(new FloatMenuOption("All", () =>
+                {
+                    if (stuffTypeFilter != null)
+                    {
+                        stuffTypeFilter = null;
+                        DetermineRequestableItems();
+                    }
+                }));
 
                 foreach (ThingDef item in stuffFilterSet.OrderBy((ThingDef def) => { return def.LabelCap; }))
                 {
-                    stuffFilterOptions.Add(new FloatMenuOption(item.LabelCap, () => {
-                        stuffTypeFilter = item;
-                        DetermineRequestableItems();
-                    }, MenuOptionPriority.Default, null, null, 0, null, null));
+                    stuffFilterOptions.Add(new FloatMenuOption(item.LabelCap, () =>
+                    {
+                        if (stuffTypeFilter != item)
+                        {
+                            stuffTypeFilter = item;
+                            DetermineRequestableItems();
+                        }
+                    }));
                 }
                 Find.WindowStack.Add(new FloatMenu(stuffFilterOptions, null, false));
             }
@@ -292,16 +306,6 @@ namespace ItemRequests
 
         private void DrawTradeableContent(Rect mainRect)
         {
-            // =====================
-            //  THIS IS WHERE THE
-            //  PLAYER WILL REQUEST
-            //  WHICH ITEMS THEY
-            //  WANT THE FACTION TO
-            //  PROVIDE.
-            // =====================
-
-            // TODO: Make filter for requestable items
-
             Text.Font = GameFont.Small;
             float constScrollbarSize = 16;
             float cumulativeContentHeight = 6f + requestableItems.Count * 30f;
@@ -345,7 +349,7 @@ namespace ItemRequests
                     {
                         Close(true);
                     }
-                    RequestSession.Close();
+                    RequestSession.CloseSession();
                 }
 
                 Event.current.Use();
@@ -356,7 +360,7 @@ namespace ItemRequests
             if (Widgets.ButtonText(cancelButtonRect, "Cancel", true, false, true))
             {
                 Close(true);
-                RequestSession.Close();
+                RequestSession.CloseSession();
                 Event.current.Use();
             }
 
@@ -374,7 +378,6 @@ namespace ItemRequests
             {
                 Widgets.DrawLightHighlight(rowRect);
             }
-            Text.Font = GameFont.Small;
 
             // Begin Row group
             GUI.BeginGroup(rowRect);
@@ -420,10 +423,10 @@ namespace ItemRequests
             int countToTransfer = trade.CountToTransfer;
             string editBuffer = trade.EditBuffer;
             Widgets.TextFieldNumeric(paddedNumericFieldArea, ref countToTransfer, ref editBuffer, 0, float.MaxValue);
-          
+
             trade.AdjustTo(countToTransfer);
-            RequestSession.deal.AdjustRequestedItem(index, trade, countToTransfer, price);
-            
+            RequestSession.deal.AdjustRequestedItem(thingTypeFilter, index, trade, countToTransfer, price);
+
             // Draw the reset to zero button by input field
             if (trade.CountToTransfer > 0)
             {
@@ -433,7 +436,7 @@ namespace ItemRequests
                 if (Widgets.ButtonText(resetToZeroButton, "0"))
                 {
                     trade.AdjustTo(0);
-                    RequestSession.deal.AdjustRequestedItem(index, trade, 0, price);
+                    RequestSession.deal.AdjustRequestedItem(thingTypeFilter, index, trade, 0, price);
                 }
             }
 
@@ -599,7 +602,9 @@ namespace ItemRequests
             float markupMultiplier = DetermineMarkupMultiplier();
             float total = TradeUtility.GetPricePlayerBuy(item.AnyThing, basePrice, negotiatorBonus, settlementBonus);
 
-            return total * markupMultiplier;
+            // Divide by 1.4 because that's the price multiplier for buying
+            // and we want to have a 1.6 multiplier for buying
+            return (total - (total * 0.4f)) * markupMultiplier;
         }
 
         private float GetOfferPriceImprovementOffsetForFaction(Faction faction, Pawn negotiator)
@@ -644,7 +649,8 @@ namespace ItemRequests
                 }
             });
 
-            Log.Message("There are " + requestableItems.Count.ToString() + " requestable items to show for filter " + thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
+            //Log.Message("There are " + requestableItems.Count.ToString() + " requestable items to show for filter " + 
+            //    thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
         }
 
         protected void UpdateAvailableMaterials()
