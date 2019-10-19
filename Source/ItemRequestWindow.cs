@@ -16,7 +16,6 @@ namespace ItemRequests
         public Rect ContentRect { get; protected set; }
         public Rect ScrollRect { get; protected set; }
         private Vector2 scrollPosition = Vector2.zero;
-        private bool resetButtonJustPressed = false;
 
         // For UI Items
         protected WidgetTable<ThingEntry> table = new WidgetTable<ThingEntry>();
@@ -46,7 +45,6 @@ namespace ItemRequests
         private const float resetItemCountAreaWidth = 40;
         private const float countAdjustInterfaceWidth = 200;
         private const string colonyCountTooltipText = "The amount your colony currently has stored.";
-
 
         public ItemRequestWindow(Map map, Faction faction, Pawn negotiator)
         {
@@ -134,7 +132,6 @@ namespace ItemRequests
             DrawTradeableContent(mainArea);
 
             // Draw the buttons at bottom
-            resetButtonJustPressed = false;
             DrawButtons(inRect, rowRect);
 
             // End Window group
@@ -369,13 +366,14 @@ namespace ItemRequests
                 Event.current.Use();
             }
 
-            Rect resetButtonRect = new Rect(rowRect.x + cancelButtonRect.width + 10, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
-            if (Widgets.ButtonText(resetButtonRect, "Reset", true, false, true))
-            {
-                SoundDefOf.Tick_Low.PlayOneShotOnCamera(null);
-                RequestSession.deal.Reset();
-                resetButtonJustPressed = true;
-            }
+            // Reset button isn't working properly rn and I don't want to spend
+            // more time trying to debug it :)
+            //Rect resetButtonRect = new Rect(rowRect.x + cancelButtonRect.width + 10, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
+            //if (Widgets.ButtonText(resetButtonRect, "Reset", true, false, true))
+            //{
+            //    SoundDefOf.Tick_Low.PlayOneShotOnCamera(null);
+            //    RequestSession.deal.Reset();
+            //}
         }
 
         public void DrawTradeableRow(Rect rowRect, Tradeable trade, int index)
@@ -426,9 +424,7 @@ namespace ItemRequests
             Rect paddedNumericFieldArea = interactiveNumericFieldArea.ContractedBy(2f);
             paddedNumericFieldArea.xMax -= 15f;
             paddedNumericFieldArea.xMin += 16f;
-
-            // Doing a manual adjustment of count here because this code loops back through
-            // before the request session has time to clear out all previous requests
+            
             int countToTransfer = RequestSession.deal.GetCountForItem(thingTypeFilter, trade);
             string editBuffer = trade.EditBuffer;
             Widgets.TextFieldNumeric(paddedNumericFieldArea, ref countToTransfer, ref editBuffer, 0, float.MaxValue);
