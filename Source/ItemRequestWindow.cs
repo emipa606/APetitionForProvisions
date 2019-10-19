@@ -61,7 +61,7 @@ namespace ItemRequests
                 group.HeldThings.ToList().ForEach(thing =>
                 {
                     //Log.Message("  - " + thing.LabelCapNoCount + " x" + thing.stackCount.ToString());
-                    string key = thing.def.LabelCap;
+                    string key = thing.def.label;
                     if (colonyItemCount.ContainsKey(key))
                     {
                         colonyItemCount[key] += thing.stackCount;
@@ -211,6 +211,7 @@ namespace ItemRequests
                 List<FloatMenuOption> filterOptions = new List<FloatMenuOption>();
                 foreach (ThingType type in thingTypes)
                 {
+                    if (type == ThingType.Discard) continue;
                     filterOptions.Add(new FloatMenuOption(type.ToString(), () =>
                     {
                         if (thingTypeFilter != type)
@@ -360,6 +361,7 @@ namespace ItemRequests
             if (Widgets.ButtonText(cancelButtonRect, "Cancel", true, false, true))
             {
                 Close(true);
+                RequestSession.CloseOpenDealWith(faction);
                 RequestSession.CloseSession();
                 Event.current.Use();
             }
@@ -420,12 +422,11 @@ namespace ItemRequests
             Rect paddedNumericFieldArea = interactiveNumericFieldArea.ContractedBy(2f);
             paddedNumericFieldArea.xMax -= 15f;
             paddedNumericFieldArea.xMin += 16f;
-            int countToTransfer = trade.CountToTransfer;
+            int countToTransfer = RequestSession.deal.GetCountForItem(thingTypeFilter, trade);
             string editBuffer = trade.EditBuffer;
             Widgets.TextFieldNumeric(paddedNumericFieldArea, ref countToTransfer, ref editBuffer, 0, float.MaxValue);
-
             trade.AdjustTo(countToTransfer);
-            RequestSession.deal.AdjustRequestedItem(thingTypeFilter, index, trade, countToTransfer, price);
+            RequestSession.deal.AdjustItemRequest(thingTypeFilter, trade, countToTransfer, price);
 
             // Draw the reset to zero button by input field
             if (trade.CountToTransfer > 0)
@@ -436,7 +437,7 @@ namespace ItemRequests
                 if (Widgets.ButtonText(resetToZeroButton, "0"))
                 {
                     trade.AdjustTo(0);
-                    RequestSession.deal.AdjustRequestedItem(thingTypeFilter, index, trade, 0, price);
+                    RequestSession.deal.AdjustItemRequest(thingTypeFilter, trade, 0, price);
                 }
             }
 
@@ -596,15 +597,19 @@ namespace ItemRequests
                 return item.BaseMarketValue;
             }
 
-            float basePrice = priceType.PriceMultiplier();
+            float basePrice = item.BaseMarketValue * priceType.PriceMultiplier();
             float negotiatorBonus = negotiator.GetStatValue(StatDefOf.TradePriceImprovement, true);
             float settlementBonus = GetOfferPriceImprovementOffsetForFaction(faction, negotiator);
             float markupMultiplier = DetermineMarkupMultiplier();
-            float total = TradeUtility.GetPricePlayerBuy(item.AnyThing, basePrice, negotiatorBonus, settlementBonus);
+            float total = basePrice * markupMultiplier;
+            total -= total * negotiatorBonus;
+            total -= total * settlementBonus;
+                
+                //TradeUtility.GetPricePlayerBuy(item.AnyThing, basePrice, negotiatorBonus, settlementBonus);
 
             // Divide by 1.4 because that's the price multiplier for buying
             // and we want to have a 1.6 multiplier for buying
-            return (total - (total * 0.4f)) * markupMultiplier;
+            return total;
         }
 
         private float GetOfferPriceImprovementOffsetForFaction(Faction faction, Pawn negotiator)
@@ -629,16 +634,17 @@ namespace ItemRequests
             List<Thing> things = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter)
                                   where hasMaximumTechLevel(x, faction.def.techLevel)
                                   select x.thing).ToList();
-
+            
             things.ForEach(thing =>
             {
+                // Put no cap on quantity you can request of a single item
                 thing.stackCount = int.MaxValue;
                 Tradeable trad = new Tradeable(thing, thing);
                 bool madeOfRightStuff = stuffTypeFilter == null || thing.Stuff == stuffTypeFilter;
                 if (!trad.IsCurrency && madeOfRightStuff)
                 {
                     trad.thingsColony = new List<Thing>();
-                    string key = thing.def.LabelCap;
+                    string key = thing.def.label;
                     if (colonyItemCount.ContainsKey(key))
                     {
                         Thing colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
@@ -649,8 +655,8 @@ namespace ItemRequests
                 }
             });
 
-            //Log.Message("There are " + requestableItems.Count.ToString() + " requestable items to show for filter " + 
-            //    thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
+            Log.Message("There are " + requestableItems.Count.ToString() + " requestable items to show for filter " +
+                thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
         }
 
         protected void UpdateAvailableMaterials()

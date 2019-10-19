@@ -13,7 +13,7 @@ namespace ItemRequests
         public static Pawn negotiator;
         public static Faction faction;
         public static RequestDeal deal;
-        public static List<RequestDeal> openDeals;
+        public static List<RequestDeal> openDeals = new List<RequestDeal>();
 
         public static void SetupWith(Faction faction, Pawn playerNegotiator)
         {
@@ -93,8 +93,19 @@ namespace ItemRequests
 
             foreach (ThingType type in Enum.GetValues(typeof(ThingType)))
             {
+                if (type == ThingType.Discard) continue;
                 requestedItems.Add(type, new Dictionary<int, RequestItem>());
             }
+        }
+
+        public int GetCountForItem(ThingType thingTypeFilter, Tradeable tradeable)
+        {
+            int key = tradeable.GetHashCode();
+            if (requestedItems[thingTypeFilter].ContainsKey(key))
+            {
+                return requestedItems[thingTypeFilter][key].amount;
+            }
+            return 0;
         }
 
         public void Reset()
@@ -137,40 +148,43 @@ namespace ItemRequests
             return true;
         }
 
-        public void AdjustRequestedItem(ThingType thingTypeFilter, int indexKey, Tradeable tradeable, int numRequested, float price)
+        public void AdjustItemRequest(ThingType thingTypeFilter, Tradeable tradeable, int numRequested, float price)
         {
-            if (requestedItems[thingTypeFilter].ContainsKey(indexKey))
+            int key = tradeable.GetHashCode();
+            if (requestedItems[thingTypeFilter].ContainsKey(key))
             {
                 int amount = Mathf.Max(numRequested, 0);
                 if (amount == 0)
                 {
-                    requestedItems[thingTypeFilter].Remove(indexKey);
+                    Log.Message("Requested: " + numRequested.ToString());
+                    Log.Message(requestedItems[thingTypeFilter].Count.ToString() + " items in current filter");
+                    requestedItems[thingTypeFilter].Remove(key);
                     Log.Message("Colony just removed request for " + tradeable.ThingDef.LabelCap);
                 }
-                else if (amount == requestedItems[thingTypeFilter][indexKey].amount)
+                else if (amount == requestedItems[thingTypeFilter][key].amount)
                 {
                     return;
                 }
                 else
                 {
-                    requestedItems[thingTypeFilter][indexKey] = new RequestItem
+                    requestedItems[thingTypeFilter][key] = new RequestItem
                     {
                         item = tradeable,
                         amount = amount,
                         price = price
                     };
-                    Log.Message("Colony just adjusted request for " + tradeable.ThingDef.LabelCap + " to " + numRequested + " for " + price.ToStringMoney("F2") + " each");
+                    Log.Message("Colony just adjusted request for " + tradeable.ThingDef.LabelCap + " to " + numRequested);
                 }
             }
             else if (numRequested > 0)
             {
-                requestedItems[thingTypeFilter][indexKey] = new RequestItem
+                requestedItems[thingTypeFilter][key] = new RequestItem
                 {
                     item = tradeable,
                     amount = numRequested,
                     price = price
                 };
-                Log.Message("Colony just requested " + tradeable.ThingDef.LabelCap + " x" + numRequested + " for " + price.ToStringMoney("F2") + " each");
+                Log.Message("Colony just requested " + tradeable.ThingDef.LabelCap + " x" + numRequested);
             }
         }
 

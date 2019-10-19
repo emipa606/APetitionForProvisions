@@ -15,6 +15,7 @@ namespace ItemRequests
         Medical,
         Buildings,
         Animals,
-        Other
+        Other,
+        Discard
     }
 }

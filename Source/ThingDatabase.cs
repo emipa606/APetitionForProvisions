@@ -259,7 +259,10 @@ namespace ItemRequests
 
         public ThingType ClassifyThingDef(ThingDef def)
         {
-
+            if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Corpses))
+            {
+                return ThingType.Discard;
+            }            
             if (BelongsToCategory(def, "Toy"))
             {
                 return ThingType.Resources;
@@ -336,7 +339,7 @@ namespace ItemRequests
                 return ThingType.Buildings;
             }
 
-            if (def.race != null && def.race.Animal == true)
+            if (def.race != null && def.race.Animal)
             {
                 return ThingType.Animals;
             }
@@ -347,12 +350,10 @@ namespace ItemRequests
                 {
                     return ThingType.Medical;
                 }
-                // Body parts should be medical
                 if (BelongsToCategoryStartingWith(def, "BodyParts"))
                 {
                     return ThingType.Medical;
                 }
-                // EPOE parts should be medical
                 if (BelongsToCategoryContaining(def, "Prostheses"))
                 {
                     return ThingType.Medical;
@@ -826,9 +827,7 @@ namespace ItemRequests
             if (kindDef != null)
             {
                 Faction faction = Faction.OfPlayer;
-                PawnGenerationRequest request = new PawnGenerationRequest(kindDef, faction, PawnGenerationContext.NonPlayer,
-                    -1, false, false, true, true, true, false, 1f, false, true, true, false, false, false,
-                    false, null, null, null, null, null, null, null, null);
+                PawnGenerationRequest request = new PawnGenerationRequest(kindDef);
                 Pawn pawn = PawnGenerator.GeneratePawn(request);
                 if (pawn.Dead || pawn.Downed)
                 {
