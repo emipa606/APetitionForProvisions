@@ -16,6 +16,7 @@ namespace ItemRequests
         public Rect ContentRect { get; protected set; }
         public Rect ScrollRect { get; protected set; }
         private Vector2 scrollPosition = Vector2.zero;
+        private bool resetButtonJustPressed = false;
 
         // For UI Items
         protected WidgetTable<ThingEntry> table = new WidgetTable<ThingEntry>();
@@ -29,7 +30,8 @@ namespace ItemRequests
         private Map map;
 
         // For listing the items
-        private List<Tradeable> requestableItems = new List<Tradeable>();
+        private List<Tradeable> allRequestableItems = new List<Tradeable>();
+        private List<Tradeable> filteredRequestableItems = new List<Tradeable>();
         private HashSet<ThingDef> stuffFilterSet = new HashSet<ThingDef>();
         private Dictionary<string, int> colonyItemCount = new Dictionary<string, int>();
         private ThingType thingTypeFilter = ThingType.Resources;
@@ -57,10 +59,8 @@ namespace ItemRequests
             List<SlotGroup> slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
             slotGroups.ForEach(group =>
             {
-                //Log.Message("Reading " + group.ToString());
                 group.HeldThings.ToList().ForEach(thing =>
                 {
-                    //Log.Message("  - " + thing.LabelCapNoCount + " x" + thing.stackCount.ToString());
                     string key = thing.def.label;
                     if (colonyItemCount.ContainsKey(key))
                     {
@@ -68,13 +68,14 @@ namespace ItemRequests
                     }
                     else
                     {
-                        colonyItemCount[key] = thing.stackCount;
+                        colonyItemCount.Add(key, thing.stackCount);
                     }
                 });
             });
 
             RequestSession.SetupWith(faction, negotiator);
-            DetermineRequestableItems();
+            DetermineAllRequestableItems();
+            FilterRequestableItems();
             Resize();
         }
         protected void Resize()
@@ -133,6 +134,7 @@ namespace ItemRequests
             DrawTradeableContent(mainArea);
 
             // Draw the buttons at bottom
+            resetButtonJustPressed = false;
             DrawButtons(inRect, rowRect);
 
             // End Window group
@@ -217,8 +219,9 @@ namespace ItemRequests
                         if (thingTypeFilter != type)
                         {
                             thingTypeFilter = type;
-                            DetermineRequestableItems();
+                            FilterRequestableItems();
                             UpdateAvailableMaterials();
+                            //FilterRequestableItems();
                         }
                     }));
                 }
@@ -237,7 +240,7 @@ namespace ItemRequests
                     if (stuffTypeFilter != null)
                     {
                         stuffTypeFilter = null;
-                        DetermineRequestableItems();
+                        FilterRequestableItems();
                     }
                 }));
 
@@ -248,7 +251,7 @@ namespace ItemRequests
                         if (stuffTypeFilter != item)
                         {
                             stuffTypeFilter = item;
-                            DetermineRequestableItems();
+                            FilterRequestableItems();
                         }
                     }));
                 }
@@ -309,7 +312,7 @@ namespace ItemRequests
         {
             Text.Font = GameFont.Small;
             float constScrollbarSize = 16;
-            float cumulativeContentHeight = 6f + requestableItems.Count * 30f;
+            float cumulativeContentHeight = 6f + filteredRequestableItems.Count * 30f;
             Rect contentRect = new Rect(mainRect.x, 0, mainRect.width - constScrollbarSize, cumulativeContentHeight);
             float bottom = scrollPosition.y - 30f;
             float top = scrollPosition.y + mainRect.height;
@@ -318,13 +321,13 @@ namespace ItemRequests
 
             Widgets.BeginScrollView(mainRect, ref scrollPosition, contentRect, true);
 
-            for (int i = 0; i < requestableItems.Count; i++)
+            for (int i = 0; i < filteredRequestableItems.Count; i++)
             {
                 counter = i;
                 if (y > bottom && y < top)
                 {
                     Rect rect = new Rect(mainRect.x, y, contentRect.width, 30f);
-                    DrawTradeableRow(rect, requestableItems[i], counter);
+                    DrawTradeableRow(rect, filteredRequestableItems[i], counter);
                 }
                 y += 30f;
             }
@@ -371,6 +374,7 @@ namespace ItemRequests
             {
                 SoundDefOf.Tick_Low.PlayOneShotOnCamera(null);
                 RequestSession.deal.Reset();
+                resetButtonJustPressed = true;
             }
         }
 
@@ -422,6 +426,9 @@ namespace ItemRequests
             Rect paddedNumericFieldArea = interactiveNumericFieldArea.ContractedBy(2f);
             paddedNumericFieldArea.xMax -= 15f;
             paddedNumericFieldArea.xMin += 16f;
+
+            // Doing a manual adjustment of count here because this code loops back through
+            // before the request session has time to clear out all previous requests
             int countToTransfer = RequestSession.deal.GetCountForItem(thingTypeFilter, trade);
             string editBuffer = trade.EditBuffer;
             Widgets.TextFieldNumeric(paddedNumericFieldArea, ref countToTransfer, ref editBuffer, 0, float.MaxValue);
@@ -628,20 +635,17 @@ namespace ItemRequests
             return 1.6f;
         }
 
-        private void DetermineRequestableItems()
+        private void DetermineAllRequestableItems()
         {
-            requestableItems.Clear();
-            List<Thing> things = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter)
+            List<Thing> things = (from x in ThingDatabase.Instance.AllThings()
                                   where hasMaximumTechLevel(x, faction.def.techLevel)
                                   select x.thing).ToList();
-            
-            things.ForEach(thing =>
+
+            foreach (Thing thing in things)
             {
-                // Put no cap on quantity you can request of a single item
                 thing.stackCount = int.MaxValue;
                 Tradeable trad = new Tradeable(thing, thing);
-                bool madeOfRightStuff = stuffTypeFilter == null || thing.Stuff == stuffTypeFilter;
-                if (!trad.IsCurrency && madeOfRightStuff)
+                if (!trad.IsCurrency)
                 {
                     trad.thingsColony = new List<Thing>();
                     string key = thing.def.label;
@@ -651,18 +655,54 @@ namespace ItemRequests
                         colonyThing.stackCount = colonyItemCount[key];
                         trad.thingsColony.Add(colonyThing);
                     }
-                    requestableItems.Add(trad);
+                    allRequestableItems.Add(trad);
                 }
-            });
+            }
+        }
 
-            Log.Message("There are " + requestableItems.Count.ToString() + " requestable items to show for filter " +
+        private Tradeable GetTradeableThingEntry(Thing fromThing)
+        {
+            foreach (Tradeable tradeable in allRequestableItems)
+            {
+                if (tradeable.AnyThing.ThingID == fromThing.ThingID) return tradeable;
+            }
+            return null;
+        }
+
+        private void FilterRequestableItems()
+        {
+            filteredRequestableItems.Clear();
+            List<Thing> things = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter)
+                                  where hasMaximumTechLevel(x, faction.def.techLevel)
+                                  select x.thing).ToList();
+
+            foreach (Thing thing in things)
+            {
+                if (thing.def == ThingDefOf.Silver) continue;
+                Tradeable foundEntry = GetTradeableThingEntry(thing);
+                if (foundEntry == null)
+                {
+                    Log.Error("Could not find matching TradeableThingEntry for " + thing.LabelCap);
+                    continue;
+                }
+                else
+                {
+                    bool madeOfRightStuff = stuffTypeFilter == null || foundEntry.AnyThing.Stuff == stuffTypeFilter;
+                    if (madeOfRightStuff)
+                    {
+                        filteredRequestableItems.Add(foundEntry);
+                    }
+                }
+            }
+
+            Log.Message("There are " + filteredRequestableItems.Count.ToString() + " requestable items to show for filter " +
                 thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
         }
 
         protected void UpdateAvailableMaterials()
         {
             stuffFilterSet.Clear();
-            foreach (Tradeable item in requestableItems)
+            foreach (Tradeable item in filteredRequestableItems)
             {
                 if (item.StuffDef != null)
                 {

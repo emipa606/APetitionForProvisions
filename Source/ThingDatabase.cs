@@ -41,7 +41,7 @@ namespace ItemRequests
         private ThingDatabase()
         {
             Log.Message("Initializing ThingDatabase...");
-            
+
             thingCategorySweetMeals = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("SweetMeals");
             thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
         }
@@ -190,7 +190,7 @@ namespace ItemRequests
                 return null;
             }
         }
-        
+
         public void PreloadDefinition(ThingDef def)
         {
             AddStuffToThingLists(def);
@@ -262,7 +262,7 @@ namespace ItemRequests
             if (BelongsToCategoryOrParentCategory(def, ThingCategoryDefOf.Corpses))
             {
                 return ThingType.Discard;
-            }            
+            }
             if (BelongsToCategory(def, "Toy"))
             {
                 return ThingType.Resources;
@@ -401,7 +401,8 @@ namespace ItemRequests
             {
                 return false;
             }
-            return def.thingCategories.FirstOrDefault(d => {
+            return def.thingCategories.FirstOrDefault(d =>
+            {
                 return categoryDef == d;
             }) != null;
         }
@@ -412,7 +413,8 @@ namespace ItemRequests
             {
                 return false;
             }
-            return def.thingCategories.FirstOrDefault(d => {
+            return def.thingCategories.FirstOrDefault(d =>
+            {
                 return d.defName.StartsWith(categoryNamePrefix);
             }) != null;
         }
@@ -423,7 +425,8 @@ namespace ItemRequests
             {
                 return false;
             }
-            return def.thingCategories.FirstOrDefault(d => {
+            return def.thingCategories.FirstOrDefault(d =>
+            {
                 return d.defName.EndsWith(categoryNameSuffix);
             }) != null;
         }
@@ -434,7 +437,8 @@ namespace ItemRequests
             {
                 return false;
             }
-            return def.thingCategories.FirstOrDefault(d => {
+            return def.thingCategories.FirstOrDefault(d =>
+            {
                 return d.defName.Contains(categoryNameSubstring);
             }) != null;
         }
@@ -445,7 +449,8 @@ namespace ItemRequests
             {
                 return false;
             }
-            return def.thingCategories.FirstOrDefault(d => {
+            return def.thingCategories.FirstOrDefault(d =>
+            {
                 return categoryName == d.defName;
             }) != null;
         }
@@ -456,134 +461,142 @@ namespace ItemRequests
             {
                 return false;
             }
-            return def.tradeTags.FirstOrDefault(t => {
+            return def.tradeTags.FirstOrDefault(t =>
+            {
                 return tradeTag == t;
             }) != null;
         }
 
-        public IEnumerable<ThingEntry> AllThingsOfType(ThingType type)
-        {
-            return entries.Values.Where((ThingEntry e) => {
-                return e.type == type;
-            });
-        }
+        public IEnumerable<ThingEntry> AllThings() => entries.Values;
+        public IEnumerable<ThingEntry> AllThingsOfType(ThingType type) => entries.Values.Where((ThingEntry e) => e.type == type);
 
-        public IEnumerable<ThingEntry> AllThings()
-        {
-            return entries.Values;
-        }
+        //public List<ThingEntry> Resources
+        //{
+        //    get
+        //    {
+        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
+        //        {
+        //            return e.type == ThingType.Resources;
+        //        });
+        //        result.Sort((ThingEntry a, ThingEntry b) =>
+        //        {
+        //            return a.Label.CompareTo(b.Label);
+        //        });
+        //        return result;
+        //    }
+        //}
 
-        public List<ThingEntry> Resources
-        {
-            get
-            {
-                List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == ThingType.Resources;
-                });
-                result.Sort((ThingEntry a, ThingEntry b) => {
-                    return a.Label.CompareTo(b.Label);
-                });
-                return result;
-            }
-        }
+        //public List<ThingEntry> Food
+        //{
+        //    get
+        //    {
+        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
+        //        {
+        //            return e.type == ThingType.Food;
+        //        });
+        //        result.Sort((ThingEntry a, ThingEntry b) =>
+        //        {
+        //            return a.Label.CompareTo(b.Label);
+        //        });
+        //        return result;
+        //    }
+        //}
 
-        public List<ThingEntry> Food
-        {
-            get
-            {
-                List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == ThingType.Food;
-                });
-                result.Sort((ThingEntry a, ThingEntry b) => {
-                    return a.Label.CompareTo(b.Label);
-                });
-                return result;
-            }
-        }
+        //public List<ThingEntry> Weapons
+        //{
+        //    get
+        //    {
+        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
+        //        {
+        //            return e.type == ThingType.Weapons;
+        //        });
+        //        result.Sort((ThingEntry a, ThingEntry b) =>
+        //        {
+        //            return a.Label.CompareTo(b.Label);
+        //        });
+        //        return result;
+        //    }
+        //}
 
-        public List<ThingEntry> Weapons
-        {
-            get
-            {
-                List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == ThingType.Weapons;
-                });
-                result.Sort((ThingEntry a, ThingEntry b) => {
-                    return a.Label.CompareTo(b.Label);
-                });
-                return result;
-            }
-        }
+        //public List<ThingEntry> Apparel
+        //{
+        //    get
+        //    {
+        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
+        //        {
+        //            return e.type == ThingType.Apparel;
+        //        });
+        //        result.Sort((ThingEntry a, ThingEntry b) =>
+        //        {
+        //            return a.Label.CompareTo(b.Label);
+        //        });
+        //        return result;
+        //    }
+        //}
 
-        public List<ThingEntry> Apparel
-        {
-            get
-            {
-                List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == ThingType.Apparel;
-                });
-                result.Sort((ThingEntry a, ThingEntry b) => {
-                    return a.Label.CompareTo(b.Label);
-                });
-                return result;
-            }
-        }
+        //public List<ThingEntry> Animals
+        //{
+        //    get
+        //    {
+        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
+        //        {
+        //            return e.type == ThingType.Animals;
+        //        });
+        //        result.Sort((ThingEntry a, ThingEntry b) =>
+        //        {
+        //            return a.Label.CompareTo(b.Label);
+        //        });
+        //        return result;
+        //    }
+        //}
 
-        public List<ThingEntry> Animals
-        {
-            get
-            {
-                List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == ThingType.Animals;
-                });
-                result.Sort((ThingEntry a, ThingEntry b) => {
-                    return a.Label.CompareTo(b.Label);
-                });
-                return result;
-            }
-        }
+        //public List<ThingEntry> Implants
+        //{
+        //    get
+        //    {
+        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
+        //        {
+        //            return e.type == ThingType.Medical;
+        //        });
+        //        result.Sort((ThingEntry a, ThingEntry b) =>
+        //        {
+        //            return a.Label.CompareTo(b.Label);
+        //        });
+        //        return result;
+        //    }
+        //}
 
-        public List<ThingEntry> Implants
-        {
-            get
-            {
-                List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == ThingType.Medical;
-                });
-                result.Sort((ThingEntry a, ThingEntry b) => {
-                    return a.Label.CompareTo(b.Label);
-                });
-                return result;
-            }
-        }
+        //public List<ThingEntry> Buildings
+        //{
+        //    get
+        //    {
+        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
+        //        {
+        //            return e.type == ThingType.Buildings;
+        //        });
+        //        result.Sort((ThingEntry a, ThingEntry b) =>
+        //        {
+        //            return a.Label.CompareTo(b.Label);
+        //        });
+        //        return result;
+        //    }
+        //}
 
-        public List<ThingEntry> Buildings
-        {
-            get
-            {
-                List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == ThingType.Buildings;
-                });
-                result.Sort((ThingEntry a, ThingEntry b) => {
-                    return a.Label.CompareTo(b.Label);
-                });
-                return result;
-            }
-        }
-
-        public List<ThingEntry> Other
-        {
-            get
-            {
-                List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) => {
-                    return e.type == ThingType.Other;
-                });
-                result.Sort((ThingEntry a, ThingEntry b) => {
-                    return a.Label.CompareTo(b.Label);
-                });
-                return result;
-            }
-        }
+        //public List<ThingEntry> Other
+        //{
+        //    get
+        //    {
+        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
+        //        {
+        //            return e.type == ThingType.Other;
+        //        });
+        //        result.Sort((ThingEntry a, ThingEntry b) =>
+        //        {
+        //            return a.Label.CompareTo(b.Label);
+        //        });
+        //        return result;
+        //    }
+        //}
 
         public ThingEntry LookupThingEntry(ThingKey key)
         {
@@ -756,13 +769,15 @@ namespace ItemRequests
 
             if (def.thingCategories != null)
             {
-                if (def.thingCategories.SingleOrDefault((ThingCategoryDef d) => {
+                if (def.thingCategories.SingleOrDefault((ThingCategoryDef d) =>
+                {
                     return (d.defName == "FoodMeals");
                 }) != null)
                 {
                     result.gear = true;
                 }
-                if (def.thingCategories.SingleOrDefault((ThingCategoryDef d) => {
+                if (def.thingCategories.SingleOrDefault((ThingCategoryDef d) =>
+                {
                     return (d.defName == "Medicine");
                 }) != null)
                 {
