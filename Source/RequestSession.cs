@@ -15,12 +15,13 @@ namespace ItemRequests
         public static RequestDeal deal;
         public static List<RequestDeal> openDeals = new List<RequestDeal>();
 
-        public static void SetupWith(Faction faction, Pawn playerNegotiator)
+        public static void SetupWith(Faction faction, Pawn playerNegotiator, out bool success)
         {
             if (HasOpenDealWith(faction))
             {
-                Messages.Message("You can't request more from " + faction.Name + " until they've satisfied your previous request.", 
+                Messages.Message("You can't request more items from " + faction.Name + " until they've satisfied your previous request.",
                     MessageTypeDefOf.CautionInput, false);
+                success = false;
                 return;
             }
 
@@ -28,6 +29,7 @@ namespace ItemRequests
             negotiator = playerNegotiator;            
             deal = new RequestDeal(faction);
             openDeals.Add(deal);
+            success = true;
         }
 
         public static RequestDeal GetOpenDealWith(Faction faction)

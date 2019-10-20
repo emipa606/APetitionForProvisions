@@ -83,7 +83,12 @@ namespace ItemRequests
             //tradeAcceptedOption.link = diaNode2;
 
             tradeAcceptedOption.action = () => {
-                Find.WindowStack.Add(new ItemRequestWindow(map, faction, negotiator));
+                bool success;
+                RequestSession.SetupWith(faction, negotiator, out success);
+                if (success)
+                {
+                    Find.WindowStack.Add(new ItemRequestWindow(map, faction, negotiator));
+                }
             };
 
             return tradeAcceptedOption;

@@ -71,7 +71,6 @@ namespace ItemRequests
                 });
             });
 
-            RequestSession.SetupWith(faction, negotiator);
             DetermineAllRequestableItems();
             FilterRequestableItems();
             Resize();
@@ -94,13 +93,7 @@ namespace ItemRequests
             rightAlignOffset = WindowSize.x - WindowPadding - ContentMargin.x - rightContentSize;
         }
 
-        public override Vector2 InitialSize
-        {
-            get
-            {
-                return new Vector2(WindowSize.x, WindowSize.y);
-            }
-        }
+        public override Vector2 InitialSize => new Vector2(WindowSize.x, WindowSize.y);
 
         public override void DoWindowContents(Rect inRect)
         {
@@ -343,17 +336,19 @@ namespace ItemRequests
                     if (success)
                     {
                         SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
-                        Find.WindowStack.Add(new RequestAcknowledgedWindow(faction));
-                        Close(false);
+                        Find.WindowStack.Add(new RequestAcknowledgedWindow(faction, () =>
+                        {
+                            Close(false);
+                            RequestSession.CloseSession();
+                        }));
                     }
                     else
                     {
+                        Messages.Message("The request was declined", MessageTypeDefOf.NegativeEvent, false);
                         Close(true);
+                        RequestSession.CloseSession();
                     }
-                    RequestSession.CloseSession();
                 }
-
-                Event.current.Use();
             }
 
 
@@ -363,7 +358,6 @@ namespace ItemRequests
                 Close(true);
                 RequestSession.CloseOpenDealWith(faction);
                 RequestSession.CloseSession();
-                Event.current.Use();
             }
 
             // Reset button isn't working properly rn and I don't want to spend
@@ -424,7 +418,7 @@ namespace ItemRequests
             Rect paddedNumericFieldArea = interactiveNumericFieldArea.ContractedBy(2f);
             paddedNumericFieldArea.xMax -= 15f;
             paddedNumericFieldArea.xMin += 16f;
-            
+
             int countToTransfer = RequestSession.deal.GetCountForItem(thingTypeFilter, trade);
             string editBuffer = trade.EditBuffer;
             Widgets.TextFieldNumeric(paddedNumericFieldArea, ref countToTransfer, ref editBuffer, 0, float.MaxValue);
@@ -606,7 +600,7 @@ namespace ItemRequests
             float markupMultiplier = DetermineMarkupMultiplier();
             float total = basePrice * markupMultiplier;
             total -= total * negotiatorBonus;
-            total -= total * settlementBonus;                
+            total -= total * settlementBonus;
 
             // Divide by 1.4 because that's the price multiplier for buying
             // and we want to have a 1.6 multiplier for buying
@@ -721,10 +715,12 @@ namespace ItemRequests
     public class RequestAcknowledgedWindow : Window
     {
         private Faction faction;
+        private Action onClose;
 
-        public RequestAcknowledgedWindow(Faction faction)
+        public RequestAcknowledgedWindow(Faction faction, Action doOnClose)
         {
             this.faction = faction;
+            this.onClose = doOnClose;
         }
 
         public override void DoWindowContents(Rect inRect)
@@ -732,7 +728,7 @@ namespace ItemRequests
             Vector2 contentMargin = new Vector2(10, 18);
             string title = "Request Acknowledged";
             string message = faction.Name + " has agreed to the exchange and will arrive within a few days.\n\n" +
-                "Remember to have the silver for the amount you agreed upon when they arrive. You may have enough " +
+                "Be sure to have the silver for the amount you agreed upon when they arrive. You may have enough " +
                 "currently, but life is notoriously perilous on the Rim and you never know what misfortunes await " +
                 "you in the next few days.";
             string closeString = "OK";
@@ -751,7 +747,7 @@ namespace ItemRequests
             Widgets.Label(titleArea, title);
 
             Text.Font = GameFont.Small;
-            Rect messageAreaRect = new Rect(x, headerRowRect.y + headerRowRect.height + 30, inRect.width - x, inRect.height - contentMargin.y * 2 - headerRowRect.height);
+            Rect messageAreaRect = new Rect(x, headerRowRect.y + headerRowRect.height + 30, inRect.width - x * 2, inRect.height - contentMargin.y * 2 - headerRowRect.height);
             Widgets.Label(messageAreaRect, message);
 
             float closeButtonHeight = 30;
@@ -760,12 +756,13 @@ namespace ItemRequests
             if (Widgets.ButtonText(closeButtonArea, closeString, false))
             {
                 Close(true);
+                onClose();
             }
 
             GenUI.ResetLabelAlign();
             GUI.EndGroup();
         }
 
-        public override Vector2 InitialSize => new Vector2(400, 400);
+        public override Vector2 InitialSize => new Vector2(450, 475);
     }
 }
