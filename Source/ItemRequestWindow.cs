@@ -343,7 +343,7 @@ namespace ItemRequests
                     if (success)
                     {
                         SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
-                        Find.WindowStack.Add(new RequestAcknowledgedWindow());
+                        Find.WindowStack.Add(new RequestAcknowledgedWindow(faction));
                         Close(false);
                     }
                     else
@@ -606,9 +606,7 @@ namespace ItemRequests
             float markupMultiplier = DetermineMarkupMultiplier();
             float total = basePrice * markupMultiplier;
             total -= total * negotiatorBonus;
-            total -= total * settlementBonus;
-                
-                //TradeUtility.GetPricePlayerBuy(item.AnyThing, basePrice, negotiatorBonus, settlementBonus);
+            total -= total * settlementBonus;                
 
             // Divide by 1.4 because that's the price multiplier for buying
             // and we want to have a 1.6 multiplier for buying
@@ -617,13 +615,13 @@ namespace ItemRequests
 
         private float GetOfferPriceImprovementOffsetForFaction(Faction faction, Pawn negotiator)
         {
-            // based on faction relations
+            // TODO: based on faction relations
             return 0;
         }
 
         private float DetermineMarkupMultiplier()
         {
-            // Price should be increased based on following factors:
+            // TODO: Price should be increased based on following factors:
             // - rarity of item
             // - distance of hailing colony from player colony
 
@@ -631,6 +629,7 @@ namespace ItemRequests
             return 1.6f;
         }
 
+        // TODO: Restrict certain items
         private void DetermineAllRequestableItems()
         {
             List<Thing> things = (from x in ThingDatabase.Instance.AllThings()
@@ -719,15 +718,54 @@ namespace ItemRequests
 
     }
 
-    // TODO:
-    // Create a window that appears after the request
-    // has been confirmed and caravan is on
-    // its way.
     public class RequestAcknowledgedWindow : Window
     {
+        private Faction faction;
+
+        public RequestAcknowledgedWindow(Faction faction)
+        {
+            this.faction = faction;
+        }
+
         public override void DoWindowContents(Rect inRect)
         {
-            throw new NotImplementedException();
+            Vector2 contentMargin = new Vector2(10, 18);
+            string title = "Request Acknowledged";
+            string message = faction.Name + " has agreed to the exchange and will arrive within a few days.\n\n" +
+                "Remember to have the silver for the amount you agreed upon when they arrive. You may have enough " +
+                "currently, but life is notoriously perilous on the Rim and you never know what misfortunes await " +
+                "you in the next few days.";
+            string closeString = "OK";
+
+            // Begin Window group
+            GUI.BeginGroup(inRect);
+
+            // Draw the names of negotiator and factions
+            inRect = inRect.AtZero();
+            float x = contentMargin.x;
+            float headerRowHeight = 35f;
+            Rect headerRowRect = new Rect(x, contentMargin.y, inRect.width - x, headerRowHeight);
+            Rect titleArea = new Rect(x, 0, headerRowRect.width, headerRowRect.height);
+            Text.Anchor = TextAnchor.UpperLeft;
+            Text.Font = GameFont.Medium;
+            Widgets.Label(titleArea, title);
+
+            Text.Font = GameFont.Small;
+            Rect messageAreaRect = new Rect(x, headerRowRect.y + headerRowRect.height + 30, inRect.width - x, inRect.height - contentMargin.y * 2 - headerRowRect.height);
+            Widgets.Label(messageAreaRect, message);
+
+            float closeButtonHeight = 30;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Rect closeButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, 100, closeButtonHeight);
+            if (Widgets.ButtonText(closeButtonArea, closeString, false))
+            {
+                Close(true);
+            }
+
+            GenUI.ResetLabelAlign();
+            GUI.EndGroup();
         }
+
+        public override Vector2 InitialSize => new Vector2(400, 400);
     }
 }
