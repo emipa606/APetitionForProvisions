@@ -158,7 +158,7 @@ namespace ItemRequests
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
             Rect negotiatorNameArea = new Rect(0, secondRowY - 2, headerRowRect.width / 2, secondRowY);
-            Widgets.Label(negotiatorNameArea, "Negotiator".Translate() + ": " + negotiator.LabelShort);
+            Widgets.Label(negotiatorNameArea, "Negotiator:" + negotiator.LabelShort);
 
             // Draw just below trader name
             Text.Anchor = TextAnchor.UpperRight;
@@ -183,7 +183,6 @@ namespace ItemRequests
             GUI.color = Color.white;
             GenUI.ResetLabelAlign();
             GUI.EndGroup();
-
         }
 
         public void DrawFilterDropdowns(Rect rectArea)

@@ -79,7 +79,12 @@
     <None Include="..\Patches\**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CaravanManager.cs" />
     <Compile Include="CostCalculator.cs" />
+    <Compile Include="IncidentWorker_RequestCaravanArrival.cs" />
+    <Compile Include="LordJob_FulfillItemRequest.cs" />
+    <Compile Include="LordToil_AttackIfNoMoney.cs" />
+    <Compile Include="LordToil_AttackIfNoTrade.cs" />
     <Compile Include="RequestSession.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ItemRequestWindow.cs" />
@@ -90,6 +95,9 @@
     <Compile Include="ThingEntry.cs" />
     <Compile Include="ThingKey.cs" />
     <Compile Include="ThingType.cs" />
+    <Compile Include="Trigger_ColonyLacksSilver.cs" />
+    <Compile Include="Trigger_ColonyNeverTraded.cs" />
+    <Compile Include="Trigger_RequestFulfilled.cs" />
     <Compile Include="Widgets.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -98,7 +98,7 @@ namespace ItemRequests
         // OK option -- return to root node
         private static DiaOption OKToRoot(Faction faction, Pawn negotiator)
         {
-            return new DiaOption("OK".Translate())
+            return new DiaOption("OK")
             {
                 linkLateBind = ResetToRoot(faction, negotiator)
             };
