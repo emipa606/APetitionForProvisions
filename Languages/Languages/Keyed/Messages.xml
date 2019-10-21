@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+  <MessageRequestedCaravanLeaving>The requested caravan from {0} is leaving.</MessageRequestedCaravanLeaving>
+  <FulfillRequestedItemsByTrading>Pay for requested items from {0}</FulfillRequestedItemsByTrading>
+</LanguageData>

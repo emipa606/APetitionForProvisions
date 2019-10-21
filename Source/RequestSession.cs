@@ -82,7 +82,7 @@ namespace ItemRequests
                 {
                     foreach (RequestItem item in dictionary.Values)
                     {
-                        val += item.price * item.amount;
+                        val += item.pricePerItem * item.amount;
                     }
                 }
                 return val;
@@ -98,6 +98,16 @@ namespace ItemRequests
                 if (type == ThingType.Discard) continue;
                 requestedItems.Add(type, new Dictionary<int, RequestItem>());
             }
+        }
+
+        public List<RequestItem> GetRequestedItems()
+        {
+            List<RequestItem> things = new List<RequestItem>();
+            foreach (ThingType type in requestedItems.Keys)
+            {
+                things.AddRange(requestedItems[type].Values);
+            }
+            return things;
         }
 
         public int GetCountForItem(ThingType thingTypeFilter, Tradeable tradeable)
@@ -173,7 +183,7 @@ namespace ItemRequests
                     {
                         item = tradeable,
                         amount = amount,
-                        price = price
+                        pricePerItem = price
                     };
                     Log.Message("Colony just adjusted request for " + tradeable.ThingDef.LabelCap + " to " + numRequested);
                 }
@@ -184,17 +194,17 @@ namespace ItemRequests
                 {
                     item = tradeable,
                     amount = numRequested,
-                    price = price
+                    pricePerItem = price
                 };
                 Log.Message("Colony just requested " + tradeable.ThingDef.LabelCap + " x" + numRequested);
             }
         }
 
-        private class RequestItem
-        {
-            public Tradeable item;
-            public int amount;
-            public float price;
-        }
+    }
+    public class RequestItem
+    {
+        public Tradeable item;
+        public int amount;
+        public float pricePerItem;
     }
 }

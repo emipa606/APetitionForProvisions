@@ -10,6 +10,8 @@ namespace ItemRequests
 {
     class LordJob_FulfillItemRequest : LordJob
     {
+        public static readonly string MemoOnFulfilled = "TriggerItemRequestFulfilled";
+        public static readonly string MemoOnUnfulfilled = "TriggerItemRequestUnfulfilled";
         private Faction faction;
         private IntVec3 chillSpot;
         private Faction playerFaction => Find.FactionManager.OfPlayer;
@@ -24,7 +26,7 @@ namespace ItemRequests
         {
             StateGraph stateGraph = new StateGraph();
             string noFulfilledTradeMsg = "Didn't fulfill trade agreement.";
-            string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? " They're attacking your colonists out of anger!" : " Relations between your faction have dropped.";
+            string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? " They're attacking your colonists out of anger!" : " Relations with your faction have dropped.";
 
             LordToil_Travel lordToil_Travel = new LordToil_Travel(chillSpot);
             stateGraph.StartingToil = lordToil_Travel;
@@ -91,7 +93,7 @@ namespace ItemRequests
             stateGraph.AddTransition(fightIfFractionPawnsLost);
 
             Transition defendIfPawnHarmed = new Transition(lordToil_Travel, lordToil_DefendPoint);
-            defendIfPawnHarmed.AddTrigger(new Trigger_PawnHarmed(1f, false, null));
+            defendIfPawnHarmed.AddTrigger(new Trigger_PawnHarmed());
             defendIfPawnHarmed.AddPreAction(new TransitionAction_SetDefendTrader());
             defendIfPawnHarmed.AddPostAction(new TransitionAction_WakeAll());
             defendIfPawnHarmed.AddPostAction(new TransitionAction_EndAllJobs());
@@ -105,15 +107,20 @@ namespace ItemRequests
             defendIfMemoReceived.AddTrigger(new Trigger_Memo("TravelArrived"));
             stateGraph.AddTransition(defendIfMemoReceived);
 
-            Transition leaveIfRequestFulfilled = new Transition(lordToil_DefendTraderCaravanPoint, lordToil_ExitMapAndEscortCarriers);
-            leaveIfRequestFulfilled.AddTrigger(new Trigger_RequestFulfilled());
-            leaveIfRequestFulfilled.AddPreAction(new TransitionAction_Message("MessageTraderCaravanLeaving".Translate(faction.Name)));
+            Transition leaveIfRequestFulfilled = new Transition(lordToil_Travel, lordToil_ExitMapAndEscortCarriers);
+            leaveIfRequestFulfilled.AddSources(new LordToil[]
+            {
+                lordToil_DefendPoint,
+                lordToil_DefendTraderCaravanPoint
+            });
+            leaveIfRequestFulfilled.AddTrigger(new Trigger_Memo(MemoOnFulfilled));
+            leaveIfRequestFulfilled.AddPreAction(new TransitionAction_Message("MessageRequestedCaravanLeaving".Translate(faction.Name)));
             leaveIfRequestFulfilled.AddPostAction(new TransitionAction_WakeAll());
             stateGraph.AddTransition(leaveIfRequestFulfilled);
 
 
-            Trigger_TicksPassed ticksPassed = new Trigger_TicksPassed((!DebugSettings.instantVisitorsGift) ? Rand.Range(27000, 45000) : 0);
-            TransitionAction_Message actionMessage = new TransitionAction_Message(faction.Name + " has been insulted by your negligence to pay for your requested items." + addedMessageText);
+            Trigger_TicksPassed ticksPassed = new Trigger_TicksPassed(Rand.Range(37000, 45000));
+            TransitionAction_Message actionMessage = new TransitionAction_Message(faction.Name + " has been insulted by your negligence to acknowledge their presence and purchase the items you requested." + addedMessageText);
             if (faction.PlayerRelationKind == FactionRelationKind.Neutral)
             {
                 Transition attackIfRequestUnfulfilled = new Transition(lordToil_DefendTraderCaravanPoint, lordToil_ExitMapTraderFighting);
@@ -127,11 +134,18 @@ namespace ItemRequests
             }
             else
             {
-                Transition leaveIfRequestUnfulfilled = new Transition(lordToil_DefendTraderCaravanPoint, lordToil_ExitMapAndEscortCarriers);
+                faction.TryAffectGoodwillWith(playerFaction, -30, true, false, noFulfilledTradeMsg);
+
+                Transition leaveIfRequestUnfulfilled = new Transition(lordToil_Travel, lordToil_ExitMapAndEscortCarriers);
+                leaveIfRequestUnfulfilled.AddSources(new LordToil[]
+                {
+                    lordToil_DefendPoint,
+                    lordToil_DefendTraderCaravanPoint
+                });
                 leaveIfRequestUnfulfilled.AddTrigger(ticksPassed);
                 leaveIfRequestUnfulfilled.AddPreAction(actionMessage);
+                leaveIfRequestUnfulfilled.AddPostAction(new TransitionAction_Message("MessageRequestedCaravanLeaving".Translate(faction.Name)));
                 leaveIfRequestUnfulfilled.AddPostAction(new TransitionAction_WakeAll());
-                faction.TryAffectGoodwillWith(playerFaction, -30, true, false, noFulfilledTradeMsg);
 
                 stateGraph.AddTransition(leaveIfRequestUnfulfilled);
             }
@@ -155,12 +169,18 @@ namespace ItemRequests
                 lordToil_DefendPoint
             });
             leaveIfBadThingsHappen.AddTrigger(new Trigger_ImportantTraderCaravanPeopleLost());
-            leaveIfBadThingsHappen.AddTrigger(new Trigger_BecamePlayerEnemy());
+            //leaveIfBadThingsHappen.AddTrigger(new Trigger_BecamePlayerEnemy());
             leaveIfBadThingsHappen.AddPostAction(new TransitionAction_WakeAll());
             leaveIfBadThingsHappen.AddPostAction(new TransitionAction_EndAllJobs());
             stateGraph.AddTransition(leaveIfBadThingsHappen);
 
             return stateGraph;
         }
+        public override void ExposeData()
+        {
+            Scribe_References.Look<Faction>(ref this.faction, "faction", false);
+            Scribe_Values.Look<IntVec3>(ref this.chillSpot, "chillSpot", default(IntVec3), false);
+        }
     }
+
 }

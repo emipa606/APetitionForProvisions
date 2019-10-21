@@ -4,6 +4,7 @@ using System.Linq;
 using RimWorld;
 using RimWorld.Planet;
 using Verse;
+using Verse.AI.Group;
 
 namespace ItemRequests
 {
@@ -22,10 +23,6 @@ namespace ItemRequests
             faction.lastTraderRequestTick = Find.TickManager.TicksGame;
         }
 
-        // faction.TryAffectGoodwillWith(ofPlayer, goodwillChange, true, true, reason, lookTarget);
-        public static void UpdateTradeCaravanGoods(Faction faction, Caravan caravan)
-        {
-            
-        }
+        // faction.TryAffectGoodwillWith(ofPlayer, goodwillChange, true, true, reason, lookTarget);        
     }
 }

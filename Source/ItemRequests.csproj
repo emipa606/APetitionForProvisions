@@ -81,10 +81,12 @@
   <ItemGroup>
     <Compile Include="CaravanManager.cs" />
     <Compile Include="CostCalculator.cs" />
+    <Compile Include="FulfillItemRequestWindow.cs" />
+    <Compile Include="FulfillRequestFloatMenuOption.cs" />
     <Compile Include="IncidentWorker_RequestCaravanArrival.cs" />
+    <Compile Include="JobDriver_FulfillTradeRequestWithFaction.cs" />
     <Compile Include="LordJob_FulfillItemRequest.cs" />
-    <Compile Include="LordToil_AttackIfNoMoney.cs" />
-    <Compile Include="LordToil_AttackIfNoTrade.cs" />
+    <Compile Include="RequestAcknowledgedWindow.cs" />
     <Compile Include="RequestSession.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ItemRequestWindow.cs" />
