@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
@@ -7,61 +8,59 @@ using Verse.AI.Group;
 
 namespace ItemRequests
 {
-    class IncidentWorker_RequestCaravanArrival : IncidentWorker_NeutralGroup
+    class IncidentWorker_RequestCaravanArrival : IncidentWorker
     {
-        public static IncidentDef DefOf
+        protected virtual PawnGroupKindDef PawnGroupKindDef
         {
             get
             {
-                IncidentDef modifiedDef = IncidentDefOf.TraderCaravanArrival;
-                modifiedDef.pawnMustBeCapableOfViolence = true;
-
-                modifiedDef.defName = "Request Caravan Arrival";
-                modifiedDef.letterLabel = "Requested Items Arrived";
-                modifiedDef.letterText = "A trade caravan carrying the items you requested has arrived.\n\n" +
-                    "Talk to the caravan leader to make your trade. Be careful though, if you don't have enough " +
-                    "silver you'll anger the faction, which could possibly lead to... undesirable outcomes.";
-                modifiedDef.description = "The caravan that was sent from the faction you requested specific items from.";
-                
-                return modifiedDef;
+                return PawnGroupKindDefOf.Peaceful;
             }
         }
 
-        protected override PawnGroupKindDef PawnGroupKindDef
+        protected bool TryResolveParms(IncidentParms parms)
         {
-            get
+            if (!TryResolveParmsGeneral(parms))
             {
-                return PawnGroupKindDefOf.Trader;
+                return false;
             }
+            ResolveParmsPoints(parms);
+            return true;
         }
 
-        protected override bool FactionCanBeGroupSource(Faction f, Map map, bool desperate = false)
+        protected void ResolveParmsPoints(IncidentParms parms)
         {
-            return base.FactionCanBeGroupSource(f, map, desperate) && f.def.caravanTraderKinds.Any();
+            parms.points = TraderCaravanUtility.GenerateGuardPoints();
+        }
+
+        private IEnumerable<Faction> CandidateFactions(Map map, bool desperate = false)
+        {
+            return from f in Find.FactionManager.AllFactions
+                   where FactionCanBeGroupSource(f, map, desperate)
+                   select f;
         }
 
         protected override bool CanFireNowSub(IncidentParms parms)
         {
-            if (!base.CanFireNowSub(parms))
-            {
-                return false;
-            }
             Map map = (Map)parms.target;
-            return parms.faction == null || !NeutralGroupIncidentUtility.AnyBlockingHostileLord(map, parms.faction);
+            return parms.faction != null || CandidateFactions(map, false).Any() || !NeutralGroupIncidentUtility.AnyBlockingHostileLord(map, parms.faction);
         }
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
             Map map = (Map)parms.target;
-            if (!base.TryResolveParms(parms))
+
+            if (!TryResolveParms(parms))
             {
                 return false;
             }
+
             if (parms.faction.HostileTo(Faction.OfPlayer))
             {
                 return false;
             }
-            List<Pawn> list = base.SpawnPawns(parms);
+
+            List<Pawn> list = SpawnPawns(parms);
             if (list.Count == 0)
             {
                 return false;
@@ -74,10 +73,10 @@ namespace ItemRequests
                 }
             }
 
-            Log.Message("Request caravan has arrived!");
-
             IntVec3 chillSpot;
-            Find.LetterStack.ReceiveLetter(DefOf.letterLabel, DefOf.letterText, LetterDefOf.PositiveEvent, list[0], parms.faction, null);
+            IncidentDef arrival = ItemRequestsDefOf.RequestCaravanArrival;
+            Find.LetterStack.ReceiveLetter(arrival.letterLabel, arrival.letterText, arrival.letterDef, list[0], parms.faction);
+            Log.Message(list[0].ToString() + "\n\n" + list[0].Name);
             RCellFinder.TryFindRandomSpotJustOutsideColony(list[0], out chillSpot);
 
             // Specify actions that happen while caravan is on the map
@@ -85,10 +84,40 @@ namespace ItemRequests
             LordMaker.MakeNewLord(parms.faction, lordJob, map, list);
             return true;
         }
-    
-        protected override void ResolveParmsPoints(IncidentParms parms)
+
+        private List<Pawn> SpawnPawns(IncidentParms parms)
         {
-            parms.points = TraderCaravanUtility.GenerateGuardPoints();
+            Map map = (Map)parms.target;
+            PawnGroupMakerParms defaultPawnGroupMakerParms = IncidentParmsUtility.GetDefaultPawnGroupMakerParms(PawnGroupKindDef, parms, true);
+            List<Pawn> list = PawnGroupMakerUtility.GeneratePawns(defaultPawnGroupMakerParms, false).ToList();
+            foreach (Pawn pawn in list)
+            {
+                IntVec3 loc = CellFinder.RandomClosewalkCellNear(parms.spawnCenter, map, 5);
+                GenSpawn.Spawn(pawn, loc, map, WipeMode.Vanish);
+            }
+            return list;
+        }
+
+        private bool FactionCanBeGroupSource(Faction f, Map map, bool desperate = false)
+        {
+            return (
+                !f.IsPlayer && !f.defeated &&
+                    (desperate || (
+                                f.def.allowedArrivalTemperatureRange.Includes(map.mapTemperature.OutdoorTemp)
+                                && f.def.allowedArrivalTemperatureRange.Includes(map.mapTemperature.SeasonalTemp)
+                        )
+                    )
+                ) &&
+                !f.def.hidden &&
+                !f.HostileTo(Faction.OfPlayer) &&
+                !NeutralGroupIncidentUtility.AnyBlockingHostileLord(map, f);
+        }
+
+        protected virtual bool TryResolveParmsGeneral(IncidentParms parms)
+        {
+            Map map = (Map)parms.target;
+            return (parms.spawnCenter.IsValid || RCellFinder.TryFindRandomPawnEntryCell(out parms.spawnCenter, map, CellFinder.EdgeRoadChance_Neutral, false, null)) && (parms.faction != null || CandidateFactions(map, false).TryRandomElement(out parms.faction) || CandidateFactions(map, true).TryRandomElement(out parms.faction));
         }
     }
 }
+

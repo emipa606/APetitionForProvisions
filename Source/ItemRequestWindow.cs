@@ -37,9 +37,9 @@ namespace ItemRequests
         private ThingDef stuffTypeFilter = null;
 
         // For UI layout
-        public static readonly float iconNameAreaWidth = 350;
         private float rightAlignOffset;
         private float rightContentSize;
+        private const float iconNameAreaWidth = 350;
         private const float priceTextAreaWidth = 100;
         private const float colonyItemCountAreaWidth = 100;
         private const float resetItemCountAreaWidth = 40;

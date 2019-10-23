@@ -22,7 +22,7 @@ namespace ItemRequests
             this.chillSpot = chillSpot;
         }
 
-        // TODO: need to close open request if caravan leaves map from other method than fulfilling/attacking
+        // TODO: need to close the open request if caravan leaves map from other method than fulfilling/attacking
         public override StateGraph CreateGraph()
         {
             StateGraph stateGraph = new StateGraph();

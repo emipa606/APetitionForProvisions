@@ -8,19 +8,6 @@ namespace ItemRequests
 {
     class JobDriver_FulfillItemRequestWithFaction : JobDriver
     {
-        //public static JobDef Def
-        //{
-        //    get
-        //    {
-        //        JobDef def = JobDefOf.TradeWithPawn;
-        //        def.defName = "Fulfill Trade Request With Faction";
-        //        def.description = "Talk to the faction you requested items from to pay for the items.";
-        //        def.label = def.defName;                
-                
-        //        return def;
-        //    }
-        //}
-
         private Pawn Trader
         {
             get
@@ -41,6 +28,7 @@ namespace ItemRequests
                 if (Trader.CanTradeNow)
                 {
                     FulfillItemRequestWindow dialog = new FulfillItemRequestWindow(actor, Trader);
+                    dialog.forcePause = true;
                     Find.WindowStack.Add(dialog);
                 }
             };

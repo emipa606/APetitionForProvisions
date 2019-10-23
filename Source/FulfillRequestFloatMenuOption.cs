@@ -6,7 +6,6 @@ using RimWorld;
 using Verse;
 using UnityEngine;
 using Verse.AI;
-using Verse.AI.Group;
 
 namespace ItemRequests
 {
@@ -28,7 +27,6 @@ namespace ItemRequests
                     // not foolproof, but should work in 99% of cases?
                     if (option.Label.Contains("TradeWith".Translate(pTarg.LabelShort + ", " + pTarg.TraderKind.label)) && RequestSession.HasOpenDealWith(pTarg.Faction))
                     {
-                        Log.Message("Option found!");
                         return true;
                     }
                 }
@@ -37,7 +35,6 @@ namespace ItemRequests
 
             if (optToRemove != null)
             {
-                Log.Message("Option removed!");
                 opts.Remove(optToRemove);
 
                 foreach (LocalTargetInfo targetInfo in localTradeTargets)
@@ -55,6 +52,8 @@ namespace ItemRequests
                             PlayerKnowledgeDatabase.KnowledgeDemonstrated(ConceptDefOf.InteractingWithTraders, KnowledgeAmount.Total);
                         };
 
+                        // TODO: add a (reserved by XXX) to the end of string
+                        // (see FloatMenuUtility.DecoratePrioritizedTask)
                         Thing thing = localTargetInfo.Thing;
                         string label = "Pay for requested items from " + pTarg.Faction.Name;
                         MenuOptionPriority priority = MenuOptionPriority.InitiateSocial;

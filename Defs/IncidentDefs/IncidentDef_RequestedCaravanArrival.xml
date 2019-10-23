@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <IncidentDef>
+    <defName>RequestCaravanArrival</defName>
+    <label>request caravan arrival</label>
+    <workerClass>ItemRequests.IncidentWorker_RequestCaravanArrival</workerClass>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <letterLabel>Request Caravan Arrival</letterLabel>
+    <letterText>A trade caravan carrying the items you requested has arrived. It looks like they have additional items to trade with you as well, once you've purchased the requested items.\n\nTalk to the caravan leader to make your trade. Be careful though, if you don't have enough silver to pay for what you requested you'll anger the faction, which could possibly lead to... undesirable outcomes.</letterText>
+    <letterDef>PositiveEvent</letterDef>
+    <category>FactionArrival</category>
+    <baseChance>4</baseChance>
+  </IncidentDef>
+</Defs>
