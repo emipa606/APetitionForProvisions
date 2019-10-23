@@ -74,6 +74,8 @@ namespace ItemRequests
                 }
             }
 
+            Log.Message("Request caravan has arrived!");
+
             IntVec3 chillSpot;
             Find.LetterStack.ReceiveLetter(DefOf.letterLabel, DefOf.letterText, LetterDefOf.PositiveEvent, list[0], parms.faction, null);
             RCellFinder.TryFindRandomSpotJustOutsideColony(list[0], out chillSpot);

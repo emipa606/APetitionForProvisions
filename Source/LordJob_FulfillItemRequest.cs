@@ -17,11 +17,12 @@ namespace ItemRequests
         private Faction playerFaction => Find.FactionManager.OfPlayer;
 
         public LordJob_FulfillItemRequest(Faction faction, IntVec3 chillSpot)
-        {            
+        {
             this.faction = faction;
             this.chillSpot = chillSpot;
         }
 
+        // TODO: need to close open request if caravan leaves map from other method than fulfilling/attacking
         public override StateGraph CreateGraph()
         {
             StateGraph stateGraph = new StateGraph();
@@ -74,7 +75,7 @@ namespace ItemRequests
             leaveIfTrapped.AddPostAction(new TransitionAction_WakeAll());
             leaveIfTrapped.AddPostAction(new TransitionAction_EndAllJobs());
             stateGraph.AddTransition(leaveIfTrapped);
-                        
+
             Transition fightIfTrapped = new Transition(lordToil_ExitMapActively, lordToil_ExitMapTraderFighting);
             fightIfTrapped.AddTrigger(new Trigger_PawnCanReachMapEdge());
             fightIfTrapped.AddPostAction(new TransitionAction_EndAllJobs());
@@ -114,12 +115,22 @@ namespace ItemRequests
                 lordToil_DefendTraderCaravanPoint
             });
             leaveIfRequestFulfilled.AddTrigger(new Trigger_Memo(MemoOnFulfilled));
-            leaveIfRequestFulfilled.AddPreAction(new TransitionAction_Message("MessageRequestedCaravanLeaving".Translate(faction.Name)));
+            leaveIfRequestFulfilled.AddPreAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));
             leaveIfRequestFulfilled.AddPostAction(new TransitionAction_WakeAll());
             stateGraph.AddTransition(leaveIfRequestFulfilled);
 
-
-            Trigger_TicksPassed ticksPassed = new Trigger_TicksPassed(Rand.Range(37000, 45000));
+            Transition attackIfNotEnoughSilver = new Transition(lordToil_Travel, lordToil_DefendTraderCaravanPoint);
+            attackIfNotEnoughSilver.AddSources(new LordToil[]
+            {
+                lordToil_DefendPoint,
+                lordToil_DefendTraderCaravanPoint
+            });
+            attackIfNotEnoughSilver.AddTrigger(new Trigger_Memo(MemoOnUnfulfilled));
+            attackIfNotEnoughSilver.AddPreAction(new TransitionAction_Message("The traders from " + faction.Name+ " are attacking your colonists!"));
+            attackIfNotEnoughSilver.AddPostAction(new TransitionAction_WakeAll());
+            stateGraph.AddTransition(attackIfNotEnoughSilver);
+            
+            Trigger_TicksPassed ticksPassed = new Trigger_TicksPassed(Rand.Range(25000, 35000));
             TransitionAction_Message actionMessage = new TransitionAction_Message(faction.Name + " has been insulted by your negligence to acknowledge their presence and purchase the items you requested." + addedMessageText);
             if (faction.PlayerRelationKind == FactionRelationKind.Neutral)
             {
@@ -144,7 +155,7 @@ namespace ItemRequests
                 });
                 leaveIfRequestUnfulfilled.AddTrigger(ticksPassed);
                 leaveIfRequestUnfulfilled.AddPreAction(actionMessage);
-                leaveIfRequestUnfulfilled.AddPostAction(new TransitionAction_Message("MessageRequestedCaravanLeaving".Translate(faction.Name)));
+                leaveIfRequestUnfulfilled.AddPostAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));
                 leaveIfRequestUnfulfilled.AddPostAction(new TransitionAction_WakeAll());
 
                 stateGraph.AddTransition(leaveIfRequestUnfulfilled);

@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <JobDef>
+    <defName>FulfillItemRequestWithFaction</defName>
+    <driverClass>ItemRequests.JobDriver_FulfillItemRequestWithFaction</driverClass>
+    <reportString>fulfilling colony's item request with TargetA.</reportString>
+  </JobDef>
+</Defs>

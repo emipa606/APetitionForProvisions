@@ -17,21 +17,21 @@ namespace ItemRequests
         [HarmonyPostfix]
         public static void ModifyTradeOption(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
         {
-            List<LocalTargetInfo> localTargets = GenUI.TargetsAt(clickPos, TargetingParameters.ForTrade(), true).ToList();
+            List<LocalTargetInfo> localTradeTargets = GenUI.TargetsAt(clickPos, TargetingParameters.ForTrade(), true).ToList();
+            if (localTradeTargets.Count == 0) return;
 
             FloatMenuOption optToRemove = opts.Find((option) =>
             {
-                foreach (LocalTargetInfo localTarget in localTargets)
+                foreach (LocalTargetInfo localTarget in localTradeTargets)
                 {
                     Pawn pTarg = (Pawn)localTarget.Thing;
-                    // not foolproof, but will work in 99% of cases
+                    // not foolproof, but should work in 99% of cases?
                     if (option.Label.Contains("TradeWith".Translate(pTarg.LabelShort + ", " + pTarg.TraderKind.label)) && RequestSession.HasOpenDealWith(pTarg.Faction))
                     {
                         Log.Message("Option found!");
                         return true;
                     }
                 }
-                Log.Message("Option not found");
                 return false;
             });
 
@@ -40,7 +40,7 @@ namespace ItemRequests
                 Log.Message("Option removed!");
                 opts.Remove(optToRemove);
 
-                foreach (LocalTargetInfo targetInfo in localTargets)
+                foreach (LocalTargetInfo targetInfo in localTradeTargets)
                 {
                     LocalTargetInfo localTargetInfo = targetInfo;
                     Pawn pTarg = (Pawn)localTargetInfo.Thing;
@@ -49,16 +49,16 @@ namespace ItemRequests
                     {
                         Action takeOrderedJob = delegate ()
                         {
-                            Job job = new Job(JobDriver_FulfillTradeRequestWithFaction.Def, pTarg);
+                            Job job = new Job(ItemRequestsDefOf.FulfillItemRequestWithFaction, pTarg);
                             job.playerForced = true;
                             pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
                             PlayerKnowledgeDatabase.KnowledgeDemonstrated(ConceptDefOf.InteractingWithTraders, KnowledgeAmount.Total);
                         };
 
                         Thing thing = localTargetInfo.Thing;
-                        string label = "FulfillRequestedItemsByTrading".Translate(pTarg.Faction.Name);
+                        string label = "Pay for requested items from " + pTarg.Faction.Name;
                         MenuOptionPriority priority = MenuOptionPriority.InitiateSocial;
-                        opts.Add(FloatMenuUtility.DecoratePrioritizedTask(new FloatMenuOption(label, takeOrderedJob, priority, null, thing), pawn, pTarg, "ReservedBy"));
+                        opts.Add(new FloatMenuOption(label, takeOrderedJob, priority, null, thing));
                     }
                 }
             }

@@ -22,8 +22,10 @@ namespace ItemRequests
         {
             this.playerPawn = playerPawn;
             this.traderPawn = traderPawn;
-            this.requestedItems = RequestSession.GetOpenDealWith(traderPawn.Faction).GetRequestedItems();
+            this.requestedItems = RequestSession.GetOpenDealWith(traderFaction).GetRequestedItems();
         }
+
+        private Faction traderFaction => traderPawn.Faction;
 
         public override Vector2 InitialSize => new Vector2(800, 1000);
 
@@ -79,8 +81,8 @@ namespace ItemRequests
             Text.Anchor = TextAnchor.MiddleRight;
             Rect totalStringRect = new Rect(x, horizontalLineY, contentRect.width - offsetFromRight - contentMargin.x, rowHeight);
             Widgets.Label(totalStringRect, "Total");
-            Rect totalPriceRect = new Rect(contentRect.width - offsetFromRight, horizontalLineY, offsetFromRight, rowHeight);
-            Widgets.Label(totalPriceRect, RequestSession.GetOpenDealWith(traderPawn.Faction).TotalRequestedValue.ToStringMoney("F2"));
+            Rect totalPriceRect = new Rect(contentRect.width - offsetFromRight, horizontalLineY, offsetFromRight - 10, rowHeight);
+            Widgets.Label(totalPriceRect, RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue.ToStringMoney("F2"));
                         
             Text.Anchor = TextAnchor.MiddleLeft;
             Rect closeButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, 100, rowHeight);
@@ -132,7 +134,7 @@ namespace ItemRequests
         {
             Close(true);
 
-            float totalRequestedValue = RequestSession.GetOpenDealWith(traderPawn.Faction).TotalRequestedValue;
+            float totalRequestedValue = RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue;
             if (playerPawn.Map.resourceCounter.Silver < totalRequestedValue)
             {
                 Lord lord = traderPawn.GetLord();
@@ -154,7 +156,7 @@ namespace ItemRequests
                 }
 
                 Log.Message("Trade successful!");
-                traderPawn.Faction.Notify_PlayerTraded(totalRequestedValue, playerPawn);
+                traderFaction.Notify_PlayerTraded(totalRequestedValue, playerPawn);
                 TaleRecorder.RecordTale(TaleDefOf.TradedWith, new object[]
                 {
                         playerPawn,
@@ -164,6 +166,8 @@ namespace ItemRequests
                 Lord lord = traderPawn.GetLord();
                 lord.ReceiveMemo(LordJob_FulfillItemRequest.MemoOnFulfilled);
             }
+
+            RequestSession.CloseOpenDealWith(traderFaction);
         }
     }
 }

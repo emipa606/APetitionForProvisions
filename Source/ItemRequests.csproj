@@ -84,7 +84,8 @@
     <Compile Include="FulfillItemRequestWindow.cs" />
     <Compile Include="FulfillRequestFloatMenuOption.cs" />
     <Compile Include="IncidentWorker_RequestCaravanArrival.cs" />
-    <Compile Include="JobDriver_FulfillTradeRequestWithFaction.cs" />
+    <Compile Include="ItemRequestsDefOf.cs" />
+    <Compile Include="JobDriver_FulfillItemRequestWithFaction.cs" />
     <Compile Include="LordJob_FulfillItemRequest.cs" />
     <Compile Include="RequestAcknowledgedWindow.cs" />
     <Compile Include="RequestSession.cs" />
