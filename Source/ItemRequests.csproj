@@ -98,9 +98,6 @@
     <Compile Include="ThingEntry.cs" />
     <Compile Include="ThingKey.cs" />
     <Compile Include="ThingType.cs" />
-    <Compile Include="Trigger_ColonyLacksSilver.cs" />
-    <Compile Include="Trigger_ColonyNeverTraded.cs" />
-    <Compile Include="Trigger_RequestFulfilled.cs" />
     <Compile Include="Widgets.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
