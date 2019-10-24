@@ -10,13 +10,7 @@ namespace ItemRequests
 {
     class IncidentWorker_RequestCaravanArrival : IncidentWorker
     {
-        protected virtual PawnGroupKindDef PawnGroupKindDef
-        {
-            get
-            {
-                return PawnGroupKindDefOf.Peaceful;
-            }
-        }
+        protected virtual PawnGroupKindDef PawnGroupKindDef => PawnGroupKindDefOf.Trader;
 
         protected bool TryResolveParms(IncidentParms parms)
         {
@@ -76,10 +70,8 @@ namespace ItemRequests
             IntVec3 chillSpot;
             IncidentDef arrival = ItemRequestsDefOf.RequestCaravanArrival;
             Find.LetterStack.ReceiveLetter(arrival.letterLabel, arrival.letterText, arrival.letterDef, list[0], parms.faction);
-            Log.Message(list[0].ToString() + "\n\n" + list[0].Name);
             RCellFinder.TryFindRandomSpotJustOutsideColony(list[0], out chillSpot);
 
-            // Specify actions that happen while caravan is on the map
             LordJob_FulfillItemRequest lordJob = new LordJob_FulfillItemRequest(parms.faction, chillSpot);
             LordMaker.MakeNewLord(parms.faction, lordJob, map, list);
             return true;
@@ -116,7 +108,14 @@ namespace ItemRequests
         protected virtual bool TryResolveParmsGeneral(IncidentParms parms)
         {
             Map map = (Map)parms.target;
-            return (parms.spawnCenter.IsValid || RCellFinder.TryFindRandomPawnEntryCell(out parms.spawnCenter, map, CellFinder.EdgeRoadChance_Neutral, false, null)) && (parms.faction != null || CandidateFactions(map, false).TryRandomElement(out parms.faction) || CandidateFactions(map, true).TryRandomElement(out parms.faction));
+            return (
+                // Set valid spawn point
+                parms.spawnCenter.IsValid || 
+                RCellFinder.TryFindRandomPawnEntryCell(out parms.spawnCenter, map, CellFinder.EdgeRoadChance_Neutral, false, null)
+            ) && 
+            (parms.faction != null || 
+             CandidateFactions(map, false).TryRandomElement(out parms.faction) || 
+             CandidateFactions(map, true).TryRandomElement(out parms.faction));
         }
     }
 }

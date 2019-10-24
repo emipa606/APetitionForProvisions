@@ -671,6 +671,7 @@ namespace ItemRequests
                 Tradeable foundEntry = GetTradeableThingEntry(thing);
                 if (foundEntry == null)
                 {
+                    // TODO: this is happening for items in stockpiles
                     Log.Error("Could not find matching TradeableThingEntry for " + thing.LabelCap);
                     continue;
                 }
@@ -684,8 +685,8 @@ namespace ItemRequests
                 }
             }
 
-            Log.Message("There are " + filteredRequestableItems.Count.ToString() + " requestable items to show for filter " +
-                thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
+            //Log.Message("There are " + filteredRequestableItems.Count.ToString() + " requestable items to show for filter " +
+            //    thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
         }
 
         protected void UpdateAvailableMaterials()
@@ -707,6 +708,11 @@ namespace ItemRequests
         private bool hasMaximumTechLevel(ThingEntry entry, TechLevel tLevel)
         {
             int lvl = (int)entry.def.techLevel;
+            if (lvl > 1)
+            {
+                // Current tech level or one level beneath
+                return lvl <= (int)tLevel && lvl >= ((int)tLevel) - 1;
+            }
             return lvl <= (int)tLevel;
         }
 

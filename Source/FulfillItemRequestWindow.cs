@@ -14,7 +14,8 @@ namespace ItemRequests
         private Pawn playerPawn;
         private Pawn traderPawn;
         private Vector2 scrollPosition = Vector2.zero;
-        private List<RequestItem> requestedItems;        
+        private List<RequestItem> requestedItems;
+        private List<Thing> colonySilver = new List<Thing>();
         private const float offsetFromRight = 100;
         private const float offsetFromBottom = 90;
 
@@ -141,13 +142,13 @@ namespace ItemRequests
             float totalRequestedValue = RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue;
             if (playerPawn.Map.resourceCounter.Silver < totalRequestedValue)
             {
-                Log.Message("Colony didn't have enough silver");
+                Messages.Message("Colony doesn't have enough silver to pay for the items!", MessageTypeDefOf.NegativeEvent, true);
                 Lord lord = traderPawn.GetLord();
                 lord.ReceiveMemo(LordJob_FulfillItemRequest.MemoOnUnfulfilled);
             }
             else
             {
-                ITrader trader = traderPawn as ITrader;
+                ITrader trader = traderPawn as ITrader;// PROBLEM
                 if (trader == null)
                 {
                     Log.Error("Trader pawn unable to be cast to ITrader!");
@@ -157,7 +158,7 @@ namespace ItemRequests
                 foreach (RequestItem requested in requestedItems)
                 {
                     Thing thing = ThingMaker.MakeThing(requested.item.ThingDef, requested.item.StuffDef);
-                    
+                    thing.holdingOwner = (ThingOwner)trader;
 
 
                     trader.GiveSoldThingToPlayer(thing, requested.amount, playerPawn);
@@ -174,9 +175,45 @@ namespace ItemRequests
 
                 Lord lord = traderPawn.GetLord();
                 lord.ReceiveMemo(LordJob_FulfillItemRequest.MemoOnFulfilled);
+                UpdateColonyCurrency(Mathf.RoundToInt(totalRequestedValue));
             }
 
             //RequestSession.CloseOpenDealWith(traderFaction);
+        }
+
+        private void UpdateColonyCurrency(int amountToRemove)
+        {
+            List<SlotGroup> slotGroups = new List<SlotGroup>(playerPawn.Map.haulDestinationManager.AllGroups.ToList());
+            slotGroups.ForEach(group =>
+            {
+                group.HeldThings.ToList().ForEach(thing =>
+                {
+                    if (thing.def == ThingDefOf.Silver)
+                    {
+                        colonySilver.Add(thing);
+                    }
+                });
+            });
+
+            foreach (Thing silver in colonySilver)
+            {
+                int stackCount = silver.stackCount;
+                int remaining = amountToRemove - stackCount;
+                if (remaining > 0)
+                {
+                    //silver.ForceSetStateToUnspawned();
+                    //silver.Discard(true);
+                    Log.Message("Destroying a stack of " + stackCount.ToString() + " silver from colony");
+                    silver.Destroy();
+                    amountToRemove = remaining;
+                }
+                else
+                {
+                    silver.stackCount -= amountToRemove;
+                    Log.Message("Setting silver stack count to " + silver.stackCount.ToString());
+                    break;
+                }
+            }
         }
     }
 }

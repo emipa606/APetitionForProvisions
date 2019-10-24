@@ -25,7 +25,12 @@ namespace ItemRequests
                 {
                     Pawn pTarg = (Pawn)localTarget.Thing;
                     // not foolproof, but should work in 99% of cases?
-                    if (option.Label.Contains("TradeWith".Translate(pTarg.LabelShort + ", " + pTarg.TraderKind.label)) && RequestSession.HasOpenDealWith(pTarg.Faction))
+                    if (
+                        option.Label.Contains("TradeWith".Translate(pTarg.LabelShort + ", " + pTarg.TraderKind.label)) && 
+                        RequestSession.HasOpenDealWith(pTarg.Faction) &&
+                        pTarg.GetTraderCaravanRole() == TraderCaravanRole.Trader &&
+                        pTarg.CanTradeNow
+                       )
                     {
                         return true;
                     }

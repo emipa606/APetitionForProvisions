@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -14,13 +12,15 @@ namespace ItemRequests
         public static readonly string MemoOnUnfulfilled = "TriggerItemRequestUnfulfilled";
         private Faction faction;
         private IntVec3 chillSpot;
-        private Faction playerFaction => Find.FactionManager.OfPlayer;
+        private Faction playerFaction => Faction.OfPlayer;
+        private bool isFactionNeutral => faction.PlayerRelationKind == FactionRelationKind.Neutral;
 
         public LordJob_FulfillItemRequest(Faction faction, IntVec3 chillSpot)
         {
             this.faction = faction;
             this.chillSpot = chillSpot;
         }
+
 
         // TODO: need to close the open request if caravan leaves map from other method than fulfilling/attacking
         public override StateGraph CreateGraph()
@@ -29,46 +29,52 @@ namespace ItemRequests
             string noFulfilledTradeMsg = "Didn't fulfill trade agreement.";
             string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? " They're attacking your colonists out of anger!" : " Relations with your faction have dropped.";
 
-            LordToil_Travel lordToil_Travel = new LordToil_Travel(chillSpot);
-            stateGraph.StartingToil = lordToil_Travel;
+            // ===================
+            //       TOILS
+            // ===================
+            LordToil_Travel moving = new LordToil_Travel(chillSpot);
+            stateGraph.StartingToil = moving;
+            
+            LordToil_DefendPoint defending = new LordToil_DefendTraderCaravan();
+            stateGraph.AddToil(defending);
 
-            LordToil_DefendPoint lordToil_DefendPoint = new LordToil_DefendPoint();
-            stateGraph.AddToil(lordToil_DefendPoint);
+            LordToil_DefendPoint defendingChillPoint = new LordToil_DefendTraderCaravan(chillSpot, 60);
+            stateGraph.AddToil(defendingChillPoint);
 
-            LordToil_DefendPoint lordToil_DefendTraderCaravanPoint = new LordToil_DefendPoint(chillSpot, 60);
-            stateGraph.AddToil(lordToil_DefendTraderCaravanPoint);
+            LordToil_ExitMapAndEscortCarriers exitingAndEscorting = new LordToil_ExitMapAndEscortCarriers();
+            stateGraph.AddToil(exitingAndEscorting);
 
-            LordToil_ExitMapAndEscortCarriers lordToil_ExitMapAndEscortCarriers = new LordToil_ExitMapAndEscortCarriers();
-            stateGraph.AddToil(lordToil_ExitMapAndEscortCarriers);
+            LordToil_ExitMap exiting = new LordToil_ExitMap();
+            stateGraph.AddToil(exiting);
 
-            LordToil_ExitMap lordToil_ExitMap = new LordToil_ExitMap();
-            stateGraph.AddToil(lordToil_ExitMap);
+            LordToil_ExitMap urgentExiting = new LordToil_ExitMap(LocomotionUrgency.Walk, true);
+            stateGraph.AddToil(urgentExiting);
 
-            LordToil_ExitMap lordToil_ExitMapActively = new LordToil_ExitMap(LocomotionUrgency.Walk, true);
-            stateGraph.AddToil(lordToil_ExitMapActively);
+            LordToil_ExitMapTraderFighting exitWhileFighting = new LordToil_ExitMapTraderFighting();
+            stateGraph.AddToil(exitWhileFighting);
 
-            LordToil_ExitMapTraderFighting lordToil_ExitMapTraderFighting = new LordToil_ExitMapTraderFighting();
-            stateGraph.AddToil(lordToil_ExitMapTraderFighting);
-
-            Transition leaveIfDangerousTemp = new Transition(lordToil_Travel, lordToil_ExitMapAndEscortCarriers);
+            // ===================
+            //    TRANSITIONS
+            // ===================
+            Transition leaveIfDangerousTemp = new Transition(moving, exitingAndEscorting);
             leaveIfDangerousTemp.AddSources(new LordToil[]
             {
-                lordToil_DefendPoint,
-                lordToil_DefendTraderCaravanPoint
+                defending,
+                defendingChillPoint
             });
             leaveIfDangerousTemp.AddTrigger(new Trigger_PawnExperiencingDangerousTemperatures());
             leaveIfDangerousTemp.AddPreAction(new TransitionAction_Message("MessageVisitorsDangerousTemperature".Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
             leaveIfDangerousTemp.AddPostAction(new TransitionAction_EndAllJobs());
             stateGraph.AddTransition(leaveIfDangerousTemp);
 
-            Transition leaveIfTrapped = new Transition(lordToil_Travel, lordToil_ExitMapActively);
+            Transition leaveIfTrapped = new Transition(moving, urgentExiting);
             leaveIfTrapped.AddSources(new LordToil[]
             {
-                lordToil_DefendPoint,
-                lordToil_DefendTraderCaravanPoint,
-                lordToil_ExitMapAndEscortCarriers,
-                lordToil_ExitMap,
-                lordToil_ExitMapTraderFighting
+                defending,
+                defendingChillPoint,
+                exitingAndEscorting,
+                exiting,
+                exitWhileFighting
             });
             leaveIfTrapped.AddTrigger(new Trigger_PawnCannotReachMapEdge());
             leaveIfTrapped.AddPostAction(new TransitionAction_Message("MessageVisitorsTrappedLeaving".Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
@@ -76,111 +82,118 @@ namespace ItemRequests
             leaveIfTrapped.AddPostAction(new TransitionAction_EndAllJobs());
             stateGraph.AddTransition(leaveIfTrapped);
 
-            Transition fightIfTrapped = new Transition(lordToil_ExitMapActively, lordToil_ExitMapTraderFighting);
+            Transition fightIfTrapped = new Transition(urgentExiting, exitWhileFighting);
             fightIfTrapped.AddTrigger(new Trigger_PawnCanReachMapEdge());
             fightIfTrapped.AddPostAction(new TransitionAction_EndAllJobs());
             stateGraph.AddTransition(fightIfTrapped);
 
-            Transition fightIfFractionPawnsLost = new Transition(lordToil_Travel, lordToil_ExitMapTraderFighting);
+            Transition fightIfFractionPawnsLost = new Transition(moving, exitWhileFighting);
             fightIfFractionPawnsLost.AddSources(new LordToil[]
             {
-                lordToil_DefendPoint,
-                lordToil_DefendTraderCaravanPoint,
-                lordToil_ExitMapAndEscortCarriers,
-                lordToil_ExitMap
+                defending,
+                defendingChillPoint,
+                exitingAndEscorting,
+                exiting
             });
             fightIfFractionPawnsLost.AddTrigger(new Trigger_FractionPawnsLost(0.2f));
             fightIfFractionPawnsLost.AddPostAction(new TransitionAction_EndAllJobs());
             stateGraph.AddTransition(fightIfFractionPawnsLost);
 
-            Transition defendIfPawnHarmed = new Transition(lordToil_Travel, lordToil_DefendPoint);
+            Transition defendIfPawnHarmed = new Transition(moving, defending);
             defendIfPawnHarmed.AddTrigger(new Trigger_PawnHarmed());
             defendIfPawnHarmed.AddPreAction(new TransitionAction_SetDefendTrader());
             defendIfPawnHarmed.AddPostAction(new TransitionAction_WakeAll());
             defendIfPawnHarmed.AddPostAction(new TransitionAction_EndAllJobs());
             stateGraph.AddTransition(defendIfPawnHarmed);
 
-            Transition returnToNormalAfterTimePasses = new Transition(lordToil_DefendPoint, lordToil_Travel);
+            Transition returnToNormalAfterTimePasses = new Transition(defending, moving);
             returnToNormalAfterTimePasses.AddTrigger(new Trigger_TicksPassedWithoutHarm(1200));
             stateGraph.AddTransition(returnToNormalAfterTimePasses);
 
-            Transition defendIfMemoReceived = new Transition(lordToil_Travel, lordToil_DefendTraderCaravanPoint);
-            defendIfMemoReceived.AddTrigger(new Trigger_Memo("TravelArrived"));
-            stateGraph.AddTransition(defendIfMemoReceived);
+            Transition stayPutAtSpot = new Transition(moving, defendingChillPoint);
+            stayPutAtSpot.AddTrigger(new Trigger_Memo("TravelArrived"));
+            stateGraph.AddTransition(stayPutAtSpot);
 
-            Transition leaveIfRequestFulfilled = new Transition(lordToil_Travel, lordToil_ExitMapAndEscortCarriers);
+            Transition leaveIfRequestFulfilled = new Transition(moving, exitingAndEscorting);
             leaveIfRequestFulfilled.AddSources(new LordToil[]
             {
-                lordToil_DefendPoint,
-                lordToil_DefendTraderCaravanPoint
+                defending,
+                defendingChillPoint
             });
             leaveIfRequestFulfilled.AddTrigger(new Trigger_Memo(MemoOnFulfilled));
             leaveIfRequestFulfilled.AddPreAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));
             leaveIfRequestFulfilled.AddPostAction(new TransitionAction_WakeAll());
             stateGraph.AddTransition(leaveIfRequestFulfilled);
-
-            Transition attackIfNotEnoughSilver = new Transition(lordToil_Travel, lordToil_DefendTraderCaravanPoint);
-            attackIfNotEnoughSilver.AddSources(new LordToil[]
-            {
-                lordToil_DefendPoint,
-                lordToil_DefendTraderCaravanPoint
-            });
-            attackIfNotEnoughSilver.AddTrigger(new Trigger_Memo(MemoOnUnfulfilled));
-            attackIfNotEnoughSilver.AddPreAction(new TransitionAction_Message("The traders from " + faction.Name+ " are attacking your colonists!"));
-            attackIfNotEnoughSilver.AddPostAction(new TransitionAction_WakeAll());
-            stateGraph.AddTransition(attackIfNotEnoughSilver);
-            
+                        
+            // Determine actions if request goes unfulfilled based on faction relation
             Trigger_TicksPassed ticksPassed = new Trigger_TicksPassed(Rand.Range(25000, 35000));
-            TransitionAction_Message actionMessage = new TransitionAction_Message(faction.Name + " has been insulted by your negligence to acknowledge their presence and purchase the items you requested." + addedMessageText);
-            if (faction.PlayerRelationKind == FactionRelationKind.Neutral)
+            TransitionAction_Message actionMessage = new TransitionAction_Message(faction.Name + " has been insulted by your negligence to acknowledge their presence.\n" + addedMessageText);
+            if (isFactionNeutral)
             {
-                Transition attackIfRequestUnfulfilled = new Transition(lordToil_DefendTraderCaravanPoint, lordToil_ExitMapTraderFighting);
+                Action setFactionToHostile = () => faction.TrySetRelationKind(playerFaction, FactionRelationKind.Hostile, true, noFulfilledTradeMsg);
+
+                Transition attackIfNotEnoughSilver = new Transition(moving, defendingChillPoint, true);
+                attackIfNotEnoughSilver.AddSources(new LordToil[]
+                {
+                    defending,
+                    defendingChillPoint,
+                    exiting,
+                    exitingAndEscorting
+                });
+                attackIfNotEnoughSilver.AddTrigger(new Trigger_Memo(MemoOnUnfulfilled));
+                attackIfNotEnoughSilver.AddPreAction(new TransitionAction_Message("The traders from " + faction.Name + " are attacking your colonists!"));
+                attackIfNotEnoughSilver.AddPreAction(new TransitionAction_Custom(setFactionToHostile));
+                attackIfNotEnoughSilver.AddPostAction(new TransitionAction_WakeAll());
+                attackIfNotEnoughSilver.AddPostAction(new TransitionAction_SetDefendLocalGroup());
+                stateGraph.AddTransition(attackIfNotEnoughSilver);
+
+                Transition attackIfRequestUnfulfilled = new Transition(defendingChillPoint, exitWhileFighting);
                 attackIfRequestUnfulfilled.AddTrigger(ticksPassed);
                 attackIfRequestUnfulfilled.AddPreAction(actionMessage);
-                attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_WakeAll());
-                attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_SetDefendTrader()); // will this work..?
-                faction.TrySetRelationKind(playerFaction, FactionRelationKind.Hostile, true, noFulfilledTradeMsg);
+                attackIfRequestUnfulfilled.AddPreAction(new TransitionAction_Custom(setFactionToHostile));
+                attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_WakeAll());                
+                attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_SetDefendLocalGroup());
 
                 stateGraph.AddTransition(attackIfRequestUnfulfilled, true);
             }
             else
             {
-                faction.TryAffectGoodwillWith(playerFaction, -30, true, false, noFulfilledTradeMsg);
-
-                Transition leaveIfRequestUnfulfilled = new Transition(lordToil_Travel, lordToil_ExitMapAndEscortCarriers);
+                Transition leaveIfRequestUnfulfilled = new Transition(moving, exitingAndEscorting);
                 leaveIfRequestUnfulfilled.AddSources(new LordToil[]
                 {
-                    lordToil_DefendPoint,
-                    lordToil_DefendTraderCaravanPoint
+                    defending,
+                    defendingChillPoint
                 });
+                leaveIfRequestUnfulfilled.AddTrigger(new Trigger_Memo(MemoOnUnfulfilled));
                 leaveIfRequestUnfulfilled.AddTrigger(ticksPassed);
                 leaveIfRequestUnfulfilled.AddPreAction(actionMessage);
+                leaveIfRequestUnfulfilled.AddPreAction(new TransitionAction_Custom(() =>
+                {
+                    faction.TryAffectGoodwillWith(playerFaction, -30, true, false, noFulfilledTradeMsg);
+                }));
                 leaveIfRequestUnfulfilled.AddPostAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));
                 leaveIfRequestUnfulfilled.AddPostAction(new TransitionAction_WakeAll());
 
                 stateGraph.AddTransition(leaveIfRequestUnfulfilled);
             }
 
-
-            Transition continueToLeaveMap = new Transition(lordToil_ExitMapAndEscortCarriers, lordToil_ExitMapAndEscortCarriers, true, true);
-            continueToLeaveMap.canMoveToSameState = true;
+            Transition continueToLeaveMap = new Transition(exitingAndEscorting, exitingAndEscorting, true);                        
             continueToLeaveMap.AddTrigger(new Trigger_PawnLost());
-            continueToLeaveMap.AddTrigger(new Trigger_TickCondition(() => LordToil_ExitMapAndEscortCarriers.IsAnyDefendingPosition(lord.ownedPawns) && !GenHostility.AnyHostileActiveThreatTo(base.Map, faction), 60));
+            continueToLeaveMap.AddTrigger(new Trigger_TickCondition(() => LordToil_ExitMapAndEscortCarriers.IsAnyDefendingPosition(lord.ownedPawns) && !GenHostility.AnyHostileActiveThreatTo(Map, faction), 60));
             stateGraph.AddTransition(continueToLeaveMap);
 
-            Transition finishLeavingMap = new Transition(lordToil_ExitMapAndEscortCarriers, lordToil_ExitMap);
+            Transition finishLeavingMap = new Transition(exitingAndEscorting, exiting);
             finishLeavingMap.AddTrigger(new Trigger_TicksPassed(60000));
             finishLeavingMap.AddPostAction(new TransitionAction_WakeAll());
             stateGraph.AddTransition(finishLeavingMap);
 
-            Transition leaveIfBadThingsHappen = new Transition(lordToil_DefendTraderCaravanPoint, lordToil_ExitMapAndEscortCarriers);
+            Transition leaveIfBadThingsHappen = new Transition(defendingChillPoint, exitingAndEscorting);
             leaveIfBadThingsHappen.AddSources(new LordToil[]
             {
-                lordToil_Travel,
-                lordToil_DefendPoint
+                moving,
+                defending
             });
             leaveIfBadThingsHappen.AddTrigger(new Trigger_ImportantTraderCaravanPeopleLost());
-            //leaveIfBadThingsHappen.AddTrigger(new Trigger_BecamePlayerEnemy());
             leaveIfBadThingsHappen.AddPostAction(new TransitionAction_WakeAll());
             leaveIfBadThingsHappen.AddPostAction(new TransitionAction_EndAllJobs());
             stateGraph.AddTransition(leaveIfBadThingsHappen);
@@ -189,8 +202,48 @@ namespace ItemRequests
         }
         public override void ExposeData()
         {
-            Scribe_References.Look<Faction>(ref this.faction, "faction", false);
-            Scribe_Values.Look<IntVec3>(ref this.chillSpot, "chillSpot", default(IntVec3), false);
+            Scribe_References.Look(ref faction, "faction", false);
+            Scribe_Values.Look(ref chillSpot, "chillSpot", default(IntVec3), false);
+        }
+
+        public override bool AddFleeToil => false;
+    }
+
+    public class LordToil_DefendTraderCaravan : LordToil_DefendPoint
+    {
+        public LordToil_DefendTraderCaravan() : base(true) {}
+        public LordToil_DefendTraderCaravan(IntVec3 defendPoint, float defendRadius) : base(defendPoint, defendRadius) {}
+
+        public override bool AllowSatisfyLongNeeds => false;
+        public override float? CustomWakeThreshold => new float?(0.5f);
+
+        public override void UpdateAllDuties()
+        {
+            LordToilData_DefendPoint data = Data;
+            Pawn pawn = TraderCaravanUtility.FindTrader(lord);
+            if (pawn != null)
+            {
+                pawn.mindState.duty = new PawnDuty(DutyDefOf.Defend, data.defendPoint, data.defendRadius);
+                for (int i = 0; i < lord.ownedPawns.Count; i++)
+                {
+                    Pawn pawn2 = lord.ownedPawns[i];
+                    switch (pawn2.GetTraderCaravanRole())
+                    {
+                        case TraderCaravanRole.Carrier:
+                            pawn2.mindState.duty = new PawnDuty(DutyDefOf.Follow, pawn, 5f);
+                            pawn2.mindState.duty.locomotion = LocomotionUrgency.Walk;
+                            break;
+                        case TraderCaravanRole.Guard:
+                            pawn2.mindState.duty = new PawnDuty(DutyDefOf.Defend, data.defendPoint, data.defendRadius);
+                            break;
+                        case TraderCaravanRole.Chattel:
+                            pawn2.mindState.duty = new PawnDuty(DutyDefOf.Escort, pawn, 5f);
+                            pawn2.mindState.duty.locomotion = LocomotionUrgency.Walk;
+                            break;
+                    }
+                }
+                return;
+            }
         }
     }
 
