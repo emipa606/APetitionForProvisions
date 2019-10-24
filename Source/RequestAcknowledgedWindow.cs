@@ -56,6 +56,6 @@ namespace ItemRequests
             GUI.EndGroup();
         }
 
-        public override Vector2 InitialSize => new Vector2(450, 475);
+        public override Vector2 InitialSize => new Vector2(500, 500);
     }
 }

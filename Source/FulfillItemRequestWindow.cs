@@ -80,9 +80,9 @@ namespace ItemRequests
 
             // Draw total
             Text.Anchor = TextAnchor.MiddleRight;
-            Rect totalStringRect = new Rect(x, horizontalLineY, scrollRect.width - offsetFromRight - contentMargin.x, rowHeight);
+            Rect totalStringRect = new Rect(scrollRect.width - offsetFromRight - 150, horizontalLineY, 140, rowHeight);
             Widgets.Label(totalStringRect, "Total");            
-            Widgets.DrawLineVertical(scrollRect.width - offsetFromRight, 0, rowHeight);
+            Widgets.DrawLineVertical(scrollRect.width - offsetFromRight, horizontalLineY, rowHeight);
             Rect totalPriceRect = new Rect(scrollRect.width - offsetFromRight, horizontalLineY, offsetFromRight - 10, rowHeight);
             Widgets.Label(totalPriceRect, RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue.ToStringMoney("F2"));
                         
@@ -114,11 +114,13 @@ namespace ItemRequests
             float iconSize = 27;
             Text.Anchor = TextAnchor.MiddleLeft;
             Rect iconArea = new Rect(x, 0, iconSize, iconSize);
+
+            // TODO: Doesn't draw the item with correct material
             Widgets.ThingIcon(iconArea, requested.item.AnyThing.def);
 
             x += iconSize * (iconSize / 2);
 
-            // Draw item name
+            // TODO: Draw item name
             Rect itemNameArea = new Rect(x, 0, rowRect.width - offsetFromRight - x, rowRect.height);
             string itemTitle = requested.item.AnyThing.LabelCapNoCount + " x" + requested.amount;
             Widgets.Label(itemNameArea, itemTitle);
@@ -136,8 +138,7 @@ namespace ItemRequests
     
         private void CloseButtonPressed()
         {
-            Close(true);
-            Log.Message("close button pressed");
+            Close(true);            
 
             float totalRequestedValue = RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue;
             if (playerPawn.Map.resourceCounter.Silver < totalRequestedValue)
@@ -148,7 +149,7 @@ namespace ItemRequests
             }
             else
             {
-                ITrader trader = traderPawn as ITrader;// PROBLEM
+                ITrader trader = traderPawn as ITrader;             
                 if (trader == null)
                 {
                     Log.Error("Trader pawn unable to be cast to ITrader!");
@@ -157,15 +158,17 @@ namespace ItemRequests
 
                 foreach (RequestItem requested in requestedItems)
                 {
+                    Log.Message("Giving " + requested.item.LabelCap + " x" + requested.amount + " to player");
+
+                    // TODO: make item actuall spawn
                     Thing thing = ThingMaker.MakeThing(requested.item.ThingDef, requested.item.StuffDef);
-                    thing.holdingOwner = (ThingOwner)trader;
+                    thing.stackCount = requested.amount;
+                    thing.holdingOwner = trader as ThingOwner;
 
 
                     trader.GiveSoldThingToPlayer(thing, requested.amount, playerPawn);
-                    Log.Message("Just gave " + thing.LabelCapNoCount + " x" + requested.amount + " to player");
                 }
 
-                Log.Message("Trade successful!");
                 traderFaction.Notify_PlayerTraded(totalRequestedValue, playerPawn);
                 TaleRecorder.RecordTale(TaleDefOf.TradedWith, new object[]
                 {
@@ -178,7 +181,7 @@ namespace ItemRequests
                 UpdateColonyCurrency(Mathf.RoundToInt(totalRequestedValue));
             }
 
-            //RequestSession.CloseOpenDealWith(traderFaction);
+            RequestSession.CloseOpenDealWith(traderFaction);
         }
 
         private void UpdateColonyCurrency(int amountToRemove)
@@ -200,17 +203,13 @@ namespace ItemRequests
                 int stackCount = silver.stackCount;
                 int remaining = amountToRemove - stackCount;
                 if (remaining > 0)
-                {
-                    //silver.ForceSetStateToUnspawned();
-                    //silver.Discard(true);
-                    Log.Message("Destroying a stack of " + stackCount.ToString() + " silver from colony");
+                {                 
                     silver.Destroy();
                     amountToRemove = remaining;
                 }
                 else
                 {
-                    silver.stackCount -= amountToRemove;
-                    Log.Message("Setting silver stack count to " + silver.stackCount.ToString());
+                    silver.stackCount -= amountToRemove;                 
                     break;
                 }
             }

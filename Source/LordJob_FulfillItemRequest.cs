@@ -27,7 +27,7 @@ namespace ItemRequests
         {
             StateGraph stateGraph = new StateGraph();
             string noFulfilledTradeMsg = "Didn't fulfill trade agreement.";
-            string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? " They're attacking your colonists out of anger!" : " Relations with your faction have dropped.";
+            string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? "They're attacking your colonists out of anger!" : "Relations with your faction have dropped.";
 
             // ===================
             //       TOILS
@@ -132,7 +132,7 @@ namespace ItemRequests
             {
                 Action setFactionToHostile = () => faction.TrySetRelationKind(playerFaction, FactionRelationKind.Hostile, true, noFulfilledTradeMsg);
 
-                Transition attackIfNotEnoughSilver = new Transition(moving, defendingChillPoint, true);
+                Transition attackIfNotEnoughSilver = new Transition(moving, defending, true);
                 attackIfNotEnoughSilver.AddSources(new LordToil[]
                 {
                     defending,
@@ -145,7 +145,7 @@ namespace ItemRequests
                 attackIfNotEnoughSilver.AddPreAction(new TransitionAction_Custom(setFactionToHostile));
                 attackIfNotEnoughSilver.AddPostAction(new TransitionAction_WakeAll());
                 attackIfNotEnoughSilver.AddPostAction(new TransitionAction_SetDefendLocalGroup());
-                stateGraph.AddTransition(attackIfNotEnoughSilver);
+                stateGraph.AddTransition(attackIfNotEnoughSilver, true);
 
                 Transition attackIfRequestUnfulfilled = new Transition(defendingChillPoint, exitWhileFighting);
                 attackIfRequestUnfulfilled.AddTrigger(ticksPassed);
@@ -155,6 +155,12 @@ namespace ItemRequests
                 attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_SetDefendLocalGroup());
 
                 stateGraph.AddTransition(attackIfRequestUnfulfilled, true);
+
+                Transition leaveAfterAttacking = new Transition(defendingChillPoint, exitWhileFighting);
+                leaveAfterAttacking.AddTrigger(new Trigger_TicksPassedAndNoRecentHarm(10000));
+                leaveAfterAttacking.AddPreAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));
+                leaveAfterAttacking.AddPostAction(new TransitionAction_EndAllJobs());
+                stateGraph.AddTransition(leaveAfterAttacking);
             }
             else
             {
