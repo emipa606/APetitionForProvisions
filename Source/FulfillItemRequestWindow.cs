@@ -158,15 +158,13 @@ namespace ItemRequests
 
                 foreach (RequestItem requested in requestedItems)
                 {
-                    Log.Message("Giving " + requested.item.LabelCap + " x" + requested.amount + " to player");
-
-                    // TODO: make item actuall spawn
                     Thing thing = ThingMaker.MakeThing(requested.item.ThingDef, requested.item.StuffDef);
                     thing.stackCount = requested.amount;
-                    thing.holdingOwner = trader as ThingOwner;
 
-
-                    trader.GiveSoldThingToPlayer(thing, requested.amount, playerPawn);
+                    if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
+                    {
+                        Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                    }
                 }
 
                 traderFaction.Notify_PlayerTraded(totalRequestedValue, playerPawn);
