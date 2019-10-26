@@ -75,15 +75,15 @@ namespace ItemRequests
 
             Widgets.EndScrollView();
 
-            float horizontalLineY = inRect.height - offsetFromBottom;
+            float horizontalLineY = mainRect.y + mainRect.height;
             Widgets.DrawLineHorizontal(x, horizontalLineY, inRect.width - contentMargin.x * 2);
 
             // Draw total
             Text.Anchor = TextAnchor.MiddleRight;
-            Rect totalStringRect = new Rect(scrollRect.width - offsetFromRight - 150, horizontalLineY, 140, rowHeight);
+            Rect totalStringRect = new Rect(mainRect.width - offsetFromRight - 150, horizontalLineY, 140, rowHeight);
             Widgets.Label(totalStringRect, "Total");            
-            Widgets.DrawLineVertical(scrollRect.width - offsetFromRight, horizontalLineY, rowHeight);
-            Rect totalPriceRect = new Rect(scrollRect.width - offsetFromRight, horizontalLineY, offsetFromRight - 10, rowHeight);
+            Widgets.DrawLineVertical(mainRect.width - offsetFromRight, horizontalLineY, rowHeight);
+            Rect totalPriceRect = new Rect(mainRect.width - offsetFromRight, horizontalLineY, offsetFromRight, rowHeight);
             Widgets.Label(totalPriceRect, RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue.ToStringMoney("F2"));
                         
             Text.Anchor = TextAnchor.MiddleLeft;
@@ -114,8 +114,7 @@ namespace ItemRequests
             float iconSize = 27;
             Text.Anchor = TextAnchor.MiddleLeft;
             Rect iconArea = new Rect(x, 0, iconSize, iconSize);
-
-            // TODO: Doesn't draw the item with correct material
+            
             Widgets.ThingIcon(iconArea, requested.item.FirstThingTrader);
 
             x += iconSize + (iconSize / 4);

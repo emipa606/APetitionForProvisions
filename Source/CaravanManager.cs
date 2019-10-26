@@ -14,7 +14,7 @@ namespace ItemRequests
             incidentParms.faction = faction;            
             incidentParms.target = playerMap;
             incidentParms.forced = true;            
-            incidentParms.traderKind = faction.def.caravanTraderKinds.RandomElement();            
+            incidentParms.traderKind = faction.def.caravanTraderKinds.RandomElement();
 
             int variableTravelTime = DetermineJourneyTime(faction, playerMap);
             Find.Storyteller.incidentQueue.Add(ItemRequestsDefOf.RequestCaravanArrival, Find.TickManager.TicksGame + variableTravelTime, incidentParms, 240000);
@@ -41,13 +41,12 @@ namespace ItemRequests
             if (factionBase == 0)
             {
                 factionBase = Mathf.Max(factionBase1, factionBase2);
-            }
-
-            if (factionBase == 0)
-            {
-                Log.Error("Couldn't find faction base within " + radius.ToString() + " tiles");
-                // Default travel time 3.5 days
-                return Mathf.FloorToInt(3.5f * fullDay);
+                if (factionBase == 0)
+                {
+                    Log.Error("Couldn't find faction base within " + radius.ToString() + " tiles");
+                    // Default travel time 3.5 days
+                    return Mathf.FloorToInt(3.5f * fullDay);
+                }
             }
 
             int ticks = CaravanArrivalTimeEstimator.EstimatedTicksToArrive(
@@ -59,7 +58,8 @@ namespace ItemRequests
                 GenTicks.TicksAbs
             );
 
-            Log.Message("It will take " + (ticks/fullDay).ToString() + " ticks to reach you");
+            //Log.Message("It will take " + (ticks/fullDay).ToString() + " days to reach you");
+
             return ticks;
         }
     }
