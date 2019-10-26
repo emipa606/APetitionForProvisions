@@ -52,6 +52,8 @@ namespace ItemRequests
             this.faction = faction;
             this.negotiator = negotiator;
             this.colonySilver = map.resourceCounter.Silver;
+            this.absorbInputAroundWindow = true;
+            this.forcePause = true;
 
             // Find all items in stockpiles and store counts in dictionary
             List<SlotGroup> slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
@@ -329,25 +331,39 @@ namespace ItemRequests
             Rect confirmButtonRect = new Rect(inRect.width - AcceptButtonSize.x, inRect.height - AcceptButtonSize.y, AcceptButtonSize.x, AcceptButtonSize.y);
             if (Widgets.ButtonText(confirmButtonRect, "Confirm", true, false, true))
             {
-                bool success;
-                if (RequestSession.deal.TryExecute(colonySilver, out success))
+                Action onConfirmed = () =>
                 {
-                    if (success)
+                    bool success;
+                    if (RequestSession.deal.TryExecute(colonySilver, out success))
                     {
-                        SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
-                        Find.WindowStack.Add(new RequestAcknowledgedWindow(faction, () =>
+                        if (success)
                         {
-                            Close(false);
+                            SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
+                            Find.WindowStack.Add(new RequestAcknowledgedWindow(faction, () =>
+                            {
+                                Close(false);
+                                RequestSession.CloseSession();
+                                CaravanManager.SendRequestedCaravan(faction, map);
+                            }));
+                        }
+                        else
+                        {
+                            Close(true);
+                            Messages.Message("The request was declined", MessageTypeDefOf.CautionInput, false);
                             RequestSession.CloseSession();
-                            CaravanManager.SendRequestedCaravan(faction, map);
-                        }));
+                        }
                     }
-                    else
-                    {
-                        Close(true);
-                        Messages.Message("The request was declined", MessageTypeDefOf.NegativeEvent, false);
-                        RequestSession.CloseSession();
-                    }
+                };
+                Action onCancelled = () => {};
+                
+
+                if (colonySilver < RequestSession.deal.TotalRequestedValue)
+                {
+                    Find.WindowStack.Add(new ConfirmRequestWindow(onConfirmed, onCancelled));
+                }
+                else
+                {
+                    onConfirmed();
                 }
             }
 
@@ -359,15 +375,6 @@ namespace ItemRequests
                 RequestSession.CloseOpenDealWith(faction);
                 RequestSession.CloseSession();
             }
-
-            // Reset button isn't working properly rn and I don't want to spend
-            // more time trying to debug it :)
-            //Rect resetButtonRect = new Rect(rowRect.x + cancelButtonRect.width + 10, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
-            //if (Widgets.ButtonText(resetButtonRect, "Reset", true, false, true))
-            //{
-            //    SoundDefOf.Tick_Low.PlayOneShotOnCamera(null);
-            //    RequestSession.deal.Reset();
-            //}
         }
 
         public void DrawTradeableRow(Rect rowRect, Tradeable trade, int index)
@@ -715,6 +722,68 @@ namespace ItemRequests
             }
             return lvl <= (int)tLevel;
         }
+    }
 
+
+    public class ConfirmRequestWindow : Window
+    {
+        private Action onConfirm;
+        private Action onCancel;
+        public override Vector2 InitialSize => new Vector2(500, 500);
+
+        public ConfirmRequestWindow(Action onConfirm, Action onCancel) {
+            this.onConfirm = onConfirm;
+            this.onCancel = onCancel;
+            this.absorbInputAroundWindow = true;
+        }
+
+        public override void DoWindowContents(Rect inRect)
+        {
+            Vector2 contentMargin = new Vector2(10, 18);
+            string title = "Are you sure?";
+            string message = "Your colony doesn't currently have enough silver to buy the requested items. " +
+                "You can still request them of course, praying to your gods that they smile upon your colony " +
+                "and provide it with the funds your poor settlement lacks.";
+            string confirmString = "I know what I'm doing";
+            string cancelString = "On second thought...";
+
+            GUI.BeginGroup(inRect);
+
+            inRect = inRect.AtZero();
+            float x = contentMargin.x;
+            float headerRowHeight = 35f;
+            Rect headerRowRect = new Rect(x, contentMargin.y, inRect.width - x, headerRowHeight);
+            Rect titleArea = new Rect(x, 0, headerRowRect.width, headerRowRect.height);
+            Text.Anchor = TextAnchor.UpperLeft;
+            Text.Font = GameFont.Medium;
+            Widgets.Label(titleArea, title);
+
+            Text.Font = GameFont.Small;
+            Rect messageAreaRect = new Rect(x, headerRowRect.y + headerRowRect.height + 30, inRect.width - x * 2, inRect.height - contentMargin.y * 2 - headerRowRect.height);
+            Widgets.Label(messageAreaRect, message);
+
+            float closeButtonHeight = 30;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Rect confirmButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, 300, closeButtonHeight);
+
+            if (Widgets.ButtonText(confirmButtonArea, confirmString, false))
+            {
+                Close(true);
+                onConfirm();
+            }
+
+            Text.Anchor = TextAnchor.MiddleRight;
+            Rect cancelButtonArea = new Rect(inRect.width - contentMargin.x - 200, confirmButtonArea.y, 200, closeButtonHeight);
+            if (Widgets.ButtonText(cancelButtonArea, cancelString, false))
+            {
+                Close(false);
+                onCancel();
+            }
+
+            GenUI.ResetLabelAlign();
+            GUI.EndGroup();
+
+            GUI.EndGroup();
+        }
     }
 }

@@ -14,6 +14,7 @@ namespace ItemRequests
         {
             this.faction = faction;
             this.onClose = doOnClose;
+            this.absorbInputAroundWindow = true;
         }
 
         public override void DoWindowContents(Rect inRect)

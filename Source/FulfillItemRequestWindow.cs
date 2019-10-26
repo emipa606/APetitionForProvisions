@@ -116,11 +116,10 @@ namespace ItemRequests
             Rect iconArea = new Rect(x, 0, iconSize, iconSize);
 
             // TODO: Doesn't draw the item with correct material
-            Widgets.ThingIcon(iconArea, requested.item.AnyThing.def);
+            Widgets.ThingIcon(iconArea, requested.item.FirstThingTrader);
 
-            x += iconSize * (iconSize / 2);
+            x += iconSize + (iconSize / 4);
 
-            // TODO: Draw item name
             Rect itemNameArea = new Rect(x, 0, rowRect.width - offsetFromRight - x, rowRect.height);
             string itemTitle = requested.item.AnyThing.LabelCapNoCount + " x" + requested.amount;
             Widgets.Label(itemNameArea, itemTitle);
