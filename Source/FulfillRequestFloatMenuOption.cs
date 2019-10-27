@@ -56,11 +56,14 @@ namespace ItemRequests
                             pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
                             PlayerKnowledgeDatabase.KnowledgeDemonstrated(ConceptDefOf.InteractingWithTraders, KnowledgeAmount.Total);
                         };
-
-                        // TODO: add a (reserved by XXX) to the end of string
-                        // (see FloatMenuUtility.DecoratePrioritizedTask)
-                        Thing thing = localTargetInfo.Thing;
+                        
+                        Pawn reservedBy = pawn.Map.reservationManager.FirstRespectedReserver(pTarg, pawn);
                         string label = "Pay for requested items from " + pTarg.Faction.Name;
+                        if (reservedBy != null)
+                        {
+                            label += " (Reserved by " + reservedBy.LabelShort + ")";
+                        }
+                        Thing thing = localTargetInfo.Thing;
                         MenuOptionPriority priority = MenuOptionPriority.InitiateSocial;
                         opts.Add(new FloatMenuOption(label, takeOrderedJob, priority, null, thing));
                     }

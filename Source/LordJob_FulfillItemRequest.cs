@@ -20,14 +20,13 @@ namespace ItemRequests
             this.faction = faction;
             this.chillSpot = chillSpot;
         }
-
-
-        // TODO: need to close the open request if caravan leaves map from other method than fulfilling/attacking
+        
         public override StateGraph CreateGraph()
         {
             StateGraph stateGraph = new StateGraph();
             string noFulfilledTradeMsg = "Didn't fulfill trade agreement.";
             string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? "They're attacking your colonists out of anger!" : "Relations with your faction have dropped.";
+            TransitionAction_Custom clearCaravanRequest = new TransitionAction_Custom(() => { RequestSession.CloseOpenDealWith(faction); });
 
             // ===================
             //       TOILS
@@ -65,6 +64,7 @@ namespace ItemRequests
             leaveIfDangerousTemp.AddTrigger(new Trigger_PawnExperiencingDangerousTemperatures());
             leaveIfDangerousTemp.AddPreAction(new TransitionAction_Message("MessageVisitorsDangerousTemperature".Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
             leaveIfDangerousTemp.AddPostAction(new TransitionAction_EndAllJobs());
+            leaveIfDangerousTemp.AddPostAction(clearCaravanRequest);
             stateGraph.AddTransition(leaveIfDangerousTemp);
 
             Transition leaveIfTrapped = new Transition(moving, urgentExiting);
@@ -80,11 +80,13 @@ namespace ItemRequests
             leaveIfTrapped.AddPostAction(new TransitionAction_Message("MessageVisitorsTrappedLeaving".Translate(faction.def.pawnsPlural.CapitalizeFirst(), faction.Name)));
             leaveIfTrapped.AddPostAction(new TransitionAction_WakeAll());
             leaveIfTrapped.AddPostAction(new TransitionAction_EndAllJobs());
+            leaveIfTrapped.AddPostAction(clearCaravanRequest);
             stateGraph.AddTransition(leaveIfTrapped);
 
             Transition fightIfTrapped = new Transition(urgentExiting, exitWhileFighting);
             fightIfTrapped.AddTrigger(new Trigger_PawnCanReachMapEdge());
             fightIfTrapped.AddPostAction(new TransitionAction_EndAllJobs());
+            fightIfTrapped.AddPostAction(clearCaravanRequest);
             stateGraph.AddTransition(fightIfTrapped);
 
             Transition fightIfFractionPawnsLost = new Transition(moving, exitWhileFighting);
@@ -97,6 +99,7 @@ namespace ItemRequests
             });
             fightIfFractionPawnsLost.AddTrigger(new Trigger_FractionPawnsLost(0.2f));
             fightIfFractionPawnsLost.AddPostAction(new TransitionAction_EndAllJobs());
+            fightIfFractionPawnsLost.AddPostAction(clearCaravanRequest);
             stateGraph.AddTransition(fightIfFractionPawnsLost);
 
             Transition defendIfPawnHarmed = new Transition(moving, defending);
@@ -117,8 +120,9 @@ namespace ItemRequests
             Transition leaveIfRequestFulfilled = new Transition(moving, exitingAndEscorting);
             leaveIfRequestFulfilled.AddSources(new LordToil[]
             {
+                moving,
                 defending,
-                defendingChillPoint
+                defendingChillPoint,
             });
             leaveIfRequestFulfilled.AddTrigger(new Trigger_Memo(MemoOnFulfilled));
             leaveIfRequestFulfilled.AddPreAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));

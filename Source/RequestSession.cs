@@ -53,7 +53,7 @@ namespace ItemRequests
         {
             for (int i = 0; i < openDeals.Count; ++i)
             {
-                if (openDeals[i].Faction.randomKey == faction.randomKey)
+                if (openDeals[i].Faction.Name == faction.Name)
                 {
                     openDeals.RemoveAt(i);
                     return;
@@ -126,38 +126,6 @@ namespace ItemRequests
             {
                 value.Clear();
             }
-        }
-
-        public bool TryExecute(int colonySilver, out bool requestSucceeded)
-        {
-            requestSucceeded = true;
-
-
-
-            // TODO: need to store the tradeable item
-            // in some place for the caravan to bring
-            // later on
-
-
-            // Should have this part when the actual caravan arrives
-            //if (RequestSession.faction != null)
-            //{
-            //    // Maybe shouldn't have this part
-            //    RequestSession.faction.Notify_PlayerTraded(num, RequestSession.negotiator);
-            //}
-
-            //Pawn pawn = RequestSession.negotiator as Pawn;
-            //if (pawn != null)
-            //{
-            //    TaleRecorder.RecordTale(TaleDefOf.TradedWith, new object[]
-            //    {
-            //        RequestSession.faction,
-            //        pawn
-            //    });
-            //}
-
-            RequestSession.negotiator.mindState.inspirationHandler.EndInspiration(InspirationDefOf.Inspired_Trade);
-            return true;
         }
 
         public void AdjustItemRequest(ThingType thingTypeFilter, Tradeable tradeable, int numRequested, float price)

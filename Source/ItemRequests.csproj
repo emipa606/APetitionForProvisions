@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CaravanManager.cs" />
+    <Compile Include="ConfirmRequestWindow.cs" />
     <Compile Include="CostCalculator.cs" />
     <Compile Include="FulfillItemRequestWindow.cs" />
     <Compile Include="FulfillRequestFloatMenuOption.cs" />

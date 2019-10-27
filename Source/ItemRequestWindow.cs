@@ -336,29 +336,16 @@ namespace ItemRequests
             {
                 Action onConfirmed = () =>
                 {
-                    bool success;
-                    if (RequestSession.deal.TryExecute(colonySilver, out success))
+                    SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
+                    Find.WindowStack.Add(new RequestAcknowledgedWindow(faction, () =>
                     {
-                        if (success)
-                        {
-                            SoundDefOf.ExecuteTrade.PlayOneShotOnCamera(null);
-                            Find.WindowStack.Add(new RequestAcknowledgedWindow(faction, () =>
-                            {
-                                Close(false);
-                                RequestSession.CloseSession();
-                                CaravanManager.SendRequestedCaravan(faction, map);
-                            }));
-                        }
-                        else
-                        {
-                            Close(true);
-                            Messages.Message("The request was declined", MessageTypeDefOf.CautionInput, false);
-                            RequestSession.CloseSession();
-                        }
-                    }
+                        Close(false);
+                        RequestSession.CloseSession();
+                        CaravanManager.SendRequestedCaravan(faction, map);
+                    }));
                 };
-                Action onCancelled = () => {};
-                
+                Action onCancelled = () => { };
+
 
                 if (colonySilver < RequestSession.deal.TotalRequestedValue)
                 {
@@ -563,7 +550,7 @@ namespace ItemRequests
                 " days' journey): x",
                 distPriceOffset.ToString("F2")
             });
-            
+
             text += "\n";
             text2 = text;
             text = string.Concat(new string[]
@@ -623,7 +610,7 @@ namespace ItemRequests
             int allyGoodwillThreshold = 75;
             float maxImprovementOffset = .60f;
             float priceImprovementRatio = (maxImprovementOffset * 100) / allyGoodwillThreshold;
-            float priceImprovementOffset = (goodwill * priceImprovementRatio) / 100;           
+            float priceImprovementOffset = (goodwill * priceImprovementRatio) / 100;
             return Mathf.Min(priceImprovementOffset, maxImprovementOffset);
         }
 
@@ -649,7 +636,7 @@ namespace ItemRequests
             return distMultiplier;
         }
 
-        // TODO: if goodwill > 80 should have change of having more advanced items (some chance 
+        // MAYBE TODO?: if goodwill > 80 should have change of having more advanced items (some chance 
         //   of containing any number of restricted item on the restricted list)
         private void DetermineAllRequestableItems()
         {
@@ -743,69 +730,7 @@ namespace ItemRequests
             return lvl <= (int)tLevel;
         }
 
-        private bool isBuyableItem(ThingEntry entry) => !RestrictedItems.Contains(entry.def);        
-    }
-
-
-    public class ConfirmRequestWindow : Window
-    {
-        private Action onConfirm;
-        private Action onCancel;
-        public override Vector2 InitialSize => new Vector2(500, 500);
-
-        public ConfirmRequestWindow(Action onConfirm, Action onCancel) {
-            this.onConfirm = onConfirm;
-            this.onCancel = onCancel;
-            this.absorbInputAroundWindow = true;
-        }
-
-        public override void DoWindowContents(Rect inRect)
-        {
-            Vector2 contentMargin = new Vector2(10, 18);
-            string title = "Are you sure?";
-            string message = "Your colony doesn't currently have enough silver to buy the requested items. " +
-                "You can still request them of course, praying to your gods that they smile upon your colony " +
-                "and provide it with the funds your poor settlement lacks.";
-            string confirmString = "I know what I'm doing";
-            string cancelString = "On second thought...";
-
-            GUI.BeginGroup(inRect);
-
-            inRect = inRect.AtZero();
-            float x = contentMargin.x;
-            float headerRowHeight = 35f;
-            Rect headerRowRect = new Rect(x, contentMargin.y, inRect.width - x, headerRowHeight);
-            Rect titleArea = new Rect(x, 0, headerRowRect.width, headerRowRect.height);
-            Text.Anchor = TextAnchor.UpperLeft;
-            Text.Font = GameFont.Medium;
-            Widgets.Label(titleArea, title);
-
-            Text.Font = GameFont.Small;
-            Rect messageAreaRect = new Rect(x, headerRowRect.y + headerRowRect.height + 30, inRect.width - x * 2, inRect.height - contentMargin.y * 2 - headerRowRect.height);
-            Widgets.Label(messageAreaRect, message);
-
-            float closeButtonHeight = 30;
-            Text.Anchor = TextAnchor.MiddleLeft;
-            Rect confirmButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, 300, closeButtonHeight);
-
-            if (Widgets.ButtonText(confirmButtonArea, confirmString, false))
-            {
-                Close(true);
-                onConfirm();
-            }
-
-            Text.Anchor = TextAnchor.MiddleRight;
-            Rect cancelButtonArea = new Rect(inRect.width - contentMargin.x - 200, confirmButtonArea.y, 200, closeButtonHeight);
-            if (Widgets.ButtonText(cancelButtonArea, cancelString, false))
-            {
-                Close(false);
-                onCancel();
-            }
-
-            GenUI.ResetLabelAlign();
-            GUI.EndGroup();
-
-            GUI.EndGroup();
-        }
+        private bool isBuyableItem(ThingEntry entry) => !RestrictedItems.Contains(entry.def);
+        
     }
 }
