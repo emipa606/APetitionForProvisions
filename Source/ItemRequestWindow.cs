@@ -36,6 +36,9 @@ namespace ItemRequests
         private ThingType thingTypeFilter = ThingType.Resources;
         private ThingDef stuffTypeFilter = null;
 
+        // buying markup is 1.4 so 1.5 makes sense for a specific request
+        private const float requestingItemMarkupMultiplier = 1.5f;
+
         // For UI layout
         private float rightAlignOffset;
         private float rightContentSize;
@@ -461,8 +464,8 @@ namespace ItemRequests
             }
 
             PriceType priceType = GetPriceTypeFor(trad);
-            float finalPrice = CalcRequestedItemPrice(trad, priceType);
-            TooltipHandler.TipRegion(rect, new TipSignal(() => GetPriceTooltip(faction, negotiator, trad, priceType, finalPrice), trad.GetHashCode() * 297));
+            float finalPrice = CalcRequestedItemPrice(trad);
+            TooltipHandler.TipRegion(rect, new TipSignal(() => GetPriceTooltip(faction, negotiator, trad, finalPrice), trad.GetHashCode() * 297));
             switch (priceType)
             {
                 case PriceType.VeryCheap:
@@ -512,7 +515,7 @@ namespace ItemRequests
             return PriceType.Normal;
         }
 
-        private string GetPriceTooltip(Faction faction, Pawn negotiator, Tradeable trad, PriceType priceType, float priceFor)
+        private string GetPriceTooltip(Faction faction, Pawn negotiator, Tradeable trad, float priceFor)
         {
             if (!trad.HasAnyThing)
             {
@@ -525,28 +528,14 @@ namespace ItemRequests
 
             string text2 = text;
 
-            // TODO: Breadown the markup multiplier here for
-            // item rarity/dist to colony, etc.
             text = string.Concat(new string[]
             {
                     text2,
                     "\n  x ",
-                    1.6f.ToString("F2"),
+                    requestingItemMarkupMultiplier.ToString("F2"),
                     " (Requesting)"
             });
 
-
-            if (priceType.PriceMultiplier() != 1f)
-            {
-                text2 = text;
-                text = string.Concat(new string[]
-                {
-                        text2,
-                        "\n  x ",
-                        priceType.PriceMultiplier().ToString("F2"),
-                        " (Faction tech level)"
-                });
-            }
             if (Find.Storyteller.difficulty.tradePriceFactorLoss != 0f)
             {
                 text2 = text;
@@ -560,6 +549,21 @@ namespace ItemRequests
                         ")"
                 });
             }
+
+            float daysToTravel;
+            float distPriceOffset = DetermineDistMultiplier(out daysToTravel);
+            text += "\n";
+            text2 = text;
+            text = string.Concat(new string[]
+            {
+                text2,
+                "\n",
+                "Price increase based on distance (approx. ",
+                daysToTravel.ToString("F1"),
+                " days' journey): x",
+                distPriceOffset.ToString("F2")
+            });
+            
             text += "\n";
             text2 = text;
             text = string.Concat(new string[]
@@ -571,7 +575,7 @@ namespace ItemRequests
                     negotiator.GetStatValue(StatDefOf.TradePriceImprovement, true).ToStringPercent()
             });
 
-            float priceGainSettlement = GetOfferPriceImprovementOffsetForFaction(faction, negotiator);
+            float priceGainSettlement = GetOfferPriceImprovementOffsetForFaction(faction);
             if (priceGainSettlement != 0f)
             {
                 text2 = text;
@@ -579,9 +583,9 @@ namespace ItemRequests
                 {
                         text2,
                         "\n",
-                        "TradeWithFactionBaseBonus".Translate(),
-                        ": -",
-                        priceGainSettlement.ToStringPercent()
+                        "Faction relation price offset: ",
+                        Mathf.Sign(priceGainSettlement) >= 0 ? "-" : "+",
+                        Mathf.Abs(priceGainSettlement).ToStringPercent()
                 });
             }
 
@@ -594,47 +598,64 @@ namespace ItemRequests
             return text;
         }
 
-        private float CalcRequestedItemPrice(Tradeable item, PriceType priceType)
+        private float CalcRequestedItemPrice(Tradeable item)
         {
             if (item.IsCurrency)
             {
                 return item.BaseMarketValue;
             }
 
-            float basePrice = item.BaseMarketValue * priceType.PriceMultiplier();
+            float daysToTravel;
+            float basePrice = item.BaseMarketValue;
             float negotiatorBonus = negotiator.GetStatValue(StatDefOf.TradePriceImprovement, true);
-            float settlementBonus = GetOfferPriceImprovementOffsetForFaction(faction, negotiator);
-            float markupMultiplier = DetermineMarkupMultiplier();
-            float total = basePrice * markupMultiplier;
+            float settlementBonus = GetOfferPriceImprovementOffsetForFaction(faction);
+            float distMultiplier = DetermineDistMultiplier(out daysToTravel);
+            float total = basePrice * distMultiplier * requestingItemMarkupMultiplier;
             total -= total * negotiatorBonus;
             total -= total * settlementBonus;
 
-            // Divide by 1.4 because that's the price multiplier for buying
-            // and we want to have a 1.6 multiplier for buying
             return total;
         }
 
-        private float GetOfferPriceImprovementOffsetForFaction(Faction faction, Pawn negotiator)
+        private float GetOfferPriceImprovementOffsetForFaction(Faction faction)
         {
-            // TODO: based on faction relations
-            return 0;
+            int goodwill = faction.RelationWith(Faction.OfPlayer).goodwill;
+            int allyGoodwillThreshold = 75;
+            float maxImprovementOffset = .60f;
+            float priceImprovementRatio = (maxImprovementOffset * 100) / allyGoodwillThreshold;
+            float priceImprovementOffset = (goodwill * priceImprovementRatio) / 100;           
+            return Mathf.Min(priceImprovementOffset, maxImprovementOffset);
         }
 
-        private float DetermineMarkupMultiplier()
+        private float DetermineDistMultiplier(out float daysToTravel)
         {
-            // TODO: Price should be increased based on following factors:
-            // - rarity of item
-            // - distance of hailing colony from player colony
+            int distToColonyInTicks = CaravanManager.DetermineJourneyTime(faction, map);
+            daysToTravel = distToColonyInTicks / CaravanManager.fullDayInTicks;
+            float distMultiplier = 1;
 
-            // standard requesting markup 1.6 (buying markup is 1.4 so 1.6 makes sense for a specific request)
-            return 1.6f;
+            if (daysToTravel >= 4)
+            {
+                distMultiplier = 1.5f;
+            }
+            else if (daysToTravel >= 2.5f)
+            {
+                distMultiplier = 1.25f;
+            }
+            else if (daysToTravel >= 1.5)
+            {
+                distMultiplier = 1.1f;
+            }
+
+            return distMultiplier;
         }
 
-        // TODO: Restrict certain items
+        // TODO: if goodwill > 80 should have change of having more advanced items (some chance 
+        //   of containing any number of restricted item on the restricted list)
         private void DetermineAllRequestableItems()
         {
             List<Thing> things = (from x in ThingDatabase.Instance.AllThings()
                                   where hasMaximumTechLevel(x, faction.def.techLevel)
+                                  where isBuyableItem(x)
                                   select x.thing).ToList();
 
             foreach (Thing thing in things)
@@ -660,7 +681,7 @@ namespace ItemRequests
         {
             foreach (Tradeable tradeable in allRequestableItems)
             {
-                if (tradeable.AnyThing.ThingID == fromThing.ThingID) return tradeable;
+                if (tradeable.FirstThingTrader.ThingID == fromThing.ThingID) return tradeable;
             }
             return null;
         }
@@ -678,7 +699,6 @@ namespace ItemRequests
                 Tradeable foundEntry = GetTradeableThingEntry(thing);
                 if (foundEntry == null)
                 {
-                    // TODO: this is happening for items in stockpiles
                     Log.Error("Could not find matching TradeableThingEntry for " + thing.LabelCap);
                     continue;
                 }
@@ -722,6 +742,8 @@ namespace ItemRequests
             }
             return lvl <= (int)tLevel;
         }
+
+        private bool isBuyableItem(ThingEntry entry) => !RestrictedItems.Contains(entry.def);        
     }
 
 

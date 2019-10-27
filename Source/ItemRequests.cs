@@ -14,8 +14,3 @@ namespace ItemRequests
         }
     }
 }
-
-// Faction: GetInfoText() GetCallLabel() 
-// Dialog_Negotiation: DoWindowContents()
-// Dialog_NodeTree
-// Verse.Window

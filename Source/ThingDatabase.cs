@@ -20,7 +20,6 @@ namespace ItemRequests
         protected List<ThingDef> stuff = new List<ThingDef>();
         protected HashSet<ThingDef> stuffLookup = new HashSet<ThingDef>();
         protected CostCalculator costs = new CostCalculator();
-        //protected List<ThingType> types = new List<ThingType>();
 
         protected ThingCategoryDef thingCategorySweetMeals = null;
         protected ThingCategoryDef thingCategoryMeatRaw = null;
@@ -40,8 +39,7 @@ namespace ItemRequests
 
         private ThingDatabase()
         {
-            Log.Message("Initializing ThingDatabase...");
-
+            //Log.Message("Initializing ThingDatabase...");
             thingCategorySweetMeals = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("SweetMeals");
             thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
         }
@@ -148,7 +146,7 @@ namespace ItemRequests
             {
                 if (!LoadingProgress.enumerator.MoveNext())
                 {
-                    Log.Message("Loaded thing database with " + LoadingProgress.stuffCount + " material(s)");
+                    //Log.Message("Loaded thing database with " + LoadingProgress.stuffCount + " material(s)");
                     NextPhase();
                     return;
                 }
@@ -166,7 +164,7 @@ namespace ItemRequests
             {
                 if (!LoadingProgress.enumerator.MoveNext())
                 {
-                    Log.Message("Loaded thing database with " + LoadingProgress.thingCount + " item(s)");
+                    //Log.Message("Loaded thing database with " + LoadingProgress.thingCount + " item(s)");
                     NextPhase();
                     return;
                 }
@@ -234,7 +232,7 @@ namespace ItemRequests
             catch (Exception e)
             {
                 Log.Warning("Failed to process thing definition while building equipment lists: " + def.defName);
-                Log.Message("  Exception: " + e);
+                //Log.Message("  Exception: " + e);
             }
             return false;
         }
@@ -808,8 +806,8 @@ namespace ItemRequests
                 }
                 catch (Exception e)
                 {
-                    Log.Warning("Failed to create a pawn for animal equipment entry: " + def.defName);
-                    Log.Message("  Exception message: " + e);
+                    Log.Warning("Failed to create a pawn for animal thing entry: " + def.defName);
+                    //Log.Message("  Exception message: " + e);
                     return null;
                 }
             }
