@@ -10,7 +10,9 @@ namespace ItemRequests
         public ThingDef def;
         public ThingDef stuffDef = null;
         public Gender gender = Gender.None;
+        public Tradeable tradeable = null;
         public Thing thing = null;
+        public PawnKindDef pawnDef = null;
         public ThingType type;
         public int stackSize;
         public double cost = 0;
@@ -20,6 +22,29 @@ namespace ItemRequests
         public bool animal = false;
         protected string label = null;
         public bool hideFromPortrait = false;
+
+        public ThingEntry Clone()
+        {
+            ThingEntry cloned = new ThingEntry();
+            cloned.def = def;
+            cloned.stuffDef = stuffDef;
+            cloned.gender = gender;
+            cloned.tradeable = tradeable == null ? 
+                null : 
+                new Tradeable(tradeable.FirstThingColony, tradeable.FirstThingTrader);
+            cloned.thing = thing;
+            cloned.pawnDef = pawnDef;
+            cloned.type = type;
+            cloned.stackSize = stackSize;
+            cloned.cost = cost;
+            cloned.color = color;
+            cloned.stacks = stacks;
+            cloned.gear = gear;
+            cloned.animal = animal;
+            cloned.label = label;
+            cloned.hideFromPortrait = hideFromPortrait;
+            return cloned;
+        }
 
         public bool Minifiable
         {

@@ -468,134 +468,6 @@ namespace ItemRequests
         public IEnumerable<ThingEntry> AllThings() => entries.Values;
         public IEnumerable<ThingEntry> AllThingsOfType(ThingType type) => entries.Values.Where((ThingEntry e) => e.type == type);
 
-        //public List<ThingEntry> Resources
-        //{
-        //    get
-        //    {
-        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
-        //        {
-        //            return e.type == ThingType.Resources;
-        //        });
-        //        result.Sort((ThingEntry a, ThingEntry b) =>
-        //        {
-        //            return a.Label.CompareTo(b.Label);
-        //        });
-        //        return result;
-        //    }
-        //}
-
-        //public List<ThingEntry> Food
-        //{
-        //    get
-        //    {
-        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
-        //        {
-        //            return e.type == ThingType.Food;
-        //        });
-        //        result.Sort((ThingEntry a, ThingEntry b) =>
-        //        {
-        //            return a.Label.CompareTo(b.Label);
-        //        });
-        //        return result;
-        //    }
-        //}
-
-        //public List<ThingEntry> Weapons
-        //{
-        //    get
-        //    {
-        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
-        //        {
-        //            return e.type == ThingType.Weapons;
-        //        });
-        //        result.Sort((ThingEntry a, ThingEntry b) =>
-        //        {
-        //            return a.Label.CompareTo(b.Label);
-        //        });
-        //        return result;
-        //    }
-        //}
-
-        //public List<ThingEntry> Apparel
-        //{
-        //    get
-        //    {
-        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
-        //        {
-        //            return e.type == ThingType.Apparel;
-        //        });
-        //        result.Sort((ThingEntry a, ThingEntry b) =>
-        //        {
-        //            return a.Label.CompareTo(b.Label);
-        //        });
-        //        return result;
-        //    }
-        //}
-
-        //public List<ThingEntry> Animals
-        //{
-        //    get
-        //    {
-        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
-        //        {
-        //            return e.type == ThingType.Animals;
-        //        });
-        //        result.Sort((ThingEntry a, ThingEntry b) =>
-        //        {
-        //            return a.Label.CompareTo(b.Label);
-        //        });
-        //        return result;
-        //    }
-        //}
-
-        //public List<ThingEntry> Implants
-        //{
-        //    get
-        //    {
-        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
-        //        {
-        //            return e.type == ThingType.Medical;
-        //        });
-        //        result.Sort((ThingEntry a, ThingEntry b) =>
-        //        {
-        //            return a.Label.CompareTo(b.Label);
-        //        });
-        //        return result;
-        //    }
-        //}
-
-        //public List<ThingEntry> Buildings
-        //{
-        //    get
-        //    {
-        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
-        //        {
-        //            return e.type == ThingType.Buildings;
-        //        });
-        //        result.Sort((ThingEntry a, ThingEntry b) =>
-        //        {
-        //            return a.Label.CompareTo(b.Label);
-        //        });
-        //        return result;
-        //    }
-        //}
-
-        //public List<ThingEntry> Other
-        //{
-        //    get
-        //    {
-        //        List<ThingEntry> result = entries.Values.ToList().FindAll((ThingEntry e) =>
-        //        {
-        //            return e.type == ThingType.Other;
-        //        });
-        //        result.Sort((ThingEntry a, ThingEntry b) =>
-        //        {
-        //            return a.Label.CompareTo(b.Label);
-        //        });
-        //        return result;
-        //    }
-        //}
-
         public ThingEntry LookupThingEntry(ThingKey key)
         {
             ThingEntry result;
@@ -802,6 +674,7 @@ namespace ItemRequests
                     else
                     {
                         result.thing = pawn;
+                        result.pawnDef = pawn.kindDef;
                     }
                 }
                 catch (Exception e)

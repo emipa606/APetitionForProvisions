@@ -81,11 +81,11 @@ namespace ItemRequests
             // Draw total
             Text.Anchor = TextAnchor.MiddleRight;
             Rect totalStringRect = new Rect(mainRect.width - offsetFromRight - 150, horizontalLineY, 140, rowHeight);
-            Widgets.Label(totalStringRect, "Total");            
+            Widgets.Label(totalStringRect, "Total");
             Widgets.DrawLineVertical(mainRect.width - offsetFromRight, horizontalLineY, rowHeight);
             Rect totalPriceRect = new Rect(mainRect.width - offsetFromRight, horizontalLineY, offsetFromRight, rowHeight);
             Widgets.Label(totalPriceRect, RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue.ToStringMoney("F2"));
-                        
+
             Text.Anchor = TextAnchor.MiddleLeft;
             Rect closeButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, 100, 50);
             if (Widgets.ButtonText(closeButtonArea, closeString, false))
@@ -114,13 +114,18 @@ namespace ItemRequests
             float iconSize = 27;
             Text.Anchor = TextAnchor.MiddleLeft;
             Rect iconArea = new Rect(x, 0, iconSize, iconSize);
-            
-            Widgets.ThingIcon(iconArea, requested.item.FirstThingTrader);
+
+            Widgets.ThingIcon(iconArea, requested.item.tradeable.FirstThingTrader);
 
             x += iconSize + (iconSize / 4);
 
             Rect itemNameArea = new Rect(x, 0, rowRect.width - offsetFromRight - x, rowRect.height);
-            string itemTitle = requested.item.AnyThing.LabelCapNoCount + " x" + requested.amount;
+            string itemTitle = requested.item.thing.LabelCapNoCount;
+            if (requested.isPawn)
+            {
+                itemTitle += " (" + requested.item.gender + ")";
+            }
+            itemTitle += " x" + requested.amount;
             Widgets.Label(itemNameArea, itemTitle);
 
             x = rowRect.width - offsetFromRight;
@@ -133,10 +138,10 @@ namespace ItemRequests
 
             GUI.EndGroup();
         }
-    
+
         private void CloseButtonPressed()
         {
-            Close(true);            
+            Close(true);
 
             float totalRequestedValue = RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue;
             if (playerPawn.Map.resourceCounter.Silver < totalRequestedValue)
@@ -147,7 +152,7 @@ namespace ItemRequests
             }
             else
             {
-                ITrader trader = traderPawn as ITrader;             
+                ITrader trader = traderPawn as ITrader;
                 if (trader == null)
                 {
                     Log.Error("Trader pawn unable to be cast to ITrader!");
@@ -156,12 +161,26 @@ namespace ItemRequests
 
                 foreach (RequestItem requested in requestedItems)
                 {
-                    Thing thing = ThingMaker.MakeThing(requested.item.ThingDef, requested.item.StuffDef);
-                    thing.stackCount = requested.amount;
-
-                    if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
+                    if (requested.isPawn)
                     {
-                        Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                        for (int i = 0; i < requested.amount; ++i)
+                        {
+                            Pawn pawn = PawnGenerator.GeneratePawn(requested.item.pawnDef, Faction.OfPlayer);
+                            pawn.gender = requested.item.gender;
+                            IntVec3 spawnSpot = CellFinder.RandomSpawnCellForPawnNear(traderPawn.Position, traderPawn.Map);
+                            GenSpawn.Spawn(pawn, spawnSpot, traderPawn.Map);
+                            Log.Message("Spawned " + pawn.LabelCap + " the " + pawn.KindLabel);
+                        }
+                    }
+                    else
+                    {
+                        Thing thing = ThingMaker.MakeThing(requested.item.def, requested.item.stuffDef);
+                        thing.stackCount = requested.amount;
+
+                        if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
+                        {
+                            Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                        }
                     }
                 }
 
@@ -199,13 +218,13 @@ namespace ItemRequests
                 int stackCount = silver.stackCount;
                 int remaining = amountToRemove - stackCount;
                 if (remaining > 0)
-                {                 
+                {
                     silver.Destroy();
                     amountToRemove = remaining;
                 }
                 else
                 {
-                    silver.stackCount -= amountToRemove;                 
+                    silver.stackCount -= amountToRemove;
                     break;
                 }
             }

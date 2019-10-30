@@ -17,11 +17,6 @@ namespace ItemRequests
         public Rect ScrollRect { get; protected set; }
         private Vector2 scrollPosition = Vector2.zero;
 
-        // For UI Items
-        protected WidgetTable<ThingEntry> table = new WidgetTable<ThingEntry>();
-        protected static readonly Vector2 AcceptButtonSize = new Vector2(160, 40f);
-        protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160, 40f);
-
         // For reference (set in constructor)
         private int colonySilver;
         private Faction faction;
@@ -29,14 +24,14 @@ namespace ItemRequests
         private Map map;
 
         // For listing the items
-        private List<Tradeable> allRequestableItems = new List<Tradeable>();
-        private List<Tradeable> filteredRequestableItems = new List<Tradeable>();
+        private List<ThingEntry> allRequestableItems = new List<ThingEntry>();
+        private List<ThingEntry> filteredRequestableItems = new List<ThingEntry>();
         private HashSet<ThingDef> stuffFilterSet = new HashSet<ThingDef>();
         private Dictionary<string, int> colonyItemCount = new Dictionary<string, int>();
         private ThingType thingTypeFilter = ThingType.Resources;
         private ThingDef stuffTypeFilter = null;
 
-        // buying markup is 1.4 so 1.5 makes sense for a specific request
+        // Regular buying markup is 1.4 so 1.5 makes sense for a specific request
         private const float requestingItemMarkupMultiplier = 1.5f;
 
         // For UI layout
@@ -44,9 +39,11 @@ namespace ItemRequests
         private float rightContentSize;
         private const float iconNameAreaWidth = 350;
         private const float priceTextAreaWidth = 100;
-        private const float colonyItemCountAreaWidth = 100;
         private const float resetItemCountAreaWidth = 40;
+        private const float colonyItemCountAreaWidth = 100;
         private const float countAdjustInterfaceWidth = 200;
+        protected static readonly Vector2 AcceptButtonSize = new Vector2(160, 40f);
+        protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160, 40f);
         private const string colonyCountTooltipText = "The amount your colony currently has stored.";
 
         public ItemRequestWindow(Map map, Faction faction, Pawn negotiator)
@@ -190,7 +187,7 @@ namespace ItemRequests
             GUI.EndGroup();
         }
 
-        public void DrawFilterDropdowns(Rect rectArea)
+        private void DrawFilterDropdowns(Rect rectArea)
         {
             Rect filterLabelArea = rectArea;
             filterLabelArea.width = 80;
@@ -253,7 +250,7 @@ namespace ItemRequests
             }
         }
 
-        public void DrawAvailableColonyCurrency(Rect rowRect, int colonySilver)
+        private void DrawAvailableColonyCurrency(Rect rowRect, int colonySilver)
         {
             // Begin row
             GUI.BeginGroup(rowRect);
@@ -367,12 +364,13 @@ namespace ItemRequests
             }
         }
 
-        public void DrawTradeableRow(Rect rowRect, Tradeable trade, int index)
+        private void DrawTradeableRow(Rect rowRect, ThingEntry entry, int index)
         {
             if (index % 2 == 1)
             {
                 Widgets.DrawLightHighlight(rowRect);
             }
+            Tradeable trade = entry.tradeable;
 
             // Begin Row group
             GUI.BeginGroup(rowRect);
@@ -382,7 +380,7 @@ namespace ItemRequests
             Text.Anchor = TextAnchor.MiddleLeft;
             Rect idRect = new Rect(x, 0, iconNameAreaWidth, rowRect.height);
             TransferableUIUtility.DoExtraAnimalIcons(trade, rowRect, ref x);
-            TransferableUIUtility.DrawTransferableInfo(trade, idRect, Color.white);
+            DrawTradeableLabels(idRect, entry);
 
             x += iconNameAreaWidth;
 
@@ -416,30 +414,71 @@ namespace ItemRequests
             paddedNumericFieldArea.xMax -= 15f;
             paddedNumericFieldArea.xMin += 16f;
 
-            int countToTransfer = RequestSession.deal.GetCountForItem(thingTypeFilter, trade);
-            string editBuffer = trade.EditBuffer;
-            Widgets.TextFieldNumeric(paddedNumericFieldArea, ref countToTransfer, ref editBuffer, 0, float.MaxValue);
-            trade.AdjustTo(countToTransfer);
-            RequestSession.deal.AdjustItemRequest(thingTypeFilter, trade, countToTransfer, price);
+            int amountRequested = RequestSession.deal.GetCountForItem(thingTypeFilter, trade);
+            string amountAsString = amountRequested.ToString();
+            Widgets.TextFieldNumeric(paddedNumericFieldArea, ref amountRequested, ref amountAsString, 0, float.MaxValue);
+            RequestSession.deal.AdjustItemRequest(thingTypeFilter, entry, amountRequested, price);
 
             // Draw the reset to zero button by input field
-            if (trade.CountToTransfer > 0)
+            if (amountRequested > 0)
             {
                 Rect resetToZeroButton = interactiveNumericFieldArea;
                 resetToZeroButton.x -= resetItemCountAreaWidth - 5;
                 resetToZeroButton.width = resetItemCountAreaWidth;
                 if (Widgets.ButtonText(resetToZeroButton, "0"))
-                {
-                    trade.AdjustTo(0);
-                    RequestSession.deal.AdjustItemRequest(thingTypeFilter, trade, 0, price);
+                {                    
+                    RequestSession.deal.AdjustItemRequest(thingTypeFilter, entry, 0, price);
                 }
             }
-
-            x += countAdjustInterfaceWidth;
-
+            
             // End Row group
             GenUI.ResetLabelAlign();
             GUI.EndGroup();
+        }
+
+        private void DrawTradeableLabels(Rect rowRect, ThingEntry entry)
+        {
+            Tradeable trade = entry.tradeable;
+            if (!trade.HasAnyThing)
+            {
+                return;
+            }
+            if (Mouse.IsOver(rowRect))
+            {
+                Widgets.DrawHighlight(rowRect);
+            }
+
+            Rect thingIconArea = new Rect(0f, 0f, 27f, 27f);
+            Widgets.ThingIcon(thingIconArea, trade.AnyThing, 1f);
+            Widgets.InfoCardButton(40f, 0f, trade.AnyThing);
+
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Text.WordWrap = false;
+            Rect itemLabelArea = new Rect(80f, 0f, rowRect.width - 80f, rowRect.height);
+
+            string itemLabel = trade.LabelCap;
+            if (entry.animal)
+            {
+                itemLabel += " (" + entry.gender + ")";
+            }
+            Widgets.Label(itemLabelArea, itemLabel);
+            
+            Text.WordWrap = true;
+            Transferable localTrad = trade;
+            TooltipHandler.TipRegion(rowRect, new TipSignal(() =>
+            {
+                if (!localTrad.HasAnyThing)
+                {
+                    return string.Empty;
+                }
+                string text = localTrad.LabelCap;
+                string tipDescription = localTrad.TipDescription;
+                if (!tipDescription.NullOrEmpty())
+                {
+                    text = text + ": " + tipDescription;
+                }
+                return text;
+            }, localTrad.GetHashCode()));
         }
 
         private float DrawPrice(Rect rect, Tradeable trad)
@@ -640,35 +679,49 @@ namespace ItemRequests
         //   of containing any number of restricted item on the restricted list)
         private void DetermineAllRequestableItems()
         {
-            List<Thing> things = (from x in ThingDatabase.Instance.AllThings()
-                                  where hasMaximumTechLevel(x, faction.def.techLevel)
-                                  where isBuyableItem(x)
-                                  select x.thing).ToList();
+            List<ThingEntry> thingEntries = (from x in ThingDatabase.Instance.AllThings()
+                                             where hasMaximumTechLevel(x, faction.def.techLevel)
+                                             where isBuyableItem(x)
+                                             select x).ToList();
 
-            foreach (Thing thing in things)
+            foreach (ThingEntry originalEntry in thingEntries)
             {
-                thing.stackCount = int.MaxValue;
-                Tradeable trad = new Tradeable(thing, thing);
-                if (!trad.IsCurrency)
+                ThingEntry thingEntry = originalEntry.Clone();
+                if (thingEntry.pawnDef != null)
                 {
+                    Pawn pawn = thingEntry.thing as Pawn;
+                    Tradeable trad = new Tradeable(pawn, pawn);
                     trad.thingsColony = new List<Thing>();
-                    string key = thing.def.label;
-                    if (colonyItemCount.ContainsKey(key))
+                    thingEntry.tradeable = trad;
+                    allRequestableItems.Add(thingEntry);
+                }
+                else
+                {
+                    Thing thing = thingEntry.thing;
+                    thing.stackCount = int.MaxValue;
+                    Tradeable trad = new Tradeable(thing, thing);
+                    if (!trad.IsCurrency)
                     {
-                        Thing colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
-                        colonyThing.stackCount = colonyItemCount[key];
-                        trad.thingsColony.Add(colonyThing);
+                        trad.thingsColony = new List<Thing>();
+                        string key = thing.def.label;
+                        if (colonyItemCount.ContainsKey(key))
+                        {
+                            Thing colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
+                            colonyThing.stackCount = colonyItemCount[key];
+                            trad.thingsColony.Add(colonyThing);
+                        }
+                        thingEntry.tradeable = trad;
+                        allRequestableItems.Add(thingEntry);
                     }
-                    allRequestableItems.Add(trad);
                 }
             }
         }
 
-        private Tradeable GetTradeableThingEntry(Thing fromThing)
+        private ThingEntry GetTradeableThingEntry(Thing fromThing)
         {
-            foreach (Tradeable tradeable in allRequestableItems)
+            foreach (ThingEntry thingEntry in allRequestableItems)
             {
-                if (tradeable.FirstThingTrader.ThingID == fromThing.ThingID) return tradeable;
+                if (thingEntry.tradeable.FirstThingTrader.ThingID == fromThing.ThingID) return thingEntry;
             }
             return null;
         }
@@ -676,22 +729,22 @@ namespace ItemRequests
         private void FilterRequestableItems()
         {
             filteredRequestableItems.Clear();
-            List<Thing> things = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter)
-                                  where hasMaximumTechLevel(x, faction.def.techLevel)
-                                  select x.thing).ToList();
+            List<ThingEntry> thingEntries = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter)
+                                             where hasMaximumTechLevel(x, faction.def.techLevel)
+                                             select x).ToList();
 
-            foreach (Thing thing in things)
+            foreach (ThingEntry thingEntry in thingEntries)
             {
-                if (thing.def == ThingDefOf.Silver) continue;
-                Tradeable foundEntry = GetTradeableThingEntry(thing);
+                if (thingEntry.def == ThingDefOf.Silver) continue;
+                ThingEntry foundEntry = GetTradeableThingEntry(thingEntry.thing);
                 if (foundEntry == null)
                 {
-                    Log.Error("Could not find matching TradeableThingEntry for " + thing.LabelCap);
+                    //Log.Warning("Could not find matching TradeableThingEntry for " + thingEntry.Label);
                     continue;
                 }
                 else
                 {
-                    bool madeOfRightStuff = stuffTypeFilter == null || foundEntry.AnyThing.Stuff == stuffTypeFilter;
+                    bool madeOfRightStuff = stuffTypeFilter == null || foundEntry.tradeable.FirstThingTrader.Stuff == stuffTypeFilter;
                     if (madeOfRightStuff)
                     {
                         filteredRequestableItems.Add(foundEntry);
@@ -706,11 +759,11 @@ namespace ItemRequests
         protected void UpdateAvailableMaterials()
         {
             stuffFilterSet.Clear();
-            foreach (Tradeable item in filteredRequestableItems)
+            foreach (ThingEntry thingEntry in filteredRequestableItems)
             {
-                if (item.StuffDef != null)
+                if (thingEntry.stuffDef != null)
                 {
-                    stuffFilterSet.Add(item.StuffDef);
+                    stuffFilterSet.Add(thingEntry.stuffDef);
                 }
             }
             if (stuffTypeFilter != null && !stuffFilterSet.Contains(stuffTypeFilter))
@@ -730,7 +783,14 @@ namespace ItemRequests
             return lvl <= (int)tLevel;
         }
 
-        private bool isBuyableItem(ThingEntry entry) => !RestrictedItems.Contains(entry.def);
-        
+        private bool isBuyableItem(ThingEntry entry)
+        {
+            if (entry.animal)
+            {
+                return !RestrictedItems.Contains(entry.pawnDef);
+            }
+            return !RestrictedItems.Contains(entry.def);
+        }
+
     }
 }

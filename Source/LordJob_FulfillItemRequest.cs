@@ -120,7 +120,6 @@ namespace ItemRequests
             Transition leaveIfRequestFulfilled = new Transition(moving, exitingAndEscorting);
             leaveIfRequestFulfilled.AddSources(new LordToil[]
             {
-                moving,
                 defending,
                 defendingChillPoint,
             });

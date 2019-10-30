@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using RimWorld;
 using Verse;
@@ -128,18 +126,18 @@ namespace ItemRequests
             }
         }
 
-        public void AdjustItemRequest(ThingType thingTypeFilter, Tradeable tradeable, int numRequested, float price)
+        public void AdjustItemRequest(ThingType thingTypeFilter, ThingEntry entry, int numRequested, float price)
         {
-            int key = tradeable.GetHashCode();
+            int key = entry.tradeable.GetHashCode();
             if (requestedItems[thingTypeFilter].ContainsKey(key))
             {
                 int amount = Mathf.Max(numRequested, 0);
                 if (amount == 0)
                 {
-                    Log.Message("Requested: " + numRequested.ToString());
-                    Log.Message(requestedItems[thingTypeFilter].Count.ToString() + " items in current filter");
+                    //Log.Message("Requested: " + numRequested.ToString());
+                    //Log.Message(requestedItems[thingTypeFilter].Count.ToString() + " items in current filter");
                     requestedItems[thingTypeFilter].Remove(key);
-                    Log.Message("Colony just removed request for " + tradeable.ThingDef.LabelCap);
+                    Log.Message("Colony just removed request for " + entry.tradeable.ThingDef.LabelCap);
                 }
                 else if (amount == requestedItems[thingTypeFilter][key].amount)
                 {
@@ -149,30 +147,33 @@ namespace ItemRequests
                 {
                     requestedItems[thingTypeFilter][key] = new RequestItem
                     {
-                        item = tradeable,
+                        item = entry,
                         amount = amount,
-                        pricePerItem = price
+                        pricePerItem = price,
+                        isPawn = entry.pawnDef != null
                     };
-                    Log.Message("Colony just adjusted request for " + tradeable.ThingDef.LabelCap + " to " + numRequested);
+                    Log.Message("Colony just adjusted request for " + entry.tradeable.ThingDef.LabelCap + " to " + numRequested);
                 }
             }
             else if (numRequested > 0)
             {
                 requestedItems[thingTypeFilter][key] = new RequestItem
                 {
-                    item = tradeable,
+                    item = entry,
                     amount = numRequested,
-                    pricePerItem = price
+                    pricePerItem = price,
+                    isPawn = entry.pawnDef != null
                 };
-                Log.Message("Colony just requested " + tradeable.ThingDef.LabelCap + " x" + numRequested);
+                Log.Message("Colony just requested " + entry.tradeable.ThingDef.LabelCap + " x" + numRequested + (entry.pawnDef != null ? " (" + entry.gender + ")" : ""));
             }
         }
 
     }
     public class RequestItem
     {
-        public Tradeable item;
+        public ThingEntry item;
         public int amount;
         public float pricePerItem;
+        public bool isPawn;
     }
 }

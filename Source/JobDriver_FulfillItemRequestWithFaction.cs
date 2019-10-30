@@ -18,7 +18,7 @@ namespace ItemRequests
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            Log.Message("Make fulfill trade request");
+            //Log.Message("Make fulfill trade request");
             this.FailOnDespawnedOrNull(TargetIndex.A);
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch).FailOn(() => !Trader.CanTradeNow);
             Toil trade = new Toil();
