@@ -41,7 +41,6 @@ namespace ItemRequests
         private const float priceTextAreaWidth = 100;
         private const float resetItemCountAreaWidth = 40;
         private const float colonyItemCountAreaWidth = 100;
-        private const float countAdjustInterfaceWidth = 200;
         protected static readonly Vector2 AcceptButtonSize = new Vector2(160, 40f);
         protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160, 40f);
         private const string colonyCountTooltipText = "The amount your colony currently has stored.";
@@ -133,6 +132,7 @@ namespace ItemRequests
             GUI.EndGroup();
         }
 
+        // MAYBE TODO: request quality of items as well?
         private void DrawWindowHeader(Rect headerRowRect, float headerRowHeight)
         {
             // Begin Header group
@@ -160,7 +160,7 @@ namespace ItemRequests
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
             Rect negotiatorNameArea = new Rect(0, secondRowY - 2, headerRowRect.width / 2, secondRowY);
-            Widgets.Label(negotiatorNameArea, "Negotiator:" + negotiator.LabelShort);
+            Widgets.Label(negotiatorNameArea, "Negotiator: " + negotiator.LabelShort);
 
             // Draw just below trader name
             Text.Anchor = TextAnchor.UpperRight;
@@ -405,8 +405,6 @@ namespace ItemRequests
                 TooltipHandler.TipRegion(colonyItemCountArea, colonyCountTooltipText);
             }
 
-            x += colonyItemCountAreaWidth;
-
             // Draw the input box to select number of requests
             Rect countAdjustInterfaceRect = new Rect(rightAlignOffset, 0, rightContentSize, rowRect.height);
             Rect interactiveNumericFieldArea = new Rect(countAdjustInterfaceRect.center.x - 45f, countAdjustInterfaceRect.center.y - 12.5f, 90f, 25f).Rounded();
@@ -459,7 +457,7 @@ namespace ItemRequests
             string itemLabel = trade.LabelCap;
             if (entry.animal)
             {
-                itemLabel += " (" + entry.gender + ")";
+                itemLabel += " (" + entry.GenderString() + ")";
             }
             Widgets.Label(itemLabelArea, itemLabel);
             
@@ -471,7 +469,7 @@ namespace ItemRequests
                 {
                     return string.Empty;
                 }
-                string text = localTrad.LabelCap;
+                string text = trade.LabelCap;
                 string tipDescription = localTrad.TipDescription;
                 if (!tipDescription.NullOrEmpty())
                 {
@@ -775,6 +773,13 @@ namespace ItemRequests
         private bool hasMaximumTechLevel(ThingEntry entry, TechLevel tLevel)
         {
             int lvl = (int)entry.def.techLevel;
+
+            // there's probably a better way to test for an advanced component but oh well
+            if (entry.thing.def.label == "advanced component" && (int)tLevel < (int)TechLevel.Industrial)
+            {
+                return false;
+            }
+
             if (lvl > 1)
             {
                 // Current tech level or one level beneath

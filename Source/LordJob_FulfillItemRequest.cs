@@ -10,6 +10,8 @@ namespace ItemRequests
     {
         public static readonly string MemoOnFulfilled = "TriggerItemRequestFulfilled";
         public static readonly string MemoOnUnfulfilled = "TriggerItemRequestUnfulfilled";
+        public static readonly string MemoOnPartiallyFulfilled = "TriggerItemRequestPartiallyFulfilled";
+
         private Faction faction;
         private IntVec3 chillSpot;
         private Faction playerFaction => Faction.OfPlayer;
@@ -21,6 +23,7 @@ namespace ItemRequests
             this.chillSpot = chillSpot;
         }
         
+        // TODO: add another transition for if colony removes items from request when caravan arrives
         public override StateGraph CreateGraph()
         {
             StateGraph stateGraph = new StateGraph();
@@ -138,6 +141,7 @@ namespace ItemRequests
                 Transition attackIfNotEnoughSilver = new Transition(moving, defending, true);
                 attackIfNotEnoughSilver.AddSources(new LordToil[]
                 {
+                    moving,
                     defending,
                     defendingChillPoint,
                     exiting,

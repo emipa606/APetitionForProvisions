@@ -15,7 +15,8 @@ namespace ItemRequests
         private Pawn traderPawn;
         private Vector2 scrollPosition = Vector2.zero;
         private List<RequestItem> requestedItems;
-        private List<Thing> colonySilver = new List<Thing>();
+        private List<Thing> colonySilverStacks = new List<Thing>();
+        private float colonySilver = 0;
         private const float offsetFromRight = 100;
         private const float offsetFromBottom = 90;
 
@@ -24,6 +25,7 @@ namespace ItemRequests
             this.playerPawn = playerPawn;
             this.traderPawn = traderPawn;
             this.requestedItems = RequestSession.GetOpenDealWith(traderFaction).GetRequestedItems();
+            UpdateColonyCurrency(0);
         }
 
         private Faction traderFaction => traderPawn.Faction;
@@ -35,6 +37,8 @@ namespace ItemRequests
             Vector2 contentMargin = new Vector2(12, 18);
             string title = "Review Requested Items";
             string closeString = "Trade";
+            string cancelString = "Hold on";
+            float totalValue = RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue;
 
             // Begin Window group
             GUI.BeginGroup(inRect);
@@ -84,8 +88,14 @@ namespace ItemRequests
             Widgets.Label(totalStringRect, "Total");
             Widgets.DrawLineVertical(mainRect.width - offsetFromRight, horizontalLineY, rowHeight);
             Rect totalPriceRect = new Rect(mainRect.width - offsetFromRight, horizontalLineY, offsetFromRight, rowHeight);
-            Widgets.Label(totalPriceRect, RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue.ToStringMoney("F2"));
+            GUI.color = totalValue > colonySilver ? Color.red : Color.white;
+            Widgets.Label(totalPriceRect, totalValue.ToStringMoney("F2"));
+            if (totalValue > colonySilver)
+            {
+                TooltipHandler.TipRegion(totalPriceRect, "Your colony doesn't have enough silver stored to pay for this!");
+            }
 
+            GUI.color = Color.white;
             Text.Anchor = TextAnchor.MiddleLeft;
             Rect closeButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, 100, 50);
             if (Widgets.ButtonText(closeButtonArea, closeString, false))
@@ -93,10 +103,18 @@ namespace ItemRequests
                 CloseButtonPressed();
             }
 
+            Text.Anchor = TextAnchor.MiddleRight;
+            Rect cancelButtonArea = new Rect(totalPriceRect.x, closeButtonArea.y, totalPriceRect.width + 10, closeButtonArea.height);
+            if (Widgets.ButtonText(cancelButtonArea, cancelString, false))
+            {
+                Close(true);
+            }          
+            
             GenUI.ResetLabelAlign();
             GUI.EndGroup();
         }
 
+        // TODO: add ability to remove items from this screen (at cost of goodwill)
         private void DrawRequestedItem(Rect rowRect, RequestItem requested, int index)
         {
             Text.Font = GameFont.Small;
@@ -123,7 +141,7 @@ namespace ItemRequests
             string itemTitle = requested.item.thing.LabelCapNoCount;
             if (requested.isPawn)
             {
-                itemTitle += " (" + requested.item.gender + ")";
+                itemTitle += " (" + requested.item.GenderString() + ")";
             }
             itemTitle += " x" + requested.amount;
             Widgets.Label(itemNameArea, itemTitle);
@@ -146,7 +164,7 @@ namespace ItemRequests
             float totalRequestedValue = RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue;
             if (playerPawn.Map.resourceCounter.Silver < totalRequestedValue)
             {
-                Messages.Message("Colony doesn't have enough silver to pay for the items!", MessageTypeDefOf.NegativeEvent, true);
+                Messages.Message("The colony doesn't have enough silver to pay for the requested items!", MessageTypeDefOf.NegativeEvent, true);
                 Lord lord = traderPawn.GetLord();
                 lord.ReceiveMemo(LordJob_FulfillItemRequest.MemoOnUnfulfilled);
             }
@@ -201,6 +219,7 @@ namespace ItemRequests
 
         private void UpdateColonyCurrency(int amountToRemove)
         {
+            colonySilver = 0;
             List<SlotGroup> slotGroups = new List<SlotGroup>(playerPawn.Map.haulDestinationManager.AllGroups.ToList());
             slotGroups.ForEach(group =>
             {
@@ -208,12 +227,13 @@ namespace ItemRequests
                 {
                     if (thing.def == ThingDefOf.Silver)
                     {
-                        colonySilver.Add(thing);
+                        colonySilverStacks.Add(thing);
+                        colonySilver += thing.stackCount;
                     }
                 });
             });
 
-            foreach (Thing silver in colonySilver)
+            foreach (Thing silver in colonySilverStacks)
             {
                 int stackCount = silver.stackCount;
                 int remaining = amountToRemove - stackCount;

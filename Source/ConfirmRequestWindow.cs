@@ -22,10 +22,11 @@ namespace ItemRequests
             Vector2 contentMargin = new Vector2(10, 18);
             string title = "Are you sure?";
             string message = "Your colony doesn't currently have enough silver to buy the requested items. " +
-                "You can still request them of course, praying to your gods that they smile upon your colony " +
-                "and provide it with the funds your poor settlement lacks.";
+                "You can still request them of course, praying to your gods that they have pity on your colony " +
+                "before the requested caravan arrives. But if life on the Rim has taught you anything, it's that " +
+                "you should never anticipate good fortune when it's most needed.";
             string confirmString = "I know what I'm doing";
-            string cancelString = "On second thought...";
+            string cancelString = "Back to request";
 
             GUI.BeginGroup(inRect);
 
@@ -44,7 +45,7 @@ namespace ItemRequests
 
             float closeButtonHeight = 30;
             Text.Anchor = TextAnchor.MiddleLeft;
-            Rect confirmButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, 300, closeButtonHeight);
+            Rect confirmButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, (inRect.width - contentMargin.x) / 2, closeButtonHeight);
 
             if (Widgets.ButtonText(confirmButtonArea, confirmString, false))
             {
@@ -53,7 +54,7 @@ namespace ItemRequests
             }
 
             Text.Anchor = TextAnchor.MiddleRight;
-            Rect cancelButtonArea = new Rect(inRect.width - contentMargin.x - 200, confirmButtonArea.y, 200, closeButtonHeight);
+            Rect cancelButtonArea = new Rect(confirmButtonArea.x + confirmButtonArea.width, confirmButtonArea.y, confirmButtonArea.width, closeButtonHeight);
             if (Widgets.ButtonText(cancelButtonArea, cancelString, false))
             {
                 Close(false);
