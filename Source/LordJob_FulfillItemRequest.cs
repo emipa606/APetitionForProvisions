@@ -3,6 +3,7 @@ using RimWorld;
 using Verse;
 using Verse.AI;
 using Verse.AI.Group;
+using UnityEngine;
 
 namespace ItemRequests
 {
@@ -25,12 +26,11 @@ namespace ItemRequests
             this.chillSpot = chillSpot;
         }
 
-        // TODO: add another transition for if colony removes items from request when caravan arrives
         public override StateGraph CreateGraph()
         {
             StateGraph stateGraph = new StateGraph();
-            string noFulfilledTradeMsg = "Didn't fulfill trade agreement.";
-            string partiallyFulfilledTradeMsg = "Didn't fulfill full trade agreement.";
+            string noFulfilledTradeMsg = "Didn't fulfill trade agreement";
+            string partiallyFulfilledTradeMsg = "Didn't fulfill entire trade agreement";
             string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? "They're attacking your colonists out of anger!" : "Relations with your faction have dropped.";
             TransitionAction_Custom clearCaravanRequest = new TransitionAction_Custom(() => { RequestSession.CloseOpenDealWith(faction); });
 
@@ -134,8 +134,13 @@ namespace ItemRequests
             leaveIfRequestFulfilled.AddPostAction(new TransitionAction_WakeAll());
             stateGraph.AddTransition(leaveIfRequestFulfilled);
 
+
+            int ticksUntilBadThings = Rand.Range(
+                Mathf.RoundToInt(CaravanManager.fullDayInTicks / 2),                                   // 0.5  days
+                CaravanManager.fullDayInTicks + Mathf.RoundToInt(CaravanManager.fullDayInTicks / 4));  // 1.25 days
+
             // Determine actions if request goes unfulfilled based on faction relation
-            Trigger_TicksPassed ticksPassed = new Trigger_TicksPassed(Rand.Range(25000, 35000));
+            Trigger_TicksPassed ticksPassed = new Trigger_TicksPassed(ticksUntilBadThings);
             TransitionAction_Message actionMessage = new TransitionAction_Message(faction.Name + " has been insulted by your negligence to acknowledge their presence.\n" + addedMessageText);
             TransitionAction_Message leavingMessage = new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving.");
             if (isFactionNeutral)
@@ -163,11 +168,10 @@ namespace ItemRequests
                 attackIfRequestUnfulfilled.AddPreAction(new TransitionAction_Custom(setFactionToHostile));
                 attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_WakeAll());
                 attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_SetDefendLocalGroup());
-
                 stateGraph.AddTransition(attackIfRequestUnfulfilled, true);
 
                 Transition leaveAfterAttacking = new Transition(defendingChillPoint, exitWhileFighting);
-                leaveAfterAttacking.AddTrigger(new Trigger_TicksPassedAndNoRecentHarm(10000));
+                leaveAfterAttacking.AddTrigger(new Trigger_TicksPassed(ticksUntilBadThings + 10000));
                 leaveAfterAttacking.AddPreAction(leavingMessage);
                 leaveAfterAttacking.AddPostAction(new TransitionAction_EndAllJobs());
                 stateGraph.AddTransition(leaveAfterAttacking);
@@ -193,7 +197,7 @@ namespace ItemRequests
             }
 
             // Partial fulfillment
-            Transition leaveIfRequestMostlyFulfilled = new Transition(moving, exitingAndEscorting);
+            Transition leaveIfRequestMostlyFulfilled = new Transition(moving, exiting);
             leaveIfRequestMostlyFulfilled.AddSources(new LordToil[]
             {
                 defending,
@@ -210,7 +214,7 @@ namespace ItemRequests
             stateGraph.AddTransition(leaveIfRequestMostlyFulfilled);
 
 
-            Transition leaveIfRequestSomewhatFulfilled = new Transition(moving, exitingAndEscorting);
+            Transition leaveIfRequestSomewhatFulfilled = new Transition(moving, exiting);
             leaveIfRequestSomewhatFulfilled.AddSources(new LordToil[]
             {
                 defending,
@@ -226,7 +230,7 @@ namespace ItemRequests
             leaveIfRequestSomewhatFulfilled.AddPostAction(new TransitionAction_WakeAll());
             stateGraph.AddTransition(leaveIfRequestSomewhatFulfilled);
 
-            Transition leaveIfRequestHardlyFulfilled = new Transition(moving, exitingAndEscorting);
+            Transition leaveIfRequestHardlyFulfilled = new Transition(moving, exiting);
             leaveIfRequestHardlyFulfilled.AddSources(new LordToil[]
             {
                 defending,

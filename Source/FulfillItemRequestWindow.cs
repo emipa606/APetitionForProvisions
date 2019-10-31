@@ -250,14 +250,17 @@ namespace ItemRequests
         private string DetermineUnfulfilledValue()
         {
             float removedItemsValue = 0;
+            float totalItemsValue = 0;
             foreach (RequestItem item in requestedItems)
             {
                 if (item.removed)
                 {
                     removedItemsValue += item.pricePerItem * item.amount;
                 }
+                totalItemsValue += item.pricePerItem * item.amount;
             }
 
+            if (removedItemsValue == totalItemsValue) return LordJob_FulfillItemRequest.MemoOnUnfulfilled;
             if (removedItemsValue < PartialFulfillmentCutoff_S) return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_S;
             if (removedItemsValue < PartialFulfillmentCutoff_M) return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_M;
             return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_L;

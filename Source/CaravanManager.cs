@@ -8,7 +8,7 @@ namespace ItemRequests
 {
     public class CaravanManager
     {
-        public static float fullDayInTicks = 60000;
+        public static int fullDayInTicks = 60000;
         private static Dictionary<Faction, int> factionTravelTime = new Dictionary<Faction, int>();
 
         private static void DetermineCaravanTravelTimeFromFaction(Faction faction, Map playerMap)

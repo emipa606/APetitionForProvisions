@@ -55,13 +55,16 @@ namespace ItemRequests
             this.forcePause = true;
 
             // Find all items in stockpiles and store counts in dictionary
-            // TODO: count held things also based on stuff made of
             List<SlotGroup> slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
             slotGroups.ForEach(group =>
             {
                 group.HeldThings.ToList().ForEach(thing =>
                 {
                     string key = thing.def.label;
+                    if (thing.Stuff != null)
+                    {
+                        key += thing.Stuff.label;
+                    }
                     if (colonyItemCount.ContainsKey(key))
                     {
                         colonyItemCount[key] += thing.stackCount;
@@ -704,6 +707,10 @@ namespace ItemRequests
                     {
                         trad.thingsColony = new List<Thing>();
                         string key = thing.def.label;
+                        if (thing.Stuff != null)
+                        {
+                            key += thing.Stuff.label;
+                        }
                         if (colonyItemCount.ContainsKey(key))
                         {
                             Thing colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
