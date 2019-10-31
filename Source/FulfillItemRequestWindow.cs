@@ -1,24 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
-using Verse.AI;
 using Verse.AI.Group;
 
 namespace ItemRequests
 {
     class FulfillItemRequestWindow : Window
     {
+        public static readonly float PartialFulfillmentCutoff_S = 400;
+        public static readonly float PartialFulfillmentCutoff_M = 1200;
+
         private Pawn playerPawn;
         private Pawn traderPawn;
         private Vector2 scrollPosition = Vector2.zero;
         private List<RequestItem> requestedItems;
         private List<Thing> colonySilverStacks = new List<Thing>();
         private float colonySilver = 0;
-        private const float offsetFromRight = 100;
+        private const float offsetFromRight = 120;
         private const float offsetFromBottom = 90;
+
+        private RequestDeal deal => RequestSession.GetOpenDealWith(traderFaction);
 
         public FulfillItemRequestWindow(Pawn playerPawn, Pawn traderPawn)
         {
@@ -37,8 +40,8 @@ namespace ItemRequests
             Vector2 contentMargin = new Vector2(12, 18);
             string title = "Review Requested Items";
             string closeString = "Trade";
-            string cancelString = "Hold on";
-            float totalValue = RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue;
+            string cancelString = "Postpone";
+            float totalValue = deal.TotalRequestedValue;
 
             // Begin Window group
             GUI.BeginGroup(inRect);
@@ -84,7 +87,7 @@ namespace ItemRequests
 
             // Draw total
             Text.Anchor = TextAnchor.MiddleRight;
-            Rect totalStringRect = new Rect(mainRect.width - offsetFromRight - 150, horizontalLineY, 140, rowHeight);
+            Rect totalStringRect = new Rect(mainRect.width - offsetFromRight - 155, horizontalLineY, 140, rowHeight);
             Widgets.Label(totalStringRect, "Total");
             Widgets.DrawLineVertical(mainRect.width - offsetFromRight, horizontalLineY, rowHeight);
             Rect totalPriceRect = new Rect(mainRect.width - offsetFromRight, horizontalLineY, offsetFromRight, rowHeight);
@@ -100,7 +103,7 @@ namespace ItemRequests
             Rect closeButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, 100, 50);
             if (Widgets.ButtonText(closeButtonArea, closeString, false))
             {
-                CloseButtonPressed();
+                TradeButtonPressed();
             }
 
             Text.Anchor = TextAnchor.MiddleRight;
@@ -108,15 +111,15 @@ namespace ItemRequests
             if (Widgets.ButtonText(cancelButtonArea, cancelString, false))
             {
                 Close(true);
-            }          
-            
+            }
+
             GenUI.ResetLabelAlign();
             GUI.EndGroup();
         }
 
-        // TODO: add ability to remove items from this screen (at cost of goodwill)
         private void DrawRequestedItem(Rect rowRect, RequestItem requested, int index)
         {
+            float removeItemButtonSize = 24;
             Text.Font = GameFont.Small;
             float price = requested.pricePerItem * requested.amount;
             if (index % 2 == 1)
@@ -150,22 +153,35 @@ namespace ItemRequests
             Widgets.DrawLineVertical(x, 0, rowRect.height);
 
             x += 10;
-            Text.Anchor = TextAnchor.MiddleRight;
-            Rect itemPriceArea = new Rect(x, 0, offsetFromRight - 10, rowRect.height);
+            Rect itemPriceArea = new Rect(x, 0, offsetFromRight - 10 - removeItemButtonSize, rowRect.height);
             Widgets.Label(itemPriceArea, price.ToStringMoney("F2"));
 
+            Rect removeItemArea = new Rect(rowRect.width - removeItemButtonSize, 0, removeItemButtonSize, removeItemButtonSize);
+            bool isBeingTraded = !requested.removed;
+            Widgets.Checkbox(removeItemArea.position, ref isBeingTraded, removeItemButtonSize);
+            requested.removed = !isBeingTraded;
+
+            if (requested.removed)
+            {                
+                Widgets.DrawLineHorizontal(itemNameArea.x, rowRect.height / 2, Text.CalcSize(itemTitle).x);
+                Widgets.DrawLineHorizontal(itemPriceArea.x, rowRect.height / 2, Text.CalcSize(price.ToStringMoney("F2")).x);
+            }
+
+            GUI.color = Color.white;
             GUI.EndGroup();
         }
 
-        private void CloseButtonPressed()
+        private void TradeButtonPressed()
         {
             Close(true);
 
-            float totalRequestedValue = RequestSession.GetOpenDealWith(traderFaction).TotalRequestedValue;
+            bool fulfilledFullRequest = true;
+            float totalRequestedValue = deal.TotalRequestedValue;
+            Lord lord = traderPawn.GetLord();
+
             if (playerPawn.Map.resourceCounter.Silver < totalRequestedValue)
             {
                 Messages.Message("The colony doesn't have enough silver to pay for the requested items!", MessageTypeDefOf.NegativeEvent, true);
-                Lord lord = traderPawn.GetLord();
                 lord.ReceiveMemo(LordJob_FulfillItemRequest.MemoOnUnfulfilled);
             }
             else
@@ -179,42 +195,73 @@ namespace ItemRequests
 
                 foreach (RequestItem requested in requestedItems)
                 {
-                    if (requested.isPawn)
+                    if (requested.removed)
                     {
-                        for (int i = 0; i < requested.amount; ++i)
-                        {
-                            Pawn pawn = PawnGenerator.GeneratePawn(requested.item.pawnDef, Faction.OfPlayer);
-                            pawn.gender = requested.item.gender;
-                            IntVec3 spawnSpot = CellFinder.RandomSpawnCellForPawnNear(traderPawn.Position, traderPawn.Map);
-                            GenSpawn.Spawn(pawn, spawnSpot, traderPawn.Map);
-                            Log.Message("Spawned " + pawn.LabelCap + " the " + pawn.KindLabel);
-                        }
+                        fulfilledFullRequest = false;
                     }
                     else
                     {
-                        Thing thing = ThingMaker.MakeThing(requested.item.def, requested.item.stuffDef);
-                        thing.stackCount = requested.amount;
-
-                        if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
+                        if (requested.isPawn)
                         {
-                            Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                            for (int i = 0; i < requested.amount; ++i)
+                            {
+                                Pawn pawn = PawnGenerator.GeneratePawn(requested.item.pawnDef, Faction.OfPlayer);
+                                pawn.gender = requested.item.gender;
+                                IntVec3 spawnSpot = CellFinder.RandomSpawnCellForPawnNear(traderPawn.Position, traderPawn.Map);
+                                GenSpawn.Spawn(pawn, spawnSpot, traderPawn.Map);
+                                Log.Message("Spawned " + pawn.LabelCap + " the " + pawn.KindLabel);
+                            }
+                        }
+                        else
+                        {
+                            Thing thing = ThingMaker.MakeThing(requested.item.def, requested.item.stuffDef);
+                            thing.stackCount = requested.amount;
+
+                            if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
+                            {
+                                Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                            }
                         }
                     }
                 }
 
-                traderFaction.Notify_PlayerTraded(totalRequestedValue, playerPawn);
-                TaleRecorder.RecordTale(TaleDefOf.TradedWith, new object[]
-                {
-                        playerPawn,
-                        traderPawn
-                });
 
-                Lord lord = traderPawn.GetLord();
-                lord.ReceiveMemo(LordJob_FulfillItemRequest.MemoOnFulfilled);
+                if (fulfilledFullRequest)
+                {
+                    traderFaction.Notify_PlayerTraded(totalRequestedValue, playerPawn);
+                    TaleRecorder.RecordTale(TaleDefOf.TradedWith, new object[]
+                    {
+                            playerPawn,
+                            traderPawn
+                    });
+
+                    lord.ReceiveMemo(LordJob_FulfillItemRequest.MemoOnFulfilled);
+                }
+                else
+                {
+                    lord.ReceiveMemo(DetermineUnfulfilledValue());
+                }
                 UpdateColonyCurrency(Mathf.RoundToInt(totalRequestedValue));
             }
 
             RequestSession.CloseOpenDealWith(traderFaction);
+        }
+
+        private string DetermineUnfulfilledValue()
+        {
+            float removedItemsValue = 0;
+            foreach (RequestItem item in requestedItems)
+            {
+                if (item.removed)
+                {
+                    removedItemsValue += item.pricePerItem * item.amount;
+                }
+            }
+
+            if (removedItemsValue < PartialFulfillmentCutoff_S) return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_S;
+            if (removedItemsValue < PartialFulfillmentCutoff_M) return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_M;
+            return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_L;
+            
         }
 
         private void UpdateColonyCurrency(int amountToRemove)

@@ -10,7 +10,9 @@ namespace ItemRequests
     {
         public static readonly string MemoOnFulfilled = "TriggerItemRequestFulfilled";
         public static readonly string MemoOnUnfulfilled = "TriggerItemRequestUnfulfilled";
-        public static readonly string MemoOnPartiallyFulfilled = "TriggerItemRequestPartiallyFulfilled";
+        public static readonly string MemoOnPartiallyFulfilled_S = "TriggerItemRequestPartiallyFulfilled_S";
+        public static readonly string MemoOnPartiallyFulfilled_M = "TriggerItemRequestPartiallyFulfilled_M";
+        public static readonly string MemoOnPartiallyFulfilled_L = "TriggerItemRequestPartiallyFulfilled_L";
 
         private Faction faction;
         private IntVec3 chillSpot;
@@ -22,12 +24,13 @@ namespace ItemRequests
             this.faction = faction;
             this.chillSpot = chillSpot;
         }
-        
+
         // TODO: add another transition for if colony removes items from request when caravan arrives
         public override StateGraph CreateGraph()
         {
             StateGraph stateGraph = new StateGraph();
             string noFulfilledTradeMsg = "Didn't fulfill trade agreement.";
+            string partiallyFulfilledTradeMsg = "Didn't fulfill full trade agreement.";
             string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? "They're attacking your colonists out of anger!" : "Relations with your faction have dropped.";
             TransitionAction_Custom clearCaravanRequest = new TransitionAction_Custom(() => { RequestSession.CloseOpenDealWith(faction); });
 
@@ -36,7 +39,7 @@ namespace ItemRequests
             // ===================
             LordToil_Travel moving = new LordToil_Travel(chillSpot);
             stateGraph.StartingToil = moving;
-            
+
             LordToil_DefendPoint defending = new LordToil_DefendTraderCaravan();
             stateGraph.AddToil(defending);
 
@@ -130,10 +133,11 @@ namespace ItemRequests
             leaveIfRequestFulfilled.AddPreAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));
             leaveIfRequestFulfilled.AddPostAction(new TransitionAction_WakeAll());
             stateGraph.AddTransition(leaveIfRequestFulfilled);
-                        
+
             // Determine actions if request goes unfulfilled based on faction relation
             Trigger_TicksPassed ticksPassed = new Trigger_TicksPassed(Rand.Range(25000, 35000));
             TransitionAction_Message actionMessage = new TransitionAction_Message(faction.Name + " has been insulted by your negligence to acknowledge their presence.\n" + addedMessageText);
+            TransitionAction_Message leavingMessage = new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving.");
             if (isFactionNeutral)
             {
                 Action setFactionToHostile = () => faction.TrySetRelationKind(playerFaction, FactionRelationKind.Hostile, true, noFulfilledTradeMsg);
@@ -141,7 +145,6 @@ namespace ItemRequests
                 Transition attackIfNotEnoughSilver = new Transition(moving, defending, true);
                 attackIfNotEnoughSilver.AddSources(new LordToil[]
                 {
-                    moving,
                     defending,
                     defendingChillPoint,
                     exiting,
@@ -158,14 +161,14 @@ namespace ItemRequests
                 attackIfRequestUnfulfilled.AddTrigger(ticksPassed);
                 attackIfRequestUnfulfilled.AddPreAction(actionMessage);
                 attackIfRequestUnfulfilled.AddPreAction(new TransitionAction_Custom(setFactionToHostile));
-                attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_WakeAll());                
+                attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_WakeAll());
                 attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_SetDefendLocalGroup());
 
                 stateGraph.AddTransition(attackIfRequestUnfulfilled, true);
 
                 Transition leaveAfterAttacking = new Transition(defendingChillPoint, exitWhileFighting);
                 leaveAfterAttacking.AddTrigger(new Trigger_TicksPassedAndNoRecentHarm(10000));
-                leaveAfterAttacking.AddPreAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));
+                leaveAfterAttacking.AddPreAction(leavingMessage);
                 leaveAfterAttacking.AddPostAction(new TransitionAction_EndAllJobs());
                 stateGraph.AddTransition(leaveAfterAttacking);
             }
@@ -184,13 +187,62 @@ namespace ItemRequests
                 {
                     faction.TryAffectGoodwillWith(playerFaction, -30, true, false, noFulfilledTradeMsg);
                 }));
-                leaveIfRequestUnfulfilled.AddPostAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));
+                leaveIfRequestUnfulfilled.AddPostAction(leavingMessage);
                 leaveIfRequestUnfulfilled.AddPostAction(new TransitionAction_WakeAll());
-
                 stateGraph.AddTransition(leaveIfRequestUnfulfilled);
             }
 
-            Transition continueToLeaveMap = new Transition(exitingAndEscorting, exitingAndEscorting, true);                        
+            // Partial fulfillment
+            Transition leaveIfRequestMostlyFulfilled = new Transition(moving, exitingAndEscorting);
+            leaveIfRequestMostlyFulfilled.AddSources(new LordToil[]
+            {
+                defending,
+                defendingChillPoint
+            });
+            leaveIfRequestMostlyFulfilled.AddTrigger(new Trigger_Memo(MemoOnPartiallyFulfilled_S));
+            leaveIfRequestMostlyFulfilled.AddPreAction(new TransitionAction_Message("The caravan from " + faction.Name + " is disappointed that you didn't buy everything you asked for.", MessageTypeDefOf.CautionInput));
+            leaveIfRequestMostlyFulfilled.AddPreAction(new TransitionAction_Custom(() =>
+            {
+                faction.TryAffectGoodwillWith(playerFaction, -5, true, false, partiallyFulfilledTradeMsg);
+            }));
+            leaveIfRequestMostlyFulfilled.AddPostAction(leavingMessage);
+            leaveIfRequestMostlyFulfilled.AddPostAction(new TransitionAction_WakeAll());
+            stateGraph.AddTransition(leaveIfRequestMostlyFulfilled);
+
+
+            Transition leaveIfRequestSomewhatFulfilled = new Transition(moving, exitingAndEscorting);
+            leaveIfRequestSomewhatFulfilled.AddSources(new LordToil[]
+            {
+                defending,
+                defendingChillPoint
+            });
+            leaveIfRequestSomewhatFulfilled.AddTrigger(new Trigger_Memo(MemoOnPartiallyFulfilled_M));
+            leaveIfRequestSomewhatFulfilled.AddPreAction(new TransitionAction_Message("The caravan from " + faction.Name + " is annoyed that you didn't buy everything you asked for.", MessageTypeDefOf.CautionInput));
+            leaveIfRequestSomewhatFulfilled.AddPreAction(new TransitionAction_Custom(() =>
+            {
+                faction.TryAffectGoodwillWith(playerFaction, -10, true, false, partiallyFulfilledTradeMsg);
+            }));
+            leaveIfRequestSomewhatFulfilled.AddPostAction(leavingMessage);
+            leaveIfRequestSomewhatFulfilled.AddPostAction(new TransitionAction_WakeAll());
+            stateGraph.AddTransition(leaveIfRequestSomewhatFulfilled);
+
+            Transition leaveIfRequestHardlyFulfilled = new Transition(moving, exitingAndEscorting);
+            leaveIfRequestHardlyFulfilled.AddSources(new LordToil[]
+            {
+                defending,
+                defendingChillPoint
+            });
+            leaveIfRequestHardlyFulfilled.AddTrigger(new Trigger_Memo(MemoOnPartiallyFulfilled_L));
+            leaveIfRequestHardlyFulfilled.AddPreAction(new TransitionAction_Message("The caravan from " + faction.Name + " is outraged that you didn't buy everything you asked for.", MessageTypeDefOf.CautionInput));
+            leaveIfRequestHardlyFulfilled.AddPreAction(new TransitionAction_Custom(() =>
+            {
+                faction.TryAffectGoodwillWith(playerFaction, -20, true, false, partiallyFulfilledTradeMsg);
+            }));
+            leaveIfRequestHardlyFulfilled.AddPostAction(leavingMessage);
+            leaveIfRequestHardlyFulfilled.AddPostAction(new TransitionAction_WakeAll());
+            stateGraph.AddTransition(leaveIfRequestHardlyFulfilled);
+
+            Transition continueToLeaveMap = new Transition(exitingAndEscorting, exitingAndEscorting, true);
             continueToLeaveMap.AddTrigger(new Trigger_PawnLost());
             continueToLeaveMap.AddTrigger(new Trigger_TickCondition(() => LordToil_ExitMapAndEscortCarriers.IsAnyDefendingPosition(lord.ownedPawns) && !GenHostility.AnyHostileActiveThreatTo(Map, faction), 60));
             stateGraph.AddTransition(continueToLeaveMap);
@@ -224,8 +276,8 @@ namespace ItemRequests
 
     public class LordToil_DefendTraderCaravan : LordToil_DefendPoint
     {
-        public LordToil_DefendTraderCaravan() : base(true) {}
-        public LordToil_DefendTraderCaravan(IntVec3 defendPoint, float defendRadius) : base(defendPoint, defendRadius) {}
+        public LordToil_DefendTraderCaravan() : base(true) { }
+        public LordToil_DefendTraderCaravan(IntVec3 defendPoint, float defendRadius) : base(defendPoint, defendRadius) { }
 
         public override bool AllowSatisfyLongNeeds => false;
         public override float? CustomWakeThreshold => new float?(0.5f);

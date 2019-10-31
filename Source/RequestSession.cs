@@ -24,7 +24,7 @@ namespace ItemRequests
             }
 
             RequestSession.faction = faction;
-            negotiator = playerNegotiator;            
+            negotiator = playerNegotiator;
             deal = new RequestDeal(faction);
             openDeals.Add(deal);
             success = true;
@@ -32,6 +32,7 @@ namespace ItemRequests
 
         public static RequestDeal GetOpenDealWith(Faction faction)
         {
+            if (faction == null) return null;
             foreach (RequestDeal openDeal in openDeals)
             {
                 if (openDeal.Faction.randomKey == faction.randomKey)
@@ -71,6 +72,7 @@ namespace ItemRequests
     {
         public Faction Faction { get; private set; }
         private Dictionary<ThingType, Dictionary<int, RequestItem>> requestedItems;
+
         public float TotalRequestedValue
         {
             get
@@ -80,7 +82,10 @@ namespace ItemRequests
                 {
                     foreach (RequestItem item in dictionary.Values)
                     {
-                        val += item.pricePerItem * item.amount;
+                        if (!item.removed)
+                        {
+                            val += item.pricePerItem * item.amount;
+                        }
                     }
                 }
                 return val;
@@ -137,7 +142,7 @@ namespace ItemRequests
                     //Log.Message("Requested: " + numRequested.ToString());
                     //Log.Message(requestedItems[thingTypeFilter].Count.ToString() + " items in current filter");
                     requestedItems[thingTypeFilter].Remove(key);
-                    Log.Message("Colony just removed request for " + entry.tradeable.ThingDef.LabelCap);
+                    //Log.Message("Colony just removed request for " + entry.tradeable.ThingDef.LabelCap);
                 }
                 else if (amount == requestedItems[thingTypeFilter][key].amount)
                 {
@@ -152,7 +157,7 @@ namespace ItemRequests
                         pricePerItem = price,
                         isPawn = entry.pawnDef != null
                     };
-                    Log.Message("Colony just adjusted request for " + entry.tradeable.ThingDef.LabelCap + " to " + numRequested);
+                    //Log.Message("Colony just adjusted request for " + entry.tradeable.ThingDef.LabelCap + " to " + numRequested);
                 }
             }
             else if (numRequested > 0)
@@ -164,16 +169,17 @@ namespace ItemRequests
                     pricePerItem = price,
                     isPawn = entry.pawnDef != null
                 };
-                Log.Message("Colony just requested " + entry.tradeable.ThingDef.LabelCap + " x" + numRequested + (entry.pawnDef != null ? " (" + entry.gender + ")" : ""));
+                //Log.Message("Colony just requested " + entry.tradeable.ThingDef.LabelCap + " x" + numRequested + (entry.pawnDef != null ? " (" + entry.gender + ")" : ""));
             }
         }
-
     }
+
     public class RequestItem
     {
         public ThingEntry item;
         public int amount;
         public float pricePerItem;
-        public bool isPawn;
+        public bool isPawn = false;
+        public bool removed = false;
     }
 }

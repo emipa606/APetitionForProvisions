@@ -55,6 +55,7 @@ namespace ItemRequests
             this.forcePause = true;
 
             // Find all items in stockpiles and store counts in dictionary
+            // TODO: count held things also based on stuff made of
             List<SlotGroup> slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
             slotGroups.ForEach(group =>
             {
@@ -133,6 +134,7 @@ namespace ItemRequests
         }
 
         // MAYBE TODO: request quality of items as well?
+        // MAYBE TODO: request prisoners (may not always be available)
         private void DrawWindowHeader(Rect headerRowRect, float headerRowHeight)
         {
             // Begin Header group
