@@ -249,11 +249,13 @@ namespace ItemRequests
             Transition continueToLeaveMap = new Transition(exitingAndEscorting, exitingAndEscorting, true);
             continueToLeaveMap.AddTrigger(new Trigger_PawnLost());
             continueToLeaveMap.AddTrigger(new Trigger_TickCondition(() => LordToil_ExitMapAndEscortCarriers.IsAnyDefendingPosition(lord.ownedPawns) && !GenHostility.AnyHostileActiveThreatTo(Map, faction), 60));
+            continueToLeaveMap.AddPostAction(clearCaravanRequest);
             stateGraph.AddTransition(continueToLeaveMap);
 
             Transition finishLeavingMap = new Transition(exitingAndEscorting, exiting);
             finishLeavingMap.AddTrigger(new Trigger_TicksPassed(60000));
             finishLeavingMap.AddPostAction(new TransitionAction_WakeAll());
+            finishLeavingMap.AddPostAction(clearCaravanRequest);
             stateGraph.AddTransition(finishLeavingMap);
 
             Transition leaveIfBadThingsHappen = new Transition(defendingChillPoint, exitingAndEscorting);
@@ -265,6 +267,7 @@ namespace ItemRequests
             leaveIfBadThingsHappen.AddTrigger(new Trigger_ImportantTraderCaravanPeopleLost());
             leaveIfBadThingsHappen.AddPostAction(new TransitionAction_WakeAll());
             leaveIfBadThingsHappen.AddPostAction(new TransitionAction_EndAllJobs());
+            leaveIfBadThingsHappen.AddPostAction(clearCaravanRequest);
             stateGraph.AddTransition(leaveIfBadThingsHappen);
 
             return stateGraph;
