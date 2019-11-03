@@ -20,12 +20,9 @@ namespace ItemRequests
         public override void DoWindowContents(Rect inRect)
         {
             Vector2 contentMargin = new Vector2(10, 18);
-            string title = "Request Acknowledged";
-            string message = faction.Name + " has agreed to the exchange and will arrive within a few days.\n\n" +
-                "Be sure to have the silver for the amount you agreed upon when they arrive. You may have enough " +
-                "currently, but life is notoriously perilous on the Rim and you never know what misfortunes await " +
-                "you in the next few days.";
-            string closeString = "OK";
+            string title = "IR.RequestAcknowledgedWindow.WindowTitle".Translate();
+            string message = "IR.RequestAcknowledgedWindow.WindowMessage".Translate(faction.Name);
+            string closeString = "IR.RequestAcknowledgedWindow.CloseText".Translate();
 
             // Begin Window group
             GUI.BeginGroup(inRect);

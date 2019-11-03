@@ -20,13 +20,10 @@ namespace ItemRequests
         public override void DoWindowContents(Rect inRect)
         {
             Vector2 contentMargin = new Vector2(10, 18);
-            string title = "Are you sure?";
-            string message = "Your colony doesn't currently have enough silver to buy the requested items. " +
-                "You can still request them of course, praying to your gods that they have pity on your colony " +
-                "before the requested caravan arrives. But if life on the Rim has taught you anything, it's that " +
-                "you should never anticipate good fortune when it's most needed.";
-            string confirmString = "I know what I'm doing";
-            string cancelString = "Back to request";
+            string title = "IR.ConfirmRequestWindow.WindowTitle".Translate();
+            string message = "IR.ConfirmRequestWindow.WindowMessage".Translate();
+            string confirmString = "IR.ConfirmRequestWindow.Confirm".Translate();
+            string cancelString = "IR.ConfirmRequestWindow.Cancel".Translate();
 
             GUI.BeginGroup(inRect);
 

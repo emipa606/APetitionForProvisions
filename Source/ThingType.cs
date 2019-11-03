@@ -1,4 +1,4 @@
-using System;
+using Verse;
 namespace ItemRequests
 {
     // This enum was adapted from the class EquipmentType
@@ -17,5 +17,13 @@ namespace ItemRequests
         Animals,
         Other,
         Discard
+    }
+
+    public static class ThingTypeExtension
+    {
+        public static string Translate(this ThingType t)
+        {
+            return ("IR.ThingType." + t.ToString()).Translate();            
+        }
     }
 }

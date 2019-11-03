@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+  <IR.ConfirmRequestWindow.WindowTitle>Are you sure?</IR.ConfirmRequestWindow.WindowTitle>
+  <IR.ConfirmRequestWindow.WindowMessage>Your colony doesn't currently have enough silver to buy the requested items. You can still request them of course, praying to your gods that they have pity on your colony before the requested caravan arrives. But if life on the Rim has taught you anything, it's that you should never anticipate good fortune when it's most needed.</IR.ConfirmRequestWindow.WindowMessage>
+  <IR.ConfirmRequestWindow.Confirm>I know what I'm doing</IR.ConfirmRequestWindow.Confirm>
+  <IR.ConfirmRequestWindow.Cancel>Back to request</IR.ConfirmRequestWindow.Cancel>
+
+  <IR.DialogWindow.RequestItems>Request specific items</IR.DialogWindow.RequestItems>
+
+  <IR.FulfillItemRequestWindow.ReviewItems>Review Requested Items</IR.FulfillItemRequestWindow.ReviewItems>
+  <IR.FulfillItemRequestWindow.Trade>Trade</IR.FulfillItemRequestWindow.Trade>
+  <IR.FulfillItemRequestWindow.Postpone>Postpone</IR.FulfillItemRequestWindow.Postpone>
+  <IR.FulfillItemRequestWindow.Total>Total</IR.FulfillItemRequestWindow.Total>
+  <IR.FulfillItemRequestWindow.NotEnoughSilverStored>Your colony doesn't have enough silver stored to pay for this!</IR.FulfillItemRequestWindow.NotEnoughSilverStored>
+  <IR.FulfillItemRequestWindow.NotEnoughSilverMessage>The colony doesn't have enough silver to pay for the requested items!</IR.FulfillItemRequestWindow.NotEnoughSilverMessage>
+
+  <IR.FulfillRequestFloatMenuOption.MenuText>Pay for requested items from {0}</IR.FulfillRequestFloatMenuOption.MenuText>
+  <IR.FulfillRequestFloatMenuOption.ReservedBy> (Reserved by {0})</IR.FulfillRequestFloatMenuOption.ReservedBy>
+
+  <IR.ItemRequestWindow.ColonyCountTooltip>The amount your colony currently has stored.</IR.ItemRequestWindow.ColonyCountTooltip>
+  <IR.ItemRequestWindow.NegotiatorLabel>Negotiator: {0}</IR.ItemRequestWindow.NegotiatorLabel>
+  <IR.ItemRequestWindow.TechLevelLabel>Tech Level: {0}</IR.ItemRequestWindow.TechLevelLabel>
+  <IR.ItemRequestWindow.AmountRequested>Amount requested</IR.ItemRequestWindow.AmountRequested>
+  <IR.ItemRequestWindow.Filters>Filters:</IR.ItemRequestWindow.Filters>
+  <IR.ItemRequestWindow.FilterAll>All</IR.ItemRequestWindow.FilterAll>
+  <IR.ItemRequestWindow.Silver>Silver</IR.ItemRequestWindow.Silver>
+  <IR.ItemRequestWindow.TotalValueRequestedTooltip>This is the value of all the items you've requested.</IR.ItemRequestWindow.TotalValueRequestedTooltip>
+  <IR.ItemRequestWindow.TotalValueRequestedCaution>Caution: You can still request these items, but you don't currently have enough silver to pay for them when they arrive.</IR.ItemRequestWindow.TotalValueRequestedCaution>
+  <IR.ItemRequestWindow.Confirm>Confirm</IR.ItemRequestWindow.Confirm>
+  <IR.ItemRequestWindow.Cancel>Cancel</IR.ItemRequestWindow.Cancel>
+  <IR.ItemRequestWindow.PriceUponDelivery>Price you'll pay upon delivery:</IR.ItemRequestWindow.PriceUponDelivery>
+  <IR.ItemRequestWindow.Requesting> (Requesting)</IR.ItemRequestWindow.Requesting>
+  <IR.ItemRequestWindow.DeliveryCharge>Price increase based on distance (approx. {0} days' journey):</IR.ItemRequestWindow.DeliveryCharge>
+  <IR.ItemRequestWindow.FactionRelationOffset>Faction relation price offset:</IR.ItemRequestWindow.FactionRelationOffset>
+
+  <IR.LordJobFulfillItemRequest.NoFulfillTrade>Didn't fulfill trade agreement</IR.LordJobFulfillItemRequest.NoFulfillTrade>
+  <IR.LordJobFulfillItemRequest.NoFulfillAllTrade>Didn't fulfill entire trade agreement</IR.LordJobFulfillItemRequest.NoFulfillAllTrade>
+  <IR.LordJobFulfillItemRequest.AttackingOutOfAnger>They're attacking your colonists out of anger!</IR.LordJobFulfillItemRequest.AttackingOutOfAnger>
+  <IR.LordJobFulfillItemRequest.RelationsDropped>Relations with your faction have dropped.</IR.LordJobFulfillItemRequest.RelationsDropped>
+  <IR.LordJobFulfillItemRequest.RequestedCaravanLeaving>The requested caravan from {0} is leaving.</IR.LordJobFulfillItemRequest.RequestedCaravanLeaving>
+  <IR.LordJobFulfillItemRequest.FactionInsulted>{0} has been insulted by your negligence to acknowledge their presence.</IR.LordJobFulfillItemRequest.FactionInsulted>
+  <IR.LordJobFulfillItemRequest.TradersAttacking>The traders from {0} are attacking your colonists!</IR.LordJobFulfillItemRequest.TradersAttacking>
+  <IR.LordJobFulfillItemRequest.DisappointedTraders>The caravan from {0} is disappointed that you didn't buy everything you asked for.</IR.LordJobFulfillItemRequest.DisappointedTraders>
+  <IR.LordJobFulfillItemRequest.AnnoyedTraders>The caravan from {0} is annoyed that you didn't buy everything you asked for.</IR.LordJobFulfillItemRequest.AnnoyedTraders>
+  <IR.LordJobFulfillItemRequest.OutragedTraders>The caravan from {0} is outraged that you didn't buy everything you asked for.</IR.LordJobFulfillItemRequest.OutragedTraders>
+
+  <IR.RequestAcknowledgedWindow.WindowTitle>Request Acknowledged</IR.RequestAcknowledgedWindow.WindowTitle>
+  <IR.RequestAcknowledgedWindow.WindowMessage>{0} has agreed to the exchange and will arrive within a few days.\n\nBe sure to have the silver for the amount you agreed upon when they arrive. You may have enough currently, but life is notoriously perilous on the Rim and you never know what misfortunes await you in the next few days.</IR.RequestAcknowledgedWindow.WindowMessage>
+  <IR.RequestAcknowledgedWindow.CloseText>OK</IR.RequestAcknowledgedWindow.CloseText>
+
+  <IR.RequestSession.CannotRequestAgainYet>You can't request more items from {0} until they've satisfied your previous request.</IR.RequestSession.CannotRequestAgainYet>
+
+  <IR.ThingType.Resources>Resources</IR.ThingType.Resources>
+  <IR.ThingType.Food>Food</IR.ThingType.Food>
+  <IR.ThingType.Weapons>Weapons</IR.ThingType.Weapons>
+  <IR.ThingType.Apparel>Apparel</IR.ThingType.Apparel>
+  <IR.ThingType.Medical>Medical</IR.ThingType.Medical>
+  <IR.ThingType.Buildings>Buildings</IR.ThingType.Buildings>
+  <IR.ThingType.Animals>Animals</IR.ThingType.Animals>
+  <IR.ThingType.Other>Other</IR.ThingType.Other>
+</LanguageData>

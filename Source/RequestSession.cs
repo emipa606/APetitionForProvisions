@@ -17,7 +17,7 @@ namespace ItemRequests
         {
             if (HasOpenDealWith(faction))
             {
-                Messages.Message("You can't request more items from " + faction.Name + " until they've satisfied your previous request.",
+                Messages.Message("IR.RequestSession.CannotRequestAgainYet".Translate(faction.Name),
                     MessageTypeDefOf.CautionInput, false);
                 success = false;
                 return;

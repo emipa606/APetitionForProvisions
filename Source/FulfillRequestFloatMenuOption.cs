@@ -24,7 +24,6 @@ namespace ItemRequests
                 foreach (LocalTargetInfo localTarget in localTradeTargets)
                 {
                     Pawn pTarg = (Pawn)localTarget.Thing;
-                    // not foolproof, but should work in 99% of cases?
                     if (
                         option.Label.Contains("TradeWith".Translate(pTarg.LabelShort + ", " + pTarg.TraderKind.label)) && 
                         RequestSession.HasOpenDealWith(pTarg.Faction) &&
@@ -58,10 +57,10 @@ namespace ItemRequests
                         };
                         
                         Pawn reservedBy = pawn.Map.reservationManager.FirstRespectedReserver(pTarg, pawn);
-                        string label = "Pay for requested items from " + pTarg.Faction.Name;
+                        string label = "IR.FulfillRequestFloatMenuOption.MenuText".Translate(pTarg.Faction.Name);
                         if (reservedBy != null)
                         {
-                            label += " (Reserved by " + reservedBy.LabelShort + ")";
+                            label += "IR.FulfillRequestFloatMenuOption.ReservedBy".Translate(reservedBy.LabelShort);
                         }
                         Thing thing = localTargetInfo.Thing;
                         MenuOptionPriority priority = MenuOptionPriority.InitiateSocial;

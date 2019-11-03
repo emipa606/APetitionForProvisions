@@ -29,9 +29,11 @@ namespace ItemRequests
         public override StateGraph CreateGraph()
         {
             StateGraph stateGraph = new StateGraph();
-            string noFulfilledTradeMsg = "Didn't fulfill trade agreement";
-            string partiallyFulfilledTradeMsg = "Didn't fulfill entire trade agreement";
-            string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? "They're attacking your colonists out of anger!" : "Relations with your faction have dropped.";
+            string noFulfilledTradeMsg = "IR.LordJobFulfillItemRequest.NoFulfillTrade".Translate();
+            string partiallyFulfilledTradeMsg = "IR.LordJobFulfillItemRequest.NoFulfillAllTrade".Translate();
+            string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? 
+                "IR.LordJobFulfillItemRequest.AttackingOutOfAnger".Translate() :
+                "IR.LordJobFulfillItemRequest.RelationsDropped".Translate();
             TransitionAction_Custom clearCaravanRequest = new TransitionAction_Custom(() => { RequestSession.CloseOpenDealWith(faction); });
 
             // ===================
@@ -130,7 +132,7 @@ namespace ItemRequests
                 defendingChillPoint,
             });
             leaveIfRequestFulfilled.AddTrigger(new Trigger_Memo(MemoOnFulfilled));
-            leaveIfRequestFulfilled.AddPreAction(new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving."));
+            leaveIfRequestFulfilled.AddPreAction(new TransitionAction_Message("IR.LordJobFulfillItemRequest.RequestedCaravanLeaving".Translate(faction.Name)));
             leaveIfRequestFulfilled.AddPostAction(new TransitionAction_WakeAll());
             stateGraph.AddTransition(leaveIfRequestFulfilled);
 
@@ -141,8 +143,8 @@ namespace ItemRequests
 
             // Determine actions if request goes unfulfilled based on faction relation
             Trigger_TicksPassed ticksPassed = new Trigger_TicksPassed(ticksUntilBadThings);
-            TransitionAction_Message actionMessage = new TransitionAction_Message(faction.Name + " has been insulted by your negligence to acknowledge their presence.\n" + addedMessageText);
-            TransitionAction_Message leavingMessage = new TransitionAction_Message("The requested caravan from " + faction.Name + " is leaving.");
+            TransitionAction_Message actionMessage = new TransitionAction_Message("IR.LordJobFulfillItemRequest.FactionInsulted".Translate(faction.Name) + "\n" + addedMessageText);
+            TransitionAction_Message leavingMessage = new TransitionAction_Message("IR.LordJobFulfillItemRequest.RequestedCaravanLeaving".Translate(faction.Name));
             if (isFactionNeutral)
             {
                 Action setFactionToHostile = () => faction.TrySetRelationKind(playerFaction, FactionRelationKind.Hostile, true, noFulfilledTradeMsg);
@@ -156,7 +158,7 @@ namespace ItemRequests
                     exitingAndEscorting
                 });
                 attackIfNotEnoughSilver.AddTrigger(new Trigger_Memo(MemoOnUnfulfilled));
-                attackIfNotEnoughSilver.AddPreAction(new TransitionAction_Message("The traders from " + faction.Name + " are attacking your colonists!"));
+                attackIfNotEnoughSilver.AddPreAction(new TransitionAction_Message("IR.LordJobFulfillItemRequest.TradersAttacking".Translate(faction.Name)));
                 attackIfNotEnoughSilver.AddPreAction(new TransitionAction_Custom(setFactionToHostile));
                 attackIfNotEnoughSilver.AddPostAction(new TransitionAction_WakeAll());
                 attackIfNotEnoughSilver.AddPostAction(new TransitionAction_SetDefendLocalGroup());
@@ -204,7 +206,7 @@ namespace ItemRequests
                 defendingChillPoint
             });
             leaveIfRequestMostlyFulfilled.AddTrigger(new Trigger_Memo(MemoOnPartiallyFulfilled_S));
-            leaveIfRequestMostlyFulfilled.AddPreAction(new TransitionAction_Message("The caravan from " + faction.Name + " is disappointed that you didn't buy everything you asked for.", MessageTypeDefOf.CautionInput));
+            leaveIfRequestMostlyFulfilled.AddPreAction(new TransitionAction_Message("IR.LordJobFulfillItemRequest.DisappointedTraders".Translate(faction.Name), MessageTypeDefOf.CautionInput));
             leaveIfRequestMostlyFulfilled.AddPreAction(new TransitionAction_Custom(() =>
             {
                 faction.TryAffectGoodwillWith(playerFaction, -5, true, false, partiallyFulfilledTradeMsg);
@@ -221,7 +223,7 @@ namespace ItemRequests
                 defendingChillPoint
             });
             leaveIfRequestSomewhatFulfilled.AddTrigger(new Trigger_Memo(MemoOnPartiallyFulfilled_M));
-            leaveIfRequestSomewhatFulfilled.AddPreAction(new TransitionAction_Message("The caravan from " + faction.Name + " is annoyed that you didn't buy everything you asked for.", MessageTypeDefOf.CautionInput));
+            leaveIfRequestSomewhatFulfilled.AddPreAction(new TransitionAction_Message("IR.LordJobFulfillItemRequest.AnnoyedTraders".Translate(faction.Name), MessageTypeDefOf.CautionInput));
             leaveIfRequestSomewhatFulfilled.AddPreAction(new TransitionAction_Custom(() =>
             {
                 faction.TryAffectGoodwillWith(playerFaction, -10, true, false, partiallyFulfilledTradeMsg);
@@ -237,7 +239,7 @@ namespace ItemRequests
                 defendingChillPoint
             });
             leaveIfRequestHardlyFulfilled.AddTrigger(new Trigger_Memo(MemoOnPartiallyFulfilled_L));
-            leaveIfRequestHardlyFulfilled.AddPreAction(new TransitionAction_Message("The caravan from " + faction.Name + " is outraged that you didn't buy everything you asked for.", MessageTypeDefOf.CautionInput));
+            leaveIfRequestHardlyFulfilled.AddPreAction(new TransitionAction_Message("IR.LordJobFulfillItemRequest.OutragedTraders".Translate(faction.Name), MessageTypeDefOf.CautionInput));
             leaveIfRequestHardlyFulfilled.AddPreAction(new TransitionAction_Custom(() =>
             {
                 faction.TryAffectGoodwillWith(playerFaction, -20, true, false, partiallyFulfilledTradeMsg);

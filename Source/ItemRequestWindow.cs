@@ -43,7 +43,7 @@ namespace ItemRequests
         private const float colonyItemCountAreaWidth = 100;
         protected static readonly Vector2 AcceptButtonSize = new Vector2(160, 40f);
         protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160, 40f);
-        private const string colonyCountTooltipText = "The amount your colony currently has stored.";
+        private string colonyCountTooltipText = "IR.ItemRequestWindow.ColonyCountTooltip".Translate();
 
         public ItemRequestWindow(Map map, Faction faction, Pawn negotiator)
         {
@@ -165,12 +165,12 @@ namespace ItemRequests
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
             Rect negotiatorNameArea = new Rect(0, secondRowY - 2, headerRowRect.width / 2, secondRowY);
-            Widgets.Label(negotiatorNameArea, "Negotiator: " + negotiator.LabelShort);
+            Widgets.Label(negotiatorNameArea, "IR.ItemRequestWindow.NegotiatorLabel".Translate(negotiator.LabelShort));
 
             // Draw just below trader name
             Text.Anchor = TextAnchor.UpperRight;
             Rect factionTechLevelArea = new Rect(headerRowRect.width / 2, secondRowY - 2, headerRowRect.width / 2, secondRowY);
-            Widgets.Label(factionTechLevelArea, "Tech Level: " + faction.def.techLevel.ToString());
+            Widgets.Label(factionTechLevelArea, "IR.ItemRequestWindow.TechLevelLabel".Translate(faction.def.techLevel.ToString()));
 
 
             // Draw the filter dropdowns
@@ -183,7 +183,7 @@ namespace ItemRequests
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.MiddleCenter;
             Rect clarificationTextArea = new Rect(rightAlignOffset, headerRowHeight - amountRequestedTextHeight, rightContentSize, amountRequestedTextHeight);
-            Widgets.Label(clarificationTextArea, "Amount requested");
+            Widgets.Label(clarificationTextArea, "IR.ItemRequestWindow.AmountRequested".Translate());
 
 
             // End Header group
@@ -196,21 +196,21 @@ namespace ItemRequests
         {
             Rect filterLabelArea = rectArea;
             filterLabelArea.width = 80;
-            Widgets.Label(filterLabelArea, "Filters:");
+            Widgets.Label(filterLabelArea, "IR.ItemRequestWindow.Filters".Translate());
 
             // Draw the thing type filter
             float filterDropdownHeight = 27;
             float filterDropdownWidth = 130;
             Text.Anchor = TextAnchor.UpperLeft;
             Rect thingFilterDropdownArea = new Rect(filterLabelArea.width + 20, rectArea.y - 6, filterDropdownWidth, filterDropdownHeight);
-            if (WidgetDropdown.Button(thingFilterDropdownArea, thingTypeFilter.ToString(), true, false, true))
+            if (WidgetDropdown.Button(thingFilterDropdownArea, thingTypeFilter.Translate(), true, false, true))
             {
                 var thingTypes = Enum.GetValues(typeof(ThingType));
                 List<FloatMenuOption> filterOptions = new List<FloatMenuOption>();
                 foreach (ThingType type in thingTypes)
                 {
                     if (type == ThingType.Discard) continue;
-                    filterOptions.Add(new FloatMenuOption(type.ToString(), () =>
+                    filterOptions.Add(new FloatMenuOption(type.Translate(), () =>
                     {
                         if (thingTypeFilter != type)
                         {
@@ -227,11 +227,11 @@ namespace ItemRequests
             // Draw the stuff filter
             Rect stuffFilterDropdownArea = thingFilterDropdownArea;
             stuffFilterDropdownArea.x += thingFilterDropdownArea.width + 10;
-            string stuffFilterLabel = stuffTypeFilter == null ? "All" : stuffTypeFilter.LabelCap;
+            string stuffFilterLabel = stuffTypeFilter == null ? "IR.ItemRequestWindow.FilterAll".Translate() : stuffTypeFilter.LabelCap;
             if (WidgetDropdown.Button(stuffFilterDropdownArea, stuffFilterLabel, true, false, true))
             {
                 List<FloatMenuOption> stuffFilterOptions = new List<FloatMenuOption>();
-                stuffFilterOptions.Add(new FloatMenuOption("All", () =>
+                stuffFilterOptions.Add(new FloatMenuOption("IR.ItemRequestWindow.FilterAll".Translate(), () =>
                 {
                     if (stuffTypeFilter != null)
                     {
@@ -275,7 +275,7 @@ namespace ItemRequests
             Rect textRectPadded = new Rect(x, 0, iconNameItemWidth, rowRect.height);
             textRectPadded.xMin += 5;
             textRectPadded.xMax -= 5;
-            Widgets.Label(textRectPadded, "Silver");
+            Widgets.Label(textRectPadded, "IR.ItemRequestWindow.Silver".Translate());
 
             x += iconNameItemWidth + priceTextAreaWidth;
 
@@ -288,11 +288,11 @@ namespace ItemRequests
 
             // Draw the amount currently requested by colony
             Text.Anchor = TextAnchor.MiddleCenter;
-            string tooltipString = "This is the value of all the items you've requested.";
+            string tooltipString = "IR.ItemRequestWindow.TotalValueRequestedTooltip".Translate();
             if (RequestSession.deal.TotalRequestedValue > colonySilver)
             {
                 GUI.color = Color.yellow;
-                tooltipString += "\n\nCaution: You can still request these items, but you don't currently have enough silver to pay for them when they arrive.";
+                tooltipString += "\n\n" + "IR.ItemRequestWindow.TotalValueRequestedCaution".Translate();
             }
             Rect requestedAmountArea = new Rect(rightAlignOffset, 0, rightContentSize, rowRect.height);
             Widgets.Label(requestedAmountArea, RequestSession.deal.TotalRequestedValue.ToStringMoney("F2"));
@@ -334,7 +334,7 @@ namespace ItemRequests
         private void DrawButtons(Rect inRect, Rect rowRect)
         {
             Rect confirmButtonRect = new Rect(inRect.width - AcceptButtonSize.x, inRect.height - AcceptButtonSize.y, AcceptButtonSize.x, AcceptButtonSize.y);
-            if (Widgets.ButtonText(confirmButtonRect, "Confirm", true, false, true))
+            if (Widgets.ButtonText(confirmButtonRect, "IR.ItemRequestWindow.Confirm".Translate(), true, false, true))
             {
                 Action onConfirmed = () =>
                 {
@@ -361,7 +361,7 @@ namespace ItemRequests
 
 
             Rect cancelButtonRect = new Rect(rowRect.x, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
-            if (Widgets.ButtonText(cancelButtonRect, "Cancel", true, false, true))
+            if (Widgets.ButtonText(cancelButtonRect, "IR.ItemRequestWindow.Cancel".Translate(), true, false, true))
             {
                 Close(true);
                 RequestSession.CloseOpenDealWith(faction);
@@ -551,7 +551,7 @@ namespace ItemRequests
                 return string.Empty;
             }
 
-            string text = "Price you'll pay upon delivery:";
+            string text = "IR.ItemRequestWindow.PriceUponDelivery".Translate();
             text += "\n\n";
             text = text + StatDefOf.MarketValue.LabelCap + ": " + trad.BaseMarketValue.ToStringMoney("F2");
 
@@ -562,7 +562,7 @@ namespace ItemRequests
                     text2,
                     "\n  x ",
                     requestingItemMarkupMultiplier.ToString("F2"),
-                    " (Requesting)"
+                    "IR.ItemRequestWindow.Requesting".Translate()
             });
 
             if (Find.Storyteller.difficulty.tradePriceFactorLoss != 0f)
@@ -587,9 +587,8 @@ namespace ItemRequests
             {
                 text2,
                 "\n",
-                "Price increase based on distance (approx. ",
-                daysToTravel.ToString("F1"),
-                " days' journey): x",
+                "IR.ItemRequestWindow.DeliveryCharge".Translate(daysToTravel.ToString("F1")),                
+                " x",
                 distPriceOffset.ToString("F2")
             });
 
@@ -612,7 +611,8 @@ namespace ItemRequests
                 {
                         text2,
                         "\n",
-                        "Faction relation price offset: ",
+                        "IR.ItemRequestWindow.FactionRelationOffset".Translate(),
+                        " ",
                         Mathf.Sign(priceGainSettlement) >= 0 ? "-" : "+",
                         Mathf.Abs(priceGainSettlement).ToStringPercent()
                 });

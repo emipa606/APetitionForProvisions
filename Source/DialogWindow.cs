@@ -34,7 +34,7 @@ namespace ItemRequests
 
         private static DiaOption RequestItemOption(Map map, Faction faction, Pawn negotiator)
         {
-            string text = "Request specific items";
+            string text = "IR.DialogWindow.RequestItems".Translate();
 
             // Can't request more items from same faction
             // until x number of ticks have passed.

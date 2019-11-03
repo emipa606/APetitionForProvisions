@@ -38,9 +38,9 @@ namespace ItemRequests
         public override void DoWindowContents(Rect inRect)
         {
             Vector2 contentMargin = new Vector2(12, 18);
-            string title = "Review Requested Items";
-            string closeString = "Trade";
-            string cancelString = "Postpone";
+            string title = "IR.FulfillItemRequestWindow.ReviewItems".Translate();
+            string closeString = "IR.FulfillItemRequestWindow.Trade".Translate();
+            string cancelString = "IR.FulfillItemRequestWindow.Postpone".Translate();
             float totalValue = deal.TotalRequestedValue;
 
             // Begin Window group
@@ -88,14 +88,14 @@ namespace ItemRequests
             // Draw total
             Text.Anchor = TextAnchor.MiddleRight;
             Rect totalStringRect = new Rect(mainRect.width - offsetFromRight - 155, horizontalLineY, 140, rowHeight);
-            Widgets.Label(totalStringRect, "Total");
+            Widgets.Label(totalStringRect, "IR.FulfillItemRequestWindow.Total".Translate());
             Widgets.DrawLineVertical(mainRect.width - offsetFromRight, horizontalLineY, rowHeight);
             Rect totalPriceRect = new Rect(mainRect.width - offsetFromRight, horizontalLineY, offsetFromRight, rowHeight);
             GUI.color = totalValue > colonySilver ? Color.red : Color.white;
             Widgets.Label(totalPriceRect, totalValue.ToStringMoney("F2"));
             if (totalValue > colonySilver)
             {
-                TooltipHandler.TipRegion(totalPriceRect, "Your colony doesn't have enough silver stored to pay for this!");
+                TooltipHandler.TipRegion(totalPriceRect, "IR.FulfillItemRequestWindow.NotEnoughSilverStored".Translate());
             }
 
             GUI.color = Color.white;
@@ -181,7 +181,7 @@ namespace ItemRequests
 
             if (playerPawn.Map.resourceCounter.Silver < totalRequestedValue)
             {
-                Messages.Message("The colony doesn't have enough silver to pay for the requested items!", MessageTypeDefOf.NegativeEvent, true);
+                Messages.Message("IR.FulfillItemRequestWindow.NotEnoughSilverMessage".Translate(), MessageTypeDefOf.NegativeEvent, true);
                 lord.ReceiveMemo(LordJob_FulfillItemRequest.MemoOnUnfulfilled);
             }
             else
@@ -209,7 +209,7 @@ namespace ItemRequests
                                 pawn.gender = requested.item.gender;
                                 IntVec3 spawnSpot = CellFinder.RandomSpawnCellForPawnNear(traderPawn.Position, traderPawn.Map);
                                 GenSpawn.Spawn(pawn, spawnSpot, traderPawn.Map);
-                                Log.Message("Spawned " + pawn.LabelCap + " the " + pawn.KindLabel);
+                                //Log.Message("Spawned " + pawn.LabelCap + " the " + pawn.KindLabel);
                             }
                         }
                         else
