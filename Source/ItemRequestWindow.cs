@@ -86,7 +86,7 @@ namespace ItemRequests
             float HeaderHeight = 32;
             float FooterHeight = 40f;
             float WindowPadding = 18;
-            WindowSize = new Vector2(800, 1000);
+            WindowSize = new Vector2(800, 800);
             Vector2 ContentSize = new Vector2(WindowSize.x - WindowPadding * 2 - ContentMargin.x * 2,
                 WindowSize.y - WindowPadding * 2 - ContentMargin.y * 2 - FooterHeight - HeaderHeight);
 
