@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <RequestCaravanArrival.label>物资小队已抵达</RequestCaravanArrival.label>
+  <RequestCaravanArrival.letterText>一支带着你所请求物资的远征队已抵达。\n\n请与远征队领袖对话以完成交易。但请注意，如果你没有足够的白银支付你请求的物资，这一行为将激怒小队所在派系，那么你可能陷入...不那么如意的局面。</RequestCaravanArrival.letterText>
+  <RequestCaravanArrival.letterLabel>物资小队已抵达</RequestCaravanArrival.letterLabel>
+
+
+</LanguageData>
