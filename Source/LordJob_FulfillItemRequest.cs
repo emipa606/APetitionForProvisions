@@ -20,6 +20,8 @@ namespace ItemRequests
         private Faction playerFaction => Faction.OfPlayer;
         private bool isFactionNeutral => faction.PlayerRelationKind == FactionRelationKind.Neutral;
 
+        public LordJob_FulfillItemRequest() { }
+
         public LordJob_FulfillItemRequest(Faction faction, IntVec3 chillSpot)
         {
             this.faction = faction;
@@ -164,7 +166,7 @@ namespace ItemRequests
                 attackIfNotEnoughSilver.AddPostAction(new TransitionAction_SetDefendLocalGroup());
                 stateGraph.AddTransition(attackIfNotEnoughSilver, true);
 
-                Transition attackIfRequestUnfulfilled = new Transition(defendingChillPoint, exitWhileFighting);
+                Transition attackIfRequestUnfulfilled = new Transition(defendingChillPoint, defending);
                 attackIfRequestUnfulfilled.AddTrigger(ticksPassed);
                 attackIfRequestUnfulfilled.AddPreAction(actionMessage);
                 attackIfRequestUnfulfilled.AddPreAction(new TransitionAction_Custom(setFactionToHostile));
@@ -172,7 +174,7 @@ namespace ItemRequests
                 attackIfRequestUnfulfilled.AddPostAction(new TransitionAction_SetDefendLocalGroup());
                 stateGraph.AddTransition(attackIfRequestUnfulfilled, true);
 
-                Transition leaveAfterAttacking = new Transition(defendingChillPoint, exitWhileFighting);
+                Transition leaveAfterAttacking = new Transition(defendingChillPoint, exitingAndEscorting);
                 leaveAfterAttacking.AddTrigger(new Trigger_TicksPassed(ticksUntilBadThings + 10000));
                 leaveAfterAttacking.AddPreAction(leavingMessage);
                 leaveAfterAttacking.AddPostAction(new TransitionAction_EndAllJobs());
@@ -274,10 +276,12 @@ namespace ItemRequests
 
             return stateGraph;
         }
+       
         public override void ExposeData()
         {
-            Scribe_References.Look(ref faction, "faction", false);
-            Scribe_Values.Look(ref chillSpot, "chillSpot", default(IntVec3), false);
+            Scribe_References.Look(ref lord, "lord");
+            Scribe_References.Look(ref faction, "faction");
+            Scribe_Values.Look(ref chillSpot, "chillSpot");
         }
 
         public override bool AddFleeToil => false;
@@ -318,7 +322,7 @@ namespace ItemRequests
                 }
                 return;
             }
-        }
+        }    
     }
 
 }

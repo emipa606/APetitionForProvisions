@@ -6,12 +6,12 @@ using Verse;
 
 namespace ItemRequests
 {
-    public static class RequestSession
+    public class RequestSession : IExposable
     {
-        public static Pawn negotiator;
-        public static Faction faction;
-        public static RequestDeal deal;
-        public static List<RequestDeal> openDeals = new List<RequestDeal>();
+        public static Pawn negotiator  = null;
+        public static Faction faction  = null;
+        public static RequestDeal deal = null;
+        public static List<RequestDeal> openDeals;
 
         public static void SetupWith(Faction faction, Pawn playerNegotiator, out bool success)
         {
@@ -33,6 +33,7 @@ namespace ItemRequests
         public static RequestDeal GetOpenDealWith(Faction faction)
         {
             if (faction == null) return null;
+            if (openDeals == null) openDeals = new List<RequestDeal>();
             foreach (RequestDeal openDeal in openDeals)
             {
                 if (openDeal.Faction.randomKey == faction.randomKey)
@@ -66,12 +67,22 @@ namespace ItemRequests
             negotiator = null;
             deal = null;
         }
+
+        public void ExposeData()
+        {
+            Log.Message("scribe requestsession");
+            Scribe_Collections.Look(ref openDeals, "openDeals", LookMode.Deep);
+        }
     }
 
-    public class RequestDeal
+    public class RequestDeal : IExposable
     {
-        public Faction Faction { get; private set; }
-        private Dictionary<ThingType, Dictionary<int, RequestItem>> requestedItems;
+        public Faction Faction { get { return faction; } }
+        private Faction faction;
+        private Dictionary<ThingType, RequestedItemDict> requestedItems;
+
+        private List<ThingType> thingTypes;
+        private List<RequestedItemDict> requestedItemsDicts;
 
         public float TotalRequestedValue
         {
@@ -80,7 +91,7 @@ namespace ItemRequests
                 float val = 0;
                 foreach (var dictionary in requestedItems.Values)
                 {
-                    foreach (RequestItem item in dictionary.Values)
+                    foreach (RequestItem item in dictionary.dict.Values)
                     {
                         if (!item.removed)
                         {
@@ -91,15 +102,16 @@ namespace ItemRequests
                 return val;
             }
         }
+
         public RequestDeal(Faction faction)
         {
-            Faction = faction;
-            requestedItems = new Dictionary<ThingType, Dictionary<int, RequestItem>>();
+            this.faction = faction;
+            requestedItems = new Dictionary<ThingType, RequestedItemDict>();
 
             foreach (ThingType type in Enum.GetValues(typeof(ThingType)))
             {
                 if (type == ThingType.Discard) continue;
-                requestedItems.Add(type, new Dictionary<int, RequestItem>());
+                requestedItems.Add(type, new RequestedItemDict());
             }
         }
 
@@ -108,7 +120,7 @@ namespace ItemRequests
             List<RequestItem> things = new List<RequestItem>();
             foreach (ThingType type in requestedItems.Keys)
             {
-                things.AddRange(requestedItems[type].Values);
+                things.AddRange(requestedItems[type].dict.Values);
             }
             return things;
         }
@@ -116,41 +128,33 @@ namespace ItemRequests
         public int GetCountForItem(ThingType thingTypeFilter, Tradeable tradeable)
         {
             int key = tradeable.GetHashCode();
-            if (requestedItems[thingTypeFilter].ContainsKey(key))
+            if (requestedItems[thingTypeFilter].dict.ContainsKey(key))
             {
-                return requestedItems[thingTypeFilter][key].amount;
+                return requestedItems[thingTypeFilter].dict[key].amount;
             }
             return 0;
-        }
-
-        public void Reset()
-        {
-            foreach (var value in requestedItems.Values)
-            {
-                value.Clear();
-            }
         }
 
         public void AdjustItemRequest(ThingType thingTypeFilter, ThingEntry entry, int numRequested, float price)
         {
             int key = entry.tradeable.GetHashCode();
-            if (requestedItems[thingTypeFilter].ContainsKey(key))
+            if (requestedItems[thingTypeFilter].dict.ContainsKey(key))
             {
                 int amount = Mathf.Max(numRequested, 0);
                 if (amount == 0)
                 {
                     //Log.Message("Requested: " + numRequested.ToString());
                     //Log.Message(requestedItems[thingTypeFilter].Count.ToString() + " items in current filter");
-                    requestedItems[thingTypeFilter].Remove(key);
+                    requestedItems[thingTypeFilter].dict.Remove(key);
                     //Log.Message("Colony just removed request for " + entry.tradeable.ThingDef.LabelCap);
                 }
-                else if (amount == requestedItems[thingTypeFilter][key].amount)
+                else if (amount == requestedItems[thingTypeFilter].dict[key].amount)
                 {
                     return;
                 }
                 else
                 {
-                    requestedItems[thingTypeFilter][key] = new RequestItem
+                    requestedItems[thingTypeFilter].dict[key] = new RequestItem
                     {
                         item = entry,
                         amount = amount,
@@ -162,7 +166,7 @@ namespace ItemRequests
             }
             else if (numRequested > 0)
             {
-                requestedItems[thingTypeFilter][key] = new RequestItem
+                requestedItems[thingTypeFilter].dict[key] = new RequestItem
                 {
                     item = entry,
                     amount = numRequested,
@@ -172,14 +176,44 @@ namespace ItemRequests
                 //Log.Message("Colony just requested " + entry.tradeable.ThingDef.LabelCap + " x" + numRequested + (entry.pawnDef != null ? " (" + entry.gender + ")" : ""));
             }
         }
+
+        public void ExposeData()
+        {
+            Log.Message("Scribe request deal");
+            Scribe_References.Look(ref faction, "faction");
+            Scribe_Collections.Look(ref requestedItems, "requestedItems", LookMode.Value, LookMode.Deep, ref thingTypes, ref requestedItemsDicts);            
+        }
+
+        private class RequestedItemDict : IExposable
+        {
+            public Dictionary<int, RequestItem> dict = new Dictionary<int, RequestItem>();
+
+            private List<int> ints;
+            private List<RequestItem> items;
+
+            public void ExposeData()
+            {
+                Log.Message("Scribing requesteditemdict");
+                Scribe_Collections.Look(ref dict, "dict", LookMode.Value, LookMode.Deep, ref ints, ref items);
+            }
+        }
     }
 
-    public class RequestItem
+    public class RequestItem : IExposable
     {
         public ThingEntry item;
         public int amount;
         public float pricePerItem;
         public bool isPawn = false;
         public bool removed = false;
+
+        public void ExposeData()
+        {
+            Scribe_Deep.Look(ref item, "item");
+            Scribe_Values.Look(ref amount, "amount", 0);
+            Scribe_Values.Look(ref pricePerItem, "pricePerItem", 0);
+            Scribe_Values.Look(ref isPawn, "isPawn", false);
+            Scribe_Values.Look(ref removed, "removed", false);
+        }
     }
 }

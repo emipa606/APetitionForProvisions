@@ -1,17 +1,16 @@
 ﻿using RimWorld;
-using System;
 using UnityEngine;
 using Verse;
 
 namespace ItemRequests
 {
-    public class ThingEntry
+    public class ThingEntry : IExposable
     {
         public ThingDef def;
         public ThingDef stuffDef = null;
         public Gender gender = Gender.None;
-        public Tradeable tradeable = null;
         public Thing thing = null;
+        public Tradeable tradeable = null;
         public PawnKindDef pawnDef = null;
         public ThingType type;
         public int stackSize;
@@ -120,6 +119,25 @@ namespace ItemRequests
             {
                 return new ThingKey(def, stuffDef, gender);
             }
+        }
+
+        public void ExposeData()
+        {
+            Scribe_Defs.Look(ref def, "def");
+            Scribe_Defs.Look(ref stuffDef, "stuffDef");
+            Scribe_Values.Look(ref gender, "gender", Gender.None);
+            Scribe_Deep.Look(ref thing, "thing");
+            Scribe_Deep.Look(ref tradeable, true, "tradeable", new object[] { null, thing });
+            Scribe_Defs.Look(ref pawnDef, "pawnDef");
+            Scribe_Values.Look(ref type, "type", ThingType.Other);
+            Scribe_Values.Look(ref stackSize, "stackSize");
+            Scribe_Values.Look(ref cost, "cost");
+            Scribe_Values.Look(ref color, "color");
+            Scribe_Values.Look(ref stacks, "stacks");
+            Scribe_Values.Look(ref gear, "gear");
+            Scribe_Values.Look(ref animal, "animal");
+            Scribe_Values.Look(ref label, "label");
+            Scribe_Values.Look(ref hideFromPortrait, "hideFromPortrait");
         }
 
         public override string ToString()
