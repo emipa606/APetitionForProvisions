@@ -6,11 +6,13 @@ using Verse.AI.Group;
 
 namespace ItemRequests
 {
-    class IncidentWorker_RequestCaravanArrival : IncidentWorker
+    class IncidentWorker_RequestCaravanArrival : IncidentWorker_NeutralGroup
     {
-        protected virtual PawnGroupKindDef PawnGroupKindDef => PawnGroupKindDefOf.Trader;
+        protected override PawnGroupKindDef PawnGroupKindDef => PawnGroupKindDefOf.Trader;
 
-        protected bool TryResolveParms(IncidentParms parms)
+        public override float AdjustedChance => 0;
+
+        protected new bool TryResolveParms(IncidentParms parms)
         {
             if (!TryResolveParmsGeneral(parms))
             {
@@ -18,18 +20,6 @@ namespace ItemRequests
             }
             ResolveParmsPoints(parms);
             return true;
-        }
-
-        protected void ResolveParmsPoints(IncidentParms parms)
-        {
-            parms.points = TraderCaravanUtility.GenerateGuardPoints();
-        }
-
-        private IEnumerable<Faction> CandidateFactions(Map map, bool desperate = false)
-        {
-            return from f in Find.FactionManager.AllFactions
-                   where FactionCanBeGroupSource(f, map, desperate)
-                   select f;
         }
 
         protected override bool CanFireNowSub(IncidentParms parms)
@@ -75,20 +65,7 @@ namespace ItemRequests
             return true;
         }
 
-        private List<Pawn> SpawnPawns(IncidentParms parms)
-        {
-            Map map = (Map)parms.target;
-            PawnGroupMakerParms defaultPawnGroupMakerParms = IncidentParmsUtility.GetDefaultPawnGroupMakerParms(PawnGroupKindDef, parms, true);
-            List<Pawn> list = PawnGroupMakerUtility.GeneratePawns(defaultPawnGroupMakerParms, false).ToList();
-            foreach (Pawn pawn in list)
-            {
-                IntVec3 loc = CellFinder.RandomClosewalkCellNear(parms.spawnCenter, map, 5);
-                GenSpawn.Spawn(pawn, loc, map, WipeMode.Vanish);
-            }
-            return list;
-        }
-
-        private bool FactionCanBeGroupSource(Faction f, Map map, bool desperate = false)
+        protected override bool FactionCanBeGroupSource(Faction f, Map map, bool desperate = false)
         {
             return (
                 !f.IsPlayer && !f.defeated &&
@@ -103,17 +80,19 @@ namespace ItemRequests
                 !NeutralGroupIncidentUtility.AnyBlockingHostileLord(map, f);
         }
 
-        protected virtual bool TryResolveParmsGeneral(IncidentParms parms)
+        protected override bool TryResolveParmsGeneral(IncidentParms parms)
         {
             Map map = (Map)parms.target;
             return (
                 // Set valid spawn point
                 parms.spawnCenter.IsValid || 
                 RCellFinder.TryFindRandomPawnEntryCell(out parms.spawnCenter, map, CellFinder.EdgeRoadChance_Neutral, false, null)
-            ) && 
-            (parms.faction != null || 
-             CandidateFactions(map, false).TryRandomElement(out parms.faction) || 
-             CandidateFactions(map, true).TryRandomElement(out parms.faction));
+            ) && parms.faction != null;
+        }
+
+        protected override void ResolveParmsPoints(IncidentParms parms)
+        {
+            parms.points = TraderCaravanUtility.GenerateGuardPoints();
         }
     }
 }

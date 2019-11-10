@@ -17,6 +17,7 @@ namespace ItemRequests
 
         private Faction faction;
         private IntVec3 chillSpot;
+
         private Faction playerFaction => Faction.OfPlayer;
         private bool isFactionNeutral => faction.PlayerRelationKind == FactionRelationKind.Neutral;
 
@@ -36,7 +37,9 @@ namespace ItemRequests
             string addedMessageText = faction.RelationKindWith(playerFaction) == FactionRelationKind.Neutral ? 
                 "IR.LordJobFulfillItemRequest.AttackingOutOfAnger".Translate() :
                 "IR.LordJobFulfillItemRequest.RelationsDropped".Translate();
-            TransitionAction_Custom clearCaravanRequest = new TransitionAction_Custom(() => { RequestSession.CloseOpenDealWith(faction); });
+            TransitionAction_Custom clearCaravanRequest = new TransitionAction_Custom(() => { 
+                Find.World.GetComponent<RequestSession>().CloseOpenDealWith(faction); 
+            });
 
             // ===================
             //       TOILS
@@ -47,7 +50,7 @@ namespace ItemRequests
             LordToil_DefendPoint defending = new LordToil_DefendTraderCaravan();
             stateGraph.AddToil(defending);
 
-            LordToil_DefendPoint defendingChillPoint = new LordToil_DefendTraderCaravan(chillSpot, 60);
+            LordToil_DefendPoint defendingChillPoint = new LordToil_DefendTraderCaravan(chillSpot, 40);
             stateGraph.AddToil(defendingChillPoint);
 
             LordToil_ExitMapAndEscortCarriers exitingAndEscorting = new LordToil_ExitMapAndEscortCarriers();
@@ -175,6 +178,7 @@ namespace ItemRequests
                 stateGraph.AddTransition(attackIfRequestUnfulfilled, true);
 
                 Transition leaveAfterAttacking = new Transition(defendingChillPoint, exitingAndEscorting);
+                leaveAfterAttacking.AddSource(defending);
                 leaveAfterAttacking.AddTrigger(new Trigger_TicksPassed(ticksUntilBadThings + 10000));
                 leaveAfterAttacking.AddPreAction(leavingMessage);
                 leaveAfterAttacking.AddPostAction(new TransitionAction_EndAllJobs());
@@ -279,9 +283,8 @@ namespace ItemRequests
        
         public override void ExposeData()
         {
-            Scribe_References.Look(ref lord, "lord");
             Scribe_References.Look(ref faction, "faction");
-            Scribe_Values.Look(ref chillSpot, "chillSpot");
+            Scribe_Values.Look(ref chillSpot, "chillSpot");            
         }
 
         public override bool AddFleeToil => false;

@@ -2,18 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 using RimWorld;
+using RimWorld.Planet;
 using Verse;
 
 namespace ItemRequests
 {
-    public class RequestSession : IExposable
+    public class RequestSession : WorldComponent
     {
-        public static Pawn negotiator  = null;
-        public static Faction faction  = null;
-        public static RequestDeal deal = null;
-        public static List<RequestDeal> openDeals;
+        public Pawn negotiator  = null;
+        public Faction faction  = null;
+        public RequestDeal deal = null;
+        public List<RequestDeal> openDeals;
 
-        public static void SetupWith(Faction faction, Pawn playerNegotiator, out bool success)
+
+        public RequestSession(World world) : base(world) 
+        {
+            openDeals = new List<RequestDeal>();
+        }
+
+        public void SetupWith(Faction faction, Pawn playerNegotiator, out bool success)
         {
             if (HasOpenDealWith(faction))
             {
@@ -23,14 +30,14 @@ namespace ItemRequests
                 return;
             }
 
-            RequestSession.faction = faction;
+            this.faction = faction;
             negotiator = playerNegotiator;
             deal = new RequestDeal(faction);
             openDeals.Add(deal);
             success = true;
         }
 
-        public static RequestDeal GetOpenDealWith(Faction faction)
+        public RequestDeal GetOpenDealWith(Faction faction)
         {
             if (faction == null) return null;
             if (openDeals == null) openDeals = new List<RequestDeal>();
@@ -44,12 +51,12 @@ namespace ItemRequests
             return null;
         }
 
-        public static bool HasOpenDealWith(Faction faction)
+        public bool HasOpenDealWith(Faction faction)
         {
             return GetOpenDealWith(faction) != null;
         }
 
-        public static void CloseOpenDealWith(Faction faction)
+        public void CloseOpenDealWith(Faction faction)
         {
             for (int i = 0; i < openDeals.Count; ++i)
             {
@@ -61,17 +68,19 @@ namespace ItemRequests
             }
         }
 
-        public static void CloseSession()
+        public void CloseSession()
         {
             faction = null;
             negotiator = null;
             deal = null;
         }
 
-        public void ExposeData()
+        public override void ExposeData()
         {
-            Log.Message("scribe requestsession");
+            base.ExposeData();
             Scribe_Collections.Look(ref openDeals, "openDeals", LookMode.Deep);
+            Scribe_References.Look(ref negotiator, "negotiator");
+            Scribe_References.Look(ref faction, "faction");            
         }
     }
 
@@ -103,11 +112,20 @@ namespace ItemRequests
             }
         }
 
+        public RequestDeal()
+        {
+            SetupRequestedItemsContainer();
+        }
+
         public RequestDeal(Faction faction)
         {
             this.faction = faction;
-            requestedItems = new Dictionary<ThingType, RequestedItemDict>();
+            SetupRequestedItemsContainer();
+        }
 
+        private void SetupRequestedItemsContainer()
+        {
+            requestedItems = new Dictionary<ThingType, RequestedItemDict>();
             foreach (ThingType type in Enum.GetValues(typeof(ThingType)))
             {
                 if (type == ThingType.Discard) continue;
@@ -179,7 +197,6 @@ namespace ItemRequests
 
         public void ExposeData()
         {
-            Log.Message("Scribe request deal");
             Scribe_References.Look(ref faction, "faction");
             Scribe_Collections.Look(ref requestedItems, "requestedItems", LookMode.Value, LookMode.Deep, ref thingTypes, ref requestedItemsDicts);            
         }
@@ -193,7 +210,6 @@ namespace ItemRequests
 
             public void ExposeData()
             {
-                Log.Message("Scribing requesteditemdict");
                 Scribe_Collections.Look(ref dict, "dict", LookMode.Value, LookMode.Deep, ref ints, ref items);
             }
         }

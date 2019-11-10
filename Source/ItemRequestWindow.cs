@@ -22,6 +22,7 @@ namespace ItemRequests
         private Faction faction;
         private Pawn negotiator;
         private Map map;
+        private RequestSession requestSession;
 
         // For listing the items
         private List<ThingEntry> allRequestableItems = new List<ThingEntry>();
@@ -53,6 +54,7 @@ namespace ItemRequests
             this.colonySilver = map.resourceCounter.Silver;
             this.absorbInputAroundWindow = true;
             this.forcePause = true;
+            this.requestSession = Find.World.GetComponent<RequestSession>();
 
             // Find all items in stockpiles and store counts in dictionary
             List<SlotGroup> slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
@@ -289,13 +291,13 @@ namespace ItemRequests
             // Draw the amount currently requested by colony
             Text.Anchor = TextAnchor.MiddleCenter;
             string tooltipString = "IR.ItemRequestWindow.TotalValueRequestedTooltip".Translate();
-            if (RequestSession.deal.TotalRequestedValue > colonySilver)
+            if (requestSession.deal.TotalRequestedValue > colonySilver)
             {
                 GUI.color = Color.yellow;
                 tooltipString += "\n\n" + "IR.ItemRequestWindow.TotalValueRequestedCaution".Translate();
             }
             Rect requestedAmountArea = new Rect(rightAlignOffset, 0, rightContentSize, rowRect.height);
-            Widgets.Label(requestedAmountArea, RequestSession.deal.TotalRequestedValue.ToStringMoney("F2"));
+            Widgets.Label(requestedAmountArea, requestSession.deal.TotalRequestedValue.ToStringMoney("F2"));
             TooltipHandler.TipRegion(requestedAmountArea, tooltipString);
 
             // Finish row
@@ -342,14 +344,14 @@ namespace ItemRequests
                     Find.WindowStack.Add(new RequestAcknowledgedWindow(faction, () =>
                     {
                         Close(false);
-                        RequestSession.CloseSession();
+                        requestSession.CloseSession();
                         CaravanManager.SendRequestedCaravan(faction, map);
                     }));
                 };
                 Action onCancelled = () => { };
 
 
-                if (colonySilver < RequestSession.deal.TotalRequestedValue)
+                if (colonySilver < requestSession.deal.TotalRequestedValue)
                 {
                     Find.WindowStack.Add(new ConfirmRequestWindow(onConfirmed, onCancelled));
                 }
@@ -364,8 +366,8 @@ namespace ItemRequests
             if (Widgets.ButtonText(cancelButtonRect, "IR.ItemRequestWindow.Cancel".Translate(), true, false, true))
             {
                 Close(true);
-                RequestSession.CloseOpenDealWith(faction);
-                RequestSession.CloseSession();
+                requestSession.CloseOpenDealWith(faction);
+                requestSession.CloseSession();
             }
         }
 
@@ -417,10 +419,10 @@ namespace ItemRequests
             paddedNumericFieldArea.xMax -= 15f;
             paddedNumericFieldArea.xMin += 16f;
 
-            int amountRequested = RequestSession.deal.GetCountForItem(thingTypeFilter, trade);
+            int amountRequested = requestSession.deal.GetCountForItem(thingTypeFilter, trade);
             string amountAsString = amountRequested.ToString();
             Widgets.TextFieldNumeric(paddedNumericFieldArea, ref amountRequested, ref amountAsString, 0, float.MaxValue);
-            RequestSession.deal.AdjustItemRequest(thingTypeFilter, entry, amountRequested, price);
+            requestSession.deal.AdjustItemRequest(thingTypeFilter, entry, amountRequested, price);
 
             // Draw the reset to zero button by input field
             if (amountRequested > 0)
@@ -430,7 +432,7 @@ namespace ItemRequests
                 resetToZeroButton.width = resetItemCountAreaWidth;
                 if (Widgets.ButtonText(resetToZeroButton, "0"))
                 {                    
-                    RequestSession.deal.AdjustItemRequest(thingTypeFilter, entry, 0, price);
+                    requestSession.deal.AdjustItemRequest(thingTypeFilter, entry, 0, price);
                 }
             }
             

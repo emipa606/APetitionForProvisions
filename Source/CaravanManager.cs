@@ -11,6 +11,19 @@ namespace ItemRequests
         public static int fullDayInTicks = 60000;
         private static Dictionary<Faction, int> factionTravelTime = new Dictionary<Faction, int>();
 
+        public static void SendRequestedCaravan(Faction faction, Map playerMap)
+        {
+            IncidentParms incidentParms = new IncidentParms();
+            incidentParms.faction = faction;
+            incidentParms.target = playerMap;
+            incidentParms.forced = true;
+            incidentParms.traderKind = faction.def.caravanTraderKinds.RandomElement();
+
+            int variableTravelTime = DetermineJourneyTime(faction, playerMap);
+            Find.Storyteller.incidentQueue.Add(ItemRequestsDefOf.RequestCaravanArrival, Find.TickManager.TicksGame + variableTravelTime, incidentParms, 240000);
+            faction.lastTraderRequestTick = Find.TickManager.TicksGame;
+        }
+
         private static void DetermineCaravanTravelTimeFromFaction(Faction faction, Map playerMap)
         {
             int radius = 60;
@@ -49,20 +62,6 @@ namespace ItemRequests
             }
 
             factionTravelTime.Add(faction, ticksToArrive);
-        }
-
-
-        public static void SendRequestedCaravan(Faction faction, Map playerMap)
-        {
-            IncidentParms incidentParms = new IncidentParms();
-            incidentParms.faction = faction;
-            incidentParms.target = playerMap;
-            incidentParms.forced = true;
-            incidentParms.traderKind = faction.def.caravanTraderKinds.RandomElement();
-
-            int variableTravelTime = DetermineJourneyTime(faction, playerMap);
-            Find.Storyteller.incidentQueue.Add(ItemRequestsDefOf.RequestCaravanArrival, Find.TickManager.TicksGame + variableTravelTime, incidentParms, 240000);
-            faction.lastTraderRequestTick = Find.TickManager.TicksGame;
         }
 
         public static int DetermineJourneyTime(Faction faction, Map playerMap)

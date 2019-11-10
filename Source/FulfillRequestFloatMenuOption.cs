@@ -16,6 +16,7 @@ namespace ItemRequests
         [HarmonyPostfix]
         public static void ModifyTradeOption(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
         {
+            RequestSession requestSession = Find.World.GetComponent<RequestSession>();
             List<LocalTargetInfo> localTradeTargets = GenUI.TargetsAt(clickPos, TargetingParameters.ForTrade(), true).ToList();
             if (localTradeTargets.Count == 0) return;
 
@@ -26,7 +27,7 @@ namespace ItemRequests
                     Pawn pTarg = (Pawn)localTarget.Thing;
                     if (
                         option.Label.Contains("TradeWith".Translate(pTarg.LabelShort + ", " + pTarg.TraderKind.label)) && 
-                        RequestSession.HasOpenDealWith(pTarg.Faction) &&
+                        requestSession.HasOpenDealWith(pTarg.Faction) &&
                         pTarg.GetTraderCaravanRole() == TraderCaravanRole.Trader &&
                         pTarg.CanTradeNow
                        )
@@ -46,7 +47,7 @@ namespace ItemRequests
                     LocalTargetInfo localTargetInfo = targetInfo;
                     Pawn pTarg = (Pawn)localTargetInfo.Thing;
 
-                    if (RequestSession.HasOpenDealWith(pTarg.Faction))
+                    if (requestSession.HasOpenDealWith(pTarg.Faction))
                     {
                         Action takeOrderedJob = delegate ()
                         {

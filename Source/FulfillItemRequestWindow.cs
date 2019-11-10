@@ -21,13 +21,13 @@ namespace ItemRequests
         private const float offsetFromRight = 120;
         private const float offsetFromBottom = 90;
 
-        private RequestDeal deal => RequestSession.GetOpenDealWith(traderFaction);
+        private RequestDeal deal => Find.World.GetComponent<RequestSession>().GetOpenDealWith(traderFaction);
 
         public FulfillItemRequestWindow(Pawn playerPawn, Pawn traderPawn)
         {
             this.playerPawn = playerPawn;
             this.traderPawn = traderPawn;
-            this.requestedItems = RequestSession.GetOpenDealWith(traderFaction).GetRequestedItems();
+            this.requestedItems = Find.World.GetComponent<RequestSession>().GetOpenDealWith(traderFaction).GetRequestedItems();
             UpdateColonyCurrency(0);
         }
 
@@ -244,7 +244,7 @@ namespace ItemRequests
                 UpdateColonyCurrency(Mathf.RoundToInt(totalRequestedValue));
             }
 
-            RequestSession.CloseOpenDealWith(traderFaction);
+            Find.World.GetComponent<RequestSession>().CloseOpenDealWith(traderFaction);
         }
 
         private string DetermineUnfulfilledValue()

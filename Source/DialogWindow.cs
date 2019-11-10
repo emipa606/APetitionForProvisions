@@ -51,7 +51,7 @@ namespace ItemRequests
             tradeAcceptedOption.action = () =>
             {
                 bool success;
-                RequestSession.SetupWith(faction, negotiator, out success);
+                Find.World.GetComponent<RequestSession>().SetupWith(faction, negotiator, out success);
                 if (success)
                 {
                     Find.WindowStack.Add(new ItemRequestWindow(map, faction, negotiator));
