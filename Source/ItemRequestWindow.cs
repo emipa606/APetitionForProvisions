@@ -466,6 +466,10 @@ namespace ItemRequests
             {
                 itemLabel += " (" + entry.GenderString() + ")";
             }
+            else if (entry.type.HasQuality() && itemLabel.IndexOf("(normal)") != -1)
+            {
+                itemLabel = itemLabel.Substring(0, itemLabel.IndexOf("(normal)"));
+            }
             Widgets.Label(itemLabelArea, itemLabel);
             
             Text.WordWrap = true;

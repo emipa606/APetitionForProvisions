@@ -25,5 +25,9 @@ namespace ItemRequests
         {
             return ("IR.ThingType." + t.ToString()).Translate();            
         }
+        public static bool HasQuality(this ThingType t)
+        {
+            return t == ThingType.Apparel || t == ThingType.Buildings || t == ThingType.Weapons;
+        }
     }
 }

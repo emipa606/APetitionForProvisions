@@ -146,6 +146,10 @@ namespace ItemRequests
             {
                 itemTitle += " (" + requested.item.GenderString() + ")";
             }
+            else if (requested.item.type.HasQuality() && itemTitle.IndexOf("(normal") != -1)
+            {
+                itemTitle = itemTitle.Substring(0, itemTitle.IndexOf("(normal)"));
+            }
             itemTitle += " x" + requested.amount;
             Widgets.Label(itemNameArea, itemTitle);
 
@@ -162,7 +166,7 @@ namespace ItemRequests
             requested.removed = !isBeingTraded;
 
             if (requested.removed)
-            {                
+            {
                 Widgets.DrawLineHorizontal(itemNameArea.x, rowRect.height / 2, Text.CalcSize(itemTitle).x);
                 Widgets.DrawLineHorizontal(itemPriceArea.x, rowRect.height / 2, Text.CalcSize(price.ToStringMoney("F2")).x);
             }
@@ -201,27 +205,7 @@ namespace ItemRequests
                     }
                     else
                     {
-                        if (requested.isPawn)
-                        {
-                            for (int i = 0; i < requested.amount; ++i)
-                            {
-                                Pawn pawn = PawnGenerator.GeneratePawn(requested.item.pawnDef, Faction.OfPlayer);
-                                pawn.gender = requested.item.gender;
-                                IntVec3 spawnSpot = CellFinder.RandomSpawnCellForPawnNear(traderPawn.Position, traderPawn.Map);
-                                GenSpawn.Spawn(pawn, spawnSpot, traderPawn.Map);
-                                //Log.Message("Spawned " + pawn.LabelCap + " the " + pawn.KindLabel);
-                            }
-                        }
-                        else
-                        {
-                            Thing thing = ThingMaker.MakeThing(requested.item.def, requested.item.stuffDef);
-                            thing.stackCount = requested.amount;
-
-                            if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
-                            {
-                                Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
-                            }
-                        }
+                        SpawnItem(requested);
                     }
                 }
 
@@ -247,6 +231,58 @@ namespace ItemRequests
             Find.World.GetComponent<RequestSession>().CloseOpenDealWith(traderFaction);
         }
 
+        private void SpawnItem(RequestItem requested)
+        {
+            if (requested.isPawn)
+            {
+                for (int i = 0; i < requested.amount; ++i)
+                {
+                    Pawn pawn = PawnGenerator.GeneratePawn(requested.item.pawnDef, Faction.OfPlayer);
+                    pawn.gender = requested.item.gender;
+                    IntVec3 spawnSpot = CellFinder.RandomSpawnCellForPawnNear(traderPawn.Position, traderPawn.Map);
+                    GenSpawn.Spawn(pawn, spawnSpot, traderPawn.Map);
+                }
+            }
+            else if (requested.item.type.HasQuality())
+            {
+                for (int i = 0; i < requested.amount; ++i)
+                {
+                    Thing thing = ThingMaker.MakeThing(requested.item.def, requested.item.stuffDef);
+                    thing.SetRandomQualityWeighted();
+
+                    if (requested.item.type == ThingType.Buildings)
+                    {
+                        MinifiedThing minifiedThing = thing.MakeMinified();
+                        if (minifiedThing.Stuff != requested.item.stuffDef)
+                        {
+                            minifiedThing.SetStuffDirect(requested.item.stuffDef);
+                        }
+
+                        if (!GenPlace.TryPlaceThing(minifiedThing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
+                        {
+                            Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                        }
+                    }
+                    else
+                    {
+                        if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
+                        {
+                            Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Thing thing = ThingMaker.MakeThing(requested.item.def, requested.item.stuffDef);
+                thing.stackCount = requested.amount;
+                if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
+                {
+                    Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                }
+            }
+        }
+
         private string DetermineUnfulfilledValue()
         {
             float removedItemsValue = 0;
@@ -264,7 +300,7 @@ namespace ItemRequests
             if (removedItemsValue < PartialFulfillmentCutoff_S) return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_S;
             if (removedItemsValue < PartialFulfillmentCutoff_M) return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_M;
             return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_L;
-            
+
         }
 
         private void UpdateColonyCurrency(int amountToRemove)

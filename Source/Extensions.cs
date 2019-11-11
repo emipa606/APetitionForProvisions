@@ -79,6 +79,43 @@ namespace ItemRequests
                 typeof(CompQuality).GetField("qualityInt", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(compQuality, quality);
             }
         }
+
+        public static void SetRandomQualityWeighted(this Thing thing, QualityCategory minQuality = QualityCategory.Awful, QualityCategory maxQuality = QualityCategory.Legendary)
+        {
+            float val = Random.Range(0, 1f);
+            int min = (int)minQuality;
+            int max = (int)maxQuality;
+            QualityCategory clamp(int toClamp) => (QualityCategory)Mathf.Max(Mathf.Min(toClamp, max), min);
+
+            if (val < .05)
+            {
+                thing.SetQuality(clamp(0));
+            }
+            else if (val < .2)
+            {
+                thing.SetQuality(clamp(1));
+            }
+            else if (val < .6)
+            {
+                thing.SetQuality(clamp(2));
+            }
+            else if (val < .85)
+            {
+                thing.SetQuality(clamp(3));
+            }
+            else if (val < .95)
+            {
+                thing.SetQuality(clamp(4));
+            }
+            else if (val < .98)
+            {
+                thing.SetQuality(clamp(5));
+            }
+            else
+            {
+                thing.SetQuality(clamp(6));
+            }
+        }
     }
 
     public static class ExtensionsString
