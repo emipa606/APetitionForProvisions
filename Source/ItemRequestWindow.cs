@@ -46,6 +46,8 @@ namespace ItemRequests
         protected static readonly Vector2 OtherBottomButtonSize = new Vector2(160, 40f);
         private string colonyCountTooltipText = "IR.ItemRequestWindow.ColonyCountTooltip".Translate();
 
+        
+
         public ItemRequestWindow(Map map, Faction faction, Pawn negotiator)
         {
             this.map = map;
@@ -136,6 +138,12 @@ namespace ItemRequests
 
             // End Window group
             GUI.EndGroup();
+        }
+
+        public override void PostClose()
+        {            
+            requestSession.CloseOpenDealWith(faction);
+            requestSession.CloseSession();
         }
 
         // MAYBE TODO: request quality of items as well?
