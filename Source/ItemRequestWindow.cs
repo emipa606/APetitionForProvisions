@@ -142,7 +142,6 @@ namespace ItemRequests
 
         public override void PostClose()
         {            
-            requestSession.CloseOpenDealWith(faction);
             requestSession.CloseSession();
         }
 
