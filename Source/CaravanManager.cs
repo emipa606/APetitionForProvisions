@@ -26,42 +26,50 @@ namespace ItemRequests
 
         private static void DetermineCaravanTravelTimeFromFaction(Faction faction, Map playerMap)
         {
-            int radius = 60;
-            int playerBase = playerMap.Tile;
-            WorldGrid grid = Find.World.grid;
-            List<SettlementBase> bases = Find.WorldObjects.SettlementBases.FindAll((settlementBase) => settlementBase.Faction.Name == faction.Name);
-
-            int closestFactionBase = 0;
-            int ticksToArrive = int.MaxValue;
-            bases.ForEach((fBase) =>
+            try
             {
-                if (grid.ApproxDistanceInTiles(playerBase, fBase.Tile) < radius)
+                int radius = 60;
+                int playerBase = playerMap.Tile;
+                WorldGrid grid = Find.World.grid;
+                List<SettlementBase> bases = Find.WorldObjects.SettlementBases.FindAll((settlementBase) => settlementBase.Faction.Name == faction.Name);
+
+                int closestFactionBase = 0;
+                int ticksToArrive = int.MaxValue;
+                bases.ForEach((fBase) =>
                 {
-                    int ticks = CaravanArrivalTimeEstimator.EstimatedTicksToArrive(
-                        fBase.Tile,
-                        playerBase,
-                        Find.WorldPathFinder.FindPath(fBase.Tile, playerBase, null),
-                        0f,
-                        CaravanTicksPerMoveUtility.DefaultTicksPerMove,
-                        GenTicks.TicksAbs
-                    );
-                    if (ticks < ticksToArrive)
+                    if (grid.ApproxDistanceInTiles(playerBase, fBase.Tile) < radius)
                     {
-                        ticksToArrive = ticks;
-                        closestFactionBase = fBase.Tile;
+                        int ticks = CaravanArrivalTimeEstimator.EstimatedTicksToArrive(
+                            fBase.Tile,
+                            playerBase,
+                            Find.WorldPathFinder.FindPath(fBase.Tile, playerBase, null),
+                            0f,
+                            CaravanTicksPerMoveUtility.DefaultTicksPerMove,
+                            GenTicks.TicksAbs
+                        );
+                        if (ticks < ticksToArrive)
+                        {
+                            ticksToArrive = ticks;
+                            closestFactionBase = fBase.Tile;
+                        }
                     }
+                });
+
+                if (closestFactionBase == 0)
+                {
+                    Log.Error("Couldn't find faction base within " + radius.ToString() + " tiles");
+                    // Fallback travel time 3.5 days
+                    factionTravelTime.Add(faction, Mathf.FloorToInt(3.5f * fullDayInTicks));
+                    return;
                 }
-            });
 
-            if (closestFactionBase == 0)
-            {
-                Log.Error("Couldn't find faction base within " + radius.ToString() + " tiles");
-                // Fallback travel time 3.5 days
-                factionTravelTime.Add(faction, Mathf.FloorToInt(3.5f * fullDayInTicks));
-                return;
+                factionTravelTime.Add(faction, ticksToArrive);
             }
-
-            factionTravelTime.Add(faction, ticksToArrive);
+            catch
+            {
+                Log.Error("Error calculating dist to nearest settlement for " + faction.Name + ". Defaulting travel time to 3.5 days");
+                factionTravelTime.Add(faction, Mathf.FloorToInt(3.5f * fullDayInTicks));
+            }
         }
 
         public static int DetermineJourneyTime(Faction faction, Map playerMap)

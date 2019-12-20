@@ -56,9 +56,9 @@ namespace ItemRequests
             public IEnumerator<ThingDef> enumerator;
             public int thingsProcessed = 0;
             public int stuffProcessed = 0;
-            public int defsToCountPerFrame = 500;
-            public int stuffToProcessPerFrame = 100;
-            public int thingsToProcessPerFrame = 50;
+            public int defsToCountPerFrame = 10;
+            public int stuffToProcessPerFrame = 10;
+            public int thingsToProcessPerFrame = 10;
             public int defCount = 0;
             public int stuffCount = 0;
             public int thingCount = 0;
@@ -100,6 +100,7 @@ namespace ItemRequests
 
         protected void UpdateLoadingPhase(LoadingPhase phase)
         {
+            //Log.Message("UpdateLoadingPhase to " + phase.ToString());
             if (phase != LoadingPhase.Loaded)
             {
                 LoadingProgress.enumerator = DefDatabase<ThingDef>.AllDefs.GetEnumerator();

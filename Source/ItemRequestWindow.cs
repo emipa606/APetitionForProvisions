@@ -80,10 +80,16 @@ namespace ItemRequests
                 });
             });
 
-            DetermineAllRequestableItems();
-            FilterRequestableItems();
+            AttemptDatabaseReload();
             Resize();
         }
+
+        void AttemptDatabaseReload()
+        {
+            DetermineAllRequestableItems();
+            FilterRequestableItems();
+        }
+
         protected void Resize()
         {
             ContentMargin = new Vector2(10, 18);
@@ -126,12 +132,28 @@ namespace ItemRequests
             GUI.color = Color.gray;
             Widgets.DrawLineHorizontal(x, headerRowHeight + rowRect.height - 2, rowWidth);
 
-            // Draw the main scroll view area
-            GUI.color = Color.white;
-            float addedMainRectPadding = 30f;
-            float buttonHeight = 38f;
-            Rect mainArea = new Rect(x, headerRowHeight + addedMainRectPadding, inRect.width - x, inRect.height - headerRowHeight - buttonHeight - addedMainRectPadding - 20f);
-            DrawTradeableContent(mainArea);
+            if (ThingDatabase.Instance.Loaded && allRequestableItems.Count > 0)
+            {
+                // Draw the main scroll view area
+                GUI.color = Color.white;
+                float addedMainRectPadding = 30f;
+                float buttonHeight = 38f;
+                Rect mainArea = new Rect(x, headerRowHeight + addedMainRectPadding, inRect.width - x, inRect.height - headerRowHeight - buttonHeight - addedMainRectPadding - 20f);
+                DrawTradeableContent(mainArea);
+            } 
+            else
+            {
+                string stillLoadingItems = "IR.ItemRequestWindow.ItemsStillLoading".Translate();
+                Vector2 textSize = Text.CalcSize(stillLoadingItems);
+                Rect middle = new Rect(inRect.width / 2 - textSize.x / 2, inRect.height / 2, textSize.x, textSize.y);
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(middle, stillLoadingItems);
+                GenUI.ResetLabelAlign();
+
+                AttemptDatabaseReload();
+            }
+
 
             // Draw the buttons at bottom
             DrawButtons(inRect, rowRect);
@@ -212,7 +234,7 @@ namespace ItemRequests
             float filterDropdownWidth = 130;
             Text.Anchor = TextAnchor.UpperLeft;
             Rect thingFilterDropdownArea = new Rect(filterLabelArea.width + 20, rectArea.y - 6, filterDropdownWidth, filterDropdownHeight);
-            if (WidgetDropdown.Button(thingFilterDropdownArea, thingTypeFilter.Translate(), true, false, true))
+            if (WidgetDropdown.Button(thingFilterDropdownArea, thingTypeFilter.Translate(), true, false, ThingDatabase.Instance.Loaded))
             {
                 var thingTypes = Enum.GetValues(typeof(ThingType));
                 List<FloatMenuOption> filterOptions = new List<FloatMenuOption>();
@@ -237,7 +259,7 @@ namespace ItemRequests
             Rect stuffFilterDropdownArea = thingFilterDropdownArea;
             stuffFilterDropdownArea.x += thingFilterDropdownArea.width + 10;
             string stuffFilterLabel = stuffTypeFilter == null ? "IR.ItemRequestWindow.FilterAll".Translate() : stuffTypeFilter.LabelCap;
-            if (WidgetDropdown.Button(stuffFilterDropdownArea, stuffFilterLabel, true, false, true))
+            if (WidgetDropdown.Button(stuffFilterDropdownArea, stuffFilterLabel, true, false, ThingDatabase.Instance.Loaded))
             {
                 List<FloatMenuOption> stuffFilterOptions = new List<FloatMenuOption>();
                 stuffFilterOptions.Add(new FloatMenuOption("IR.ItemRequestWindow.FilterAll".Translate(), () =>
@@ -360,7 +382,22 @@ namespace ItemRequests
 
                 if (colonySilver < requestSession.deal.TotalRequestedValue)
                 {
-                    Find.WindowStack.Add(new ConfirmRequestWindow(onConfirmed, onCancelled));
+                    string title = "IR.ConfirmRequestWindow.WindowTitle".Translate();
+                    string message = "IR.ConfirmRequestWindow.WindowMessage".Translate();
+                    string confirmString = "IR.ConfirmRequestWindow.Confirm".Translate();
+                    string cancelString = "IR.ConfirmRequestWindow.Cancel".Translate();
+                    Find.WindowStack.Add(new ConfirmRequestWindow(onConfirmed, onCancelled, title, message, confirmString, cancelString));
+                }
+                else if (requestSession.deal.GetRequestedItems().Count == 0)
+                {
+                    string title = "IR.ConfirmEmptyRequestWindow.WindowTitle".Translate();
+                    string message = "IR.ConfirmEmptyRequestWindow.WindowMessage".Translate(faction.Name);
+                    string confirmString = "IR.ConfirmEmptyRequestWindow.Confirm".Translate();
+                    Find.WindowStack.Add(new ConfirmRequestWindow(() => {
+                        Close(false);
+                        requestSession.CloseOpenDealWith(faction);
+                        requestSession.CloseSession();
+                    }, null, title, message, confirmString, null));
                 }
                 else
                 {
@@ -695,6 +732,8 @@ namespace ItemRequests
         //   of containing any number of restricted item on the restricted list)
         private void DetermineAllRequestableItems()
         {
+            if (!ThingDatabase.Instance.Loaded) return;
+
             List<ThingEntry> thingEntries = (from x in ThingDatabase.Instance.AllThings()
                                              where hasMaximumTechLevel(x, faction.def.techLevel)
                                              where isBuyableItem(x)
@@ -748,6 +787,8 @@ namespace ItemRequests
 
         private void FilterRequestableItems()
         {
+            if (!ThingDatabase.Instance.Loaded) return;
+
             filteredRequestableItems.Clear();
             List<ThingEntry> thingEntries = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter)
                                              where hasMaximumTechLevel(x, faction.def.techLevel)

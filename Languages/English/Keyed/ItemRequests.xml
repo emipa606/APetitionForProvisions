@@ -5,6 +5,10 @@
   <IR.ConfirmRequestWindow.Confirm>I know what I'm doing</IR.ConfirmRequestWindow.Confirm>
   <IR.ConfirmRequestWindow.Cancel>Back to request</IR.ConfirmRequestWindow.Cancel>
 
+  <IR.ConfirmEmptyRequestWindow.WindowTitle>Goodbye</IR.ConfirmEmptyRequestWindow.WindowTitle>
+  <IR.ConfirmEmptyRequestWindow.WindowMessage>The negotiator from {0} mumbles something about a waste of time as they hang up.</IR.ConfirmEmptyRequestWindow.WindowMessage>
+  <IR.ConfirmEmptyRequestWindow.Confirm>OK</IR.ConfirmEmptyRequestWindow.Confirm>
+
   <IR.DialogWindow.RequestItems>Request specific items</IR.DialogWindow.RequestItems>
 
   <IR.FulfillItemRequestWindow.ReviewItems>Review Requested Items</IR.FulfillItemRequestWindow.ReviewItems>
@@ -32,6 +36,7 @@
   <IR.ItemRequestWindow.Requesting> (Requesting)</IR.ItemRequestWindow.Requesting>
   <IR.ItemRequestWindow.DeliveryCharge>Price increase based on distance (approx. {0} days' journey):</IR.ItemRequestWindow.DeliveryCharge>
   <IR.ItemRequestWindow.FactionRelationOffset>Faction relation price offset:</IR.ItemRequestWindow.FactionRelationOffset>
+  <IR.ItemRequestWindow.ItemsStillLoading>Loading items...</IR.ItemRequestWindow.ItemsStillLoading>
 
   <IR.LordJobFulfillItemRequest.NoFulfillTrade>Didn't fulfill trade agreement</IR.LordJobFulfillItemRequest.NoFulfillTrade>
   <IR.LordJobFulfillItemRequest.NoFulfillAllTrade>Didn't fulfill entire trade agreement</IR.LordJobFulfillItemRequest.NoFulfillAllTrade>

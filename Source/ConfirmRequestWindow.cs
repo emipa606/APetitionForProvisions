@@ -9,22 +9,25 @@ namespace ItemRequests
         private Action onConfirm;
         private Action onCancel;
         public override Vector2 InitialSize => new Vector2(500, 500);
+        private string title;
+        private string message;
+        private string confirmString;
+        private string cancelString;
 
-        public ConfirmRequestWindow(Action onConfirm, Action onCancel)
+        public ConfirmRequestWindow(Action onConfirm, Action onCancel, string title, string message, string confirmString, string cancelString)
         {
             this.onConfirm = onConfirm;
             this.onCancel = onCancel;
             this.absorbInputAroundWindow = true;
+            this.title = title;
+            this.message = message;
+            this.confirmString = confirmString;
+            this.cancelString = cancelString;
         }
 
         public override void DoWindowContents(Rect inRect)
         {
             Vector2 contentMargin = new Vector2(10, 18);
-            string title = "IR.ConfirmRequestWindow.WindowTitle".Translate();
-            string message = "IR.ConfirmRequestWindow.WindowMessage".Translate();
-            string confirmString = "IR.ConfirmRequestWindow.Confirm".Translate();
-            string cancelString = "IR.ConfirmRequestWindow.Cancel".Translate();
-
             GUI.BeginGroup(inRect);
 
             inRect = inRect.AtZero();
@@ -44,18 +47,25 @@ namespace ItemRequests
             Text.Anchor = TextAnchor.MiddleLeft;
             Rect confirmButtonArea = new Rect(x, inRect.height - contentMargin.y * 2, (inRect.width - contentMargin.x) / 2, closeButtonHeight);
 
-            if (Widgets.ButtonText(confirmButtonArea, confirmString, false))
+            if (confirmString != null && confirmString != "" && onConfirm != null)
             {
-                Close(true);
-                onConfirm();
+                if (Widgets.ButtonText(confirmButtonArea, confirmString, false))
+                {
+                    Close(true);
+                    onConfirm();
+                }
             }
 
             Text.Anchor = TextAnchor.MiddleRight;
             Rect cancelButtonArea = new Rect(confirmButtonArea.x + confirmButtonArea.width, confirmButtonArea.y, confirmButtonArea.width, closeButtonHeight);
-            if (Widgets.ButtonText(cancelButtonArea, cancelString, false))
+
+            if (cancelString != null && cancelString != "" && onCancel != null)
             {
-                Close(false);
-                onCancel();
+                if (Widgets.ButtonText(cancelButtonArea, cancelString, false))
+                {
+                    Close(false);
+                    onCancel();
+                }
             }
 
             GenUI.ResetLabelAlign();
