@@ -5,6 +5,10 @@
   <IR.ConfirmRequestWindow.Confirm>我清楚我在做什么</IR.ConfirmRequestWindow.Confirm>
   <IR.ConfirmRequestWindow.Cancel>撤回请求</IR.ConfirmRequestWindow.Cancel>
 
+  <IR.ConfirmEmptyRequestWindow.WindowTitle>再见</IR.ConfirmEmptyRequestWindow.WindowTitle>
+  <IR.ConfirmEmptyRequestWindow.WindowMessage>{0} 的交易员在挂断时嘟囔着浪费时间之类的话。</IR.ConfirmEmptyRequestWindow.WindowMessage>
+  <IR.ConfirmEmptyRequestWindow.Confirm>好</IR.ConfirmEmptyRequestWindow.Confirm>
+
   <IR.DialogWindow.RequestItems>物资申请</IR.DialogWindow.RequestItems>
 
   <IR.FulfillItemRequestWindow.ReviewItems>交易请求物资</IR.FulfillItemRequestWindow.ReviewItems>
@@ -32,9 +36,10 @@
   <IR.ItemRequestWindow.Requesting> (购买价)</IR.ItemRequestWindow.Requesting>
   <IR.ItemRequestWindow.DeliveryCharge>基于运距涨价(预计: {0} 天行程):</IR.ItemRequestWindow.DeliveryCharge>
   <IR.ItemRequestWindow.FactionRelationOffset>基于派系关系的价格偏向:</IR.ItemRequestWindow.FactionRelationOffset>
+  <IR.ItemRequestWindow.ItemsStillLoading>货物列表载入中...</IR.ItemRequestWindow.ItemsStillLoading>
 
   <IR.LordJobFulfillItemRequest.NoFulfillTrade>未进行交易</IR.LordJobFulfillItemRequest.NoFulfillTrade>
-  <IR.LordJobFulfillItemRequest.NoFulfillAllTrade>未完成整个交易</IR.LordJobFulfillItemRequest.NoFulfillAllTrade>
+  <IR.LordJobFulfillItemRequest.NoFulfillAllTrade>未完整完成交易</IR.LordJobFulfillItemRequest.NoFulfillAllTrade>
   <IR.LordJobFulfillItemRequest.AttackingOutOfAnger>他们因愤怒而攻击你的殖民者！</IR.LordJobFulfillItemRequest.AttackingOutOfAnger>
   <IR.LordJobFulfillItemRequest.RelationsDropped>与该派系的关系下降了。</IR.LordJobFulfillItemRequest.RelationsDropped>
   <IR.LordJobFulfillItemRequest.RequestedCaravanLeaving>来自 {0} 的物资小队正在离开。</IR.LordJobFulfillItemRequest.RequestedCaravanLeaving>
