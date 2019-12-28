@@ -759,15 +759,18 @@ namespace ItemRequests
                     {
                         trad.thingsColony = new List<Thing>();
                         string key = thing.def.label;
-                        if (thing.Stuff != null)
+                        if (key != null)
                         {
-                            key += thing.Stuff.label;
-                        }
-                        if (colonyItemCount.ContainsKey(key))
-                        {
-                            Thing colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
-                            colonyThing.stackCount = colonyItemCount[key];
-                            trad.thingsColony.Add(colonyThing);
+                            if (thing.Stuff != null)
+                            {
+                                key += thing.Stuff.label;
+                            }
+                            if (colonyItemCount.ContainsKey(key))
+                            {
+                                Thing colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
+                                colonyThing.stackCount = colonyItemCount[key];
+                                trad.thingsColony.Add(colonyThing);
+                            }
                         }
                         thingEntry.tradeable = trad;
                         allRequestableItems.Add(thingEntry);
