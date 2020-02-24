@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using Verse;
-using Harmony;
+using HarmonyLib;
 
 namespace ItemRequests
 {
@@ -9,7 +9,7 @@ namespace ItemRequests
     {
         static ItemRequests()
         {
-            var harmony = HarmonyInstance.Create("com.github.toywalrus.itemrequests");
+            var harmony = new Harmony("com.github.toywalrus.itemrequests");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             RestrictedItems.Init();
         }       
