@@ -31,7 +31,7 @@ namespace ItemRequests
                 int radius = 60;
                 int playerBase = playerMap.Tile;
                 WorldGrid grid = Find.World.grid;
-                List<SettlementBase> bases = Find.WorldObjects.SettlementBases.FindAll((settlementBase) => settlementBase.Faction.Name == faction.Name);
+                List<Settlement> bases = Find.WorldObjects.SettlementBases.FindAll((settlementBase) => settlementBase.Faction.Name == faction.Name);
 
                 int closestFactionBase = 0;
                 int ticksToArrive = int.MaxValue;

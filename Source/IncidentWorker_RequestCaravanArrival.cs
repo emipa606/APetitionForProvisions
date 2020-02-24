@@ -10,8 +10,6 @@ namespace ItemRequests
     {
         protected override PawnGroupKindDef PawnGroupKindDef => PawnGroupKindDefOf.Trader;
 
-        public override float AdjustedChance => 0;
-
         protected new bool TryResolveParms(IncidentParms parms)
         {
             if (!TryResolveParmsGeneral(parms))

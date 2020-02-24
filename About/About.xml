@@ -3,9 +3,7 @@
 	<name>A Petition for Provisions</name>
 	<author>ToyWalrus</author>
 	<supportedVersions>
-    <li>
-      1.0
-    </li>
+    <li>1.0</li>
     <li>1.1</li>
   </supportedVersions>
   <packageId>toywalrus.itemrequests</packageId>
