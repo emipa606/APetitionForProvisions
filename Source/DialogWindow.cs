@@ -35,6 +35,14 @@ namespace ItemRequests
         private static DiaOption RequestItemOption(Map map, Faction faction, Pawn negotiator)
         {
             string text = "IR.DialogWindow.RequestItems".Translate();
+            bool sociallyInept = negotiator.skills.GetSkill(SkillDefOf.Social).TotallyDisabled;
+
+            if (sociallyInept)
+            {
+                DiaOption noSocial = new DiaOption(text);
+                noSocial.Disable("WorkTypeDisablesOption".Translate(SkillDefOf.Social.LabelCap));
+                return noSocial;
+            }
 
             // Can't request more items from same faction
             // until x number of ticks have passed.
@@ -44,6 +52,33 @@ namespace ItemRequests
                 DiaOption mustWaitOption = new DiaOption(text);
                 mustWaitOption.Disable("WaitTime".Translate(num.ToStringTicksToPeriod()));
                 return mustWaitOption;
+            }
+
+            if (faction == Faction.Empire)
+            {
+                bool pawnHasRequiredTitle = false;
+                TraderKindDef traderKind = faction.def.caravanTraderKinds[0];
+                if (negotiator.royalty != null && negotiator.royalty.HasPermit(traderKind.permitRequiredForTrading, faction))
+                {
+                    pawnHasRequiredTitle = true;
+                }
+
+                //Find.ColonistBar.Entries.ForEach((ColonistBar.Entry entry) => {
+                //    Pawn p = entry.pawn;
+                //    if (p.royalty != null && p.royalty.HasPermit(traderKind.permitRequiredForTrading, faction))
+                //    {
+                //        hasPawnWithRequiredTitle = true;                        
+                //        return;
+                //    }
+                //});
+                
+                if (!pawnHasRequiredTitle)
+                {                    
+                    DiaOption noTitle = new DiaOption(text);
+                    TaggedString noTitleMessage = "CannotTradeMissingTitleAbility".Translate();
+                    noTitle.Disable(noTitleMessage.RawText.Substring(noTitleMessage.RawText.IndexOf(':')+1).Trim());
+                    return noTitle;
+                }
             }
 
             DiaOption tradeAcceptedOption = new DiaOption(text);

@@ -16,8 +16,8 @@ namespace ItemRequests
         [HarmonyPostfix]
         public static void ModifyTradeOption(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
         {
-            RequestSession requestSession = Find.World.GetComponent<RequestSession>();
-            List<LocalTargetInfo> localTradeTargets = GenUI.TargetsAt(clickPos, TargetingParameters.ForTrade(), true).ToList();
+            RequestSession requestSession = Find.World.GetComponent<RequestSession>();            
+            List<LocalTargetInfo> localTradeTargets = GenUI.TargetsAt_NewTemp(clickPos, TargetingParameters.ForTrade(), true).ToList();
             if (localTradeTargets.Count == 0) return;
 
             FloatMenuOption optToRemove = opts.Find((option) =>
