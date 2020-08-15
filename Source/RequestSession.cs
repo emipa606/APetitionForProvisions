@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using RimWorld;
@@ -9,15 +10,18 @@ namespace ItemRequests
 {
     public class RequestSession : WorldComponent
     {
-        public Pawn negotiator  = null;
-        public Faction faction  = null;
+        public Pawn negotiator = null;
+        public Faction faction = null;
         public RequestDeal deal = null;
-        public List<RequestDeal> openDeals;
+        public IEnumerable<RequestDeal> openDeals => timeOfOccurences.Keys;
 
+        private Dictionary<RequestDeal, float> timeOfOccurences;
+        private List<RequestDeal> deals;
+        private List<float> travelTimes;
 
-        public RequestSession(World world) : base(world) 
+        public RequestSession(World world) : base(world)
         {
-            openDeals = new List<RequestDeal>();
+            timeOfOccurences = new Dictionary<RequestDeal, float>();
         }
 
         public void SetupWith(Faction faction, Pawn playerNegotiator, out bool success)
@@ -33,14 +37,24 @@ namespace ItemRequests
             this.faction = faction;
             negotiator = playerNegotiator;
             deal = new RequestDeal(faction);
-            openDeals.Add(deal);
+            timeOfOccurences.Add(deal, float.MaxValue);
             success = true;
+        }
+
+        public void SetTimeOfOccurence(Faction faction, float time)
+        {
+            RequestDeal deal = GetOpenDealWith(faction);
+            if (deal == null)
+            {
+                Log.Warning("Trying to set time of arrival for requested faction arrival, but no open deal with faction exists!");
+                return;
+            }
+            timeOfOccurences[deal] = time;
         }
 
         public RequestDeal GetOpenDealWith(Faction faction)
         {
             if (faction == null) return null;
-            if (openDeals == null) openDeals = new List<RequestDeal>();
             foreach (RequestDeal openDeal in openDeals)
             {
                 if (openDeal.Faction.randomKey == faction.randomKey)
@@ -51,6 +65,13 @@ namespace ItemRequests
             return null;
         }
 
+        public float GetTimeOfOccurenceWithFaction(Faction faction)
+        {
+            RequestDeal deal = GetOpenDealWith(faction);
+            if (deal == null) return float.MaxValue;
+            return timeOfOccurences[deal];
+        }
+
         public bool HasOpenDealWith(Faction faction)
         {
             return GetOpenDealWith(faction) != null;
@@ -58,13 +79,10 @@ namespace ItemRequests
 
         public void CloseOpenDealWith(Faction faction)
         {
-            for (int i = 0; i < openDeals.Count; ++i)
+            RequestDeal deal = GetOpenDealWith(faction);
+            if (deal != null)
             {
-                if (openDeals[i].Faction.Name == faction.Name)
-                {
-                    openDeals.RemoveAt(i);
-                    return;
-                }
+                timeOfOccurences.Remove(deal);
             }
         }
 
@@ -78,9 +96,9 @@ namespace ItemRequests
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Collections.Look(ref openDeals, "openDeals", LookMode.Deep);
+            Scribe_Collections.Look(ref timeOfOccurences, "timeOfOccurences", LookMode.Deep, LookMode.Value, ref deals, ref travelTimes);
             Scribe_References.Look(ref negotiator, "negotiator");
-            Scribe_References.Look(ref faction, "faction");            
+            Scribe_References.Look(ref faction, "faction");
         }
     }
 
@@ -198,7 +216,7 @@ namespace ItemRequests
         public void ExposeData()
         {
             Scribe_References.Look(ref faction, "faction");
-            Scribe_Collections.Look(ref requestedItems, "requestedItems", LookMode.Value, LookMode.Deep, ref thingTypes, ref requestedItemsDicts);            
+            Scribe_Collections.Look(ref requestedItems, "requestedItems", LookMode.Value, LookMode.Deep, ref thingTypes, ref requestedItemsDicts);
         }
 
         private class RequestedItemDict : IExposable

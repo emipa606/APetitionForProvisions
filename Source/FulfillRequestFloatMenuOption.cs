@@ -28,6 +28,7 @@ namespace ItemRequests
                     if (
                         option.Label.Contains("TradeWith".Translate(pTarg.LabelShort + ", " + pTarg.TraderKind.label)) && 
                         requestSession.HasOpenDealWith(pTarg.Faction) &&
+                        Find.TickManager.TicksGame >= requestSession.GetTimeOfOccurenceWithFaction(pTarg.Faction) &&
                         pTarg.GetTraderCaravanRole() == TraderCaravanRole.Trader &&
                         pTarg.CanTradeNow
                        )
@@ -47,7 +48,7 @@ namespace ItemRequests
                     LocalTargetInfo localTargetInfo = targetInfo;
                     Pawn pTarg = (Pawn)localTargetInfo.Thing;
 
-                    if (requestSession.HasOpenDealWith(pTarg.Faction))
+                    if (requestSession.HasOpenDealWith(pTarg.Faction) && Find.TickManager.TicksGame >= requestSession.GetTimeOfOccurenceWithFaction(pTarg.Faction))
                     {
                         Action takeOrderedJob = delegate ()
                         {

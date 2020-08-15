@@ -373,6 +373,7 @@ namespace ItemRequests
                     Find.WindowStack.Add(new RequestAcknowledgedWindow(faction, () =>
                     {
                         Close(false);
+                        requestSession.SetTimeOfOccurence(faction, Find.TickManager.TicksGame + CaravanManager.DetermineJourneyTime(faction, map));
                         requestSession.CloseSession();
                         CaravanManager.SendRequestedCaravan(faction, map);
                     }));
