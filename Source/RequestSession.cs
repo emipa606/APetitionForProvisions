@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using RimWorld;
@@ -13,7 +12,22 @@ namespace ItemRequests
         public Pawn negotiator = null;
         public Faction faction = null;
         public RequestDeal deal = null;
-        public IEnumerable<RequestDeal> openDeals => timeOfOccurences.Keys;
+        public IEnumerable<RequestDeal> openDeals {
+            get
+            {
+                try {
+                    if (timeOfOccurences == null)
+                    {
+                        Log.Warning("Trying to access request deals when they haven't been initialized! Fixing...");
+                        timeOfOccurences = new Dictionary<RequestDeal, float>();                    
+                    }
+                    return timeOfOccurences.Keys;
+                } catch {
+                    Log.ErrorOnce("Unable to access any existing deals with factions. It's possible the last time this game was saved a different version of this mod was running. Try saving and quitting, then coming back.", "no_open_deals".GetHashCode());
+                    return new List<RequestDeal>();
+                }
+            }
+        }
 
         private Dictionary<RequestDeal, float> timeOfOccurences;
         private List<RequestDeal> deals;
@@ -57,6 +71,7 @@ namespace ItemRequests
             if (faction == null) return null;
             foreach (RequestDeal openDeal in openDeals)
             {
+                if (openDeal == null) continue;
                 if (openDeal.Faction.randomKey == faction.randomKey)
                 {
                     return openDeal;

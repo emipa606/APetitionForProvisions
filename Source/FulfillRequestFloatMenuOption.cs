@@ -41,8 +41,6 @@ namespace ItemRequests
 
             if (optToRemove != null)
             {
-                opts.Remove(optToRemove);
-
                 foreach (LocalTargetInfo targetInfo in localTradeTargets)
                 {
                     LocalTargetInfo localTargetInfo = targetInfo;
@@ -67,6 +65,7 @@ namespace ItemRequests
                         Thing thing = localTargetInfo.Thing;
                         MenuOptionPriority priority = MenuOptionPriority.InitiateSocial;
                         opts.Add(new FloatMenuOption(label, takeOrderedJob, priority, null, thing));
+                        opts.Remove(optToRemove);
                     }
                 }
             }
