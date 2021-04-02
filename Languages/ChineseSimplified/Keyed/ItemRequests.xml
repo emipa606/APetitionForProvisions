@@ -4,23 +4,18 @@
   <IR.ConfirmRequestWindow.WindowMessage>你的殖民地当前没有足够的白银购买所请求的物资。当然，你可以坚持请求物资，然后在物资小队抵达你的殖民地前向上帝祈祷他们善心大发。但如果说边缘世界的日子教会了你什么，那就是千万别在最需要运气的时候抱有希望。</IR.ConfirmRequestWindow.WindowMessage>
   <IR.ConfirmRequestWindow.Confirm>我清楚我在做什么</IR.ConfirmRequestWindow.Confirm>
   <IR.ConfirmRequestWindow.Cancel>撤回请求</IR.ConfirmRequestWindow.Cancel>
-
   <IR.ConfirmEmptyRequestWindow.WindowTitle>再见</IR.ConfirmEmptyRequestWindow.WindowTitle>
   <IR.ConfirmEmptyRequestWindow.WindowMessage>{0} 的交易员在挂断时嘟囔着浪费时间之类的话。</IR.ConfirmEmptyRequestWindow.WindowMessage>
   <IR.ConfirmEmptyRequestWindow.Confirm>好</IR.ConfirmEmptyRequestWindow.Confirm>
-
   <IR.DialogWindow.RequestItems>物资申请</IR.DialogWindow.RequestItems>
-
   <IR.FulfillItemRequestWindow.ReviewItems>交易请求物资</IR.FulfillItemRequestWindow.ReviewItems>
   <IR.FulfillItemRequestWindow.Trade>交易</IR.FulfillItemRequestWindow.Trade>
   <IR.FulfillItemRequestWindow.Postpone>晚点</IR.FulfillItemRequestWindow.Postpone>
   <IR.FulfillItemRequestWindow.Total>合计</IR.FulfillItemRequestWindow.Total>
   <IR.FulfillItemRequestWindow.NotEnoughSilverStored>你的殖民地储存区内没有足够的白银支付所求物资！</IR.FulfillItemRequestWindow.NotEnoughSilverStored>
   <IR.FulfillItemRequestWindow.NotEnoughSilverMessage>该殖民地没有足够的白银支付所求物资！</IR.FulfillItemRequestWindow.NotEnoughSilverMessage>
-
   <IR.FulfillRequestFloatMenuOption.MenuText>为 {0} 带来的请求物资付款</IR.FulfillRequestFloatMenuOption.MenuText>
   <IR.FulfillRequestFloatMenuOption.ReservedBy> (预购于 {0})</IR.FulfillRequestFloatMenuOption.ReservedBy>
-
   <IR.ItemRequestWindow.ColonyCountTooltip>当前殖民地内的储量。</IR.ItemRequestWindow.ColonyCountTooltip>
   <IR.ItemRequestWindow.NegotiatorLabel>交易者: {0}</IR.ItemRequestWindow.NegotiatorLabel>
   <IR.ItemRequestWindow.TechLevelLabel>科技水平: {0}</IR.ItemRequestWindow.TechLevelLabel>
@@ -37,7 +32,6 @@
   <IR.ItemRequestWindow.DeliveryCharge>基于运距涨价(预计: {0} 天行程):</IR.ItemRequestWindow.DeliveryCharge>
   <IR.ItemRequestWindow.FactionRelationOffset>基于派系关系的价格偏向:</IR.ItemRequestWindow.FactionRelationOffset>
   <IR.ItemRequestWindow.ItemsStillLoading>货物列表载入中...</IR.ItemRequestWindow.ItemsStillLoading>
-
   <IR.LordJobFulfillItemRequest.NoFulfillTrade>未进行交易</IR.LordJobFulfillItemRequest.NoFulfillTrade>
   <IR.LordJobFulfillItemRequest.NoFulfillAllTrade>未完整完成交易</IR.LordJobFulfillItemRequest.NoFulfillAllTrade>
   <IR.LordJobFulfillItemRequest.AttackingOutOfAnger>他们因愤怒而攻击你的殖民者！</IR.LordJobFulfillItemRequest.AttackingOutOfAnger>
@@ -48,13 +42,10 @@
   <IR.LordJobFulfillItemRequest.DisappointedTraders>来自 {0} 的物资小队对你感到失望，因你未买下你请求的所有物资。</IR.LordJobFulfillItemRequest.DisappointedTraders>
   <IR.LordJobFulfillItemRequest.AnnoyedTraders>来自 {0} 的物资小队因你未买下你请求的所有物资而生气。</IR.LordJobFulfillItemRequest.AnnoyedTraders>
   <IR.LordJobFulfillItemRequest.OutragedTraders>来自 {0} 的物资小队因你未买下你请求的所有物资而愤怒。</IR.LordJobFulfillItemRequest.OutragedTraders>
-
   <IR.RequestAcknowledgedWindow.WindowTitle>请求已确认</IR.RequestAcknowledgedWindow.WindowTitle>
   <IR.RequestAcknowledgedWindow.WindowMessage>{0} 已同意此次交易，物资小队将于几天内抵达。\n\n当队伍抵达时，确保白银数量满足你约定的数目。现在，或许你还有足够的白银，但边缘世界的日子是出了名的艰难，你永远不知道在接下来这段时间里会有什么不幸在等待着你。</IR.RequestAcknowledgedWindow.WindowMessage>
   <IR.RequestAcknowledgedWindow.CloseText>好</IR.RequestAcknowledgedWindow.CloseText>
-
   <IR.RequestSession.CannotRequestAgainYet>在完成上次交易前，你不能从 {0} 请求更多物资。</IR.RequestSession.CannotRequestAgainYet>
-
   <IR.ThingType.Resources>资源</IR.ThingType.Resources>
   <IR.ThingType.Food>食物</IR.ThingType.Food>
   <IR.ThingType.Weapons>武器</IR.ThingType.Weapons>
@@ -63,5 +54,4 @@
   <IR.ThingType.Buildings>家具</IR.ThingType.Buildings>
   <IR.ThingType.Animals>动物</IR.ThingType.Animals>
   <IR.ThingType.Other>其他</IR.ThingType.Other>
-
 </LanguageData>
