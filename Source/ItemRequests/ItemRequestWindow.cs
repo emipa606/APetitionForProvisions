@@ -275,7 +275,7 @@ namespace ItemRequests
             // Draw the stuff filter
             var stuffFilterDropdownArea = thingFilterDropdownArea;
             stuffFilterDropdownArea.x += thingFilterDropdownArea.width + 10;
-            string stuffFilterLabel = stuffTypeFilter?.LabelCap ?? "IR.ItemRequestWindow.FilterAll".Translate();
+            var stuffFilterLabel = stuffTypeFilter?.label ?? "IR.ItemRequestWindow.FilterAll".Translate();
             if (!WidgetDropdown.Button(stuffFilterDropdownArea, stuffFilterLabel, true, false,
                 ThingDatabase.Instance.Loaded))
             {
@@ -296,9 +296,9 @@ namespace ItemRequests
                 })
             };
 
-            foreach (var item in stuffFilterSet.OrderBy(def => def.LabelCap))
+            foreach (var item in stuffFilterSet.OrderBy(def => def.label))
             {
-                stuffFilterOptions.Add(new FloatMenuOption(item.LabelCap, () =>
+                stuffFilterOptions.Add(new FloatMenuOption(item.label, () =>
                 {
                     if (stuffTypeFilter == item)
                     {
@@ -881,6 +881,36 @@ namespace ItemRequests
 
         private bool hasMaximumTechLevel(ThingEntry entry, TechLevel tLevel)
         {
+            if (entry.def.techLevel > tLevel)
+            {
+                return false;
+            }
+
+            if (RestrictedItems.researchTechCache.ContainsKey(entry.def) &&
+                RestrictedItems.researchTechCache[entry.def] > tLevel)
+            {
+                return false;
+            }
+
+            if ((entry.def.intricate || entry.def.thingCategories?.Contains(ThingCategoryDefOf.Techprints) == true) &&
+                tLevel < TechLevel.Industrial)
+            {
+                return false;
+            }
+
+            if (entry.def.thingClass == typeof(Building) &&
+                (!entry.def.Minifiable || entry.def.designationCategory == null))
+            {
+                return false;
+            }
+
+            if (entry.def.destroyOnDrop || entry.def.menuHidden)
+            {
+                return false;
+            }
+
+            return true;
+
             var lvl = (int) entry.def.techLevel;
 
             // there's probably a better way to test for an advanced component but oh well

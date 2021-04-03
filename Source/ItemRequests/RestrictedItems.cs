@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using Verse;
 
@@ -6,6 +7,7 @@ namespace ItemRequests
 {
     public class RestrictedItems
     {
+        public static Dictionary<ThingDef, TechLevel> researchTechCache = new();
         public static List<ThingDef> GetThings { get; } = new();
 
         public static List<PawnKindDef> GetPawns { get; } = new();
@@ -57,6 +59,45 @@ namespace ItemRequests
             GetPawns.Add(PawnKindDefOf.Megaspider);
             GetPawns.Add(PawnKindDefOf.Spelopede);
             GetPawns.Add(PawnKindDefOf.Alphabeaver);
+
+            var validThings = from thing in DefDatabase<ThingDef>.AllDefsListForReading
+                where thing.recipeMaker != null || thing.researchPrerequisites != null
+                select thing;
+            Log.Message("[A Petition For Provisions] Caching tech-level for things");
+            foreach (var validThing in validThings)
+            {
+                var currentTechLevel = TechLevel.Neolithic;
+                if (validThing.researchPrerequisites?.Count > 0)
+                {
+                    foreach (var validThingResearchPrerequisite in validThing.researchPrerequisites)
+                    {
+                        if (validThingResearchPrerequisite.techLevel > currentTechLevel)
+                        {
+                            currentTechLevel = validThingResearchPrerequisite.techLevel;
+                        }
+                    }
+                }
+
+                if (validThing.recipeMaker?.researchPrerequisites?.Count > 0)
+                {
+                    foreach (var validThingResearchPrerequisite in validThing.recipeMaker.researchPrerequisites)
+                    {
+                        if (validThingResearchPrerequisite.techLevel > currentTechLevel)
+                        {
+                            currentTechLevel = validThingResearchPrerequisite.techLevel;
+                        }
+                    }
+                }
+
+                if (validThing.recipeMaker?.researchPrerequisite?.techLevel > currentTechLevel)
+                {
+                    currentTechLevel = validThing.recipeMaker.researchPrerequisite.techLevel;
+                }
+
+                researchTechCache.Add(validThing, currentTechLevel);
+            }
+
+            Log.Message("[A Petition For Provisions] Caching complete");
         }
     }
 }

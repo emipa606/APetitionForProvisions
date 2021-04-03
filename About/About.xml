@@ -52,10 +52,6 @@ CREDIT
 Huge thanks to the developer(s) of the EdB Prepare Carefully mod, whose code helped immensely in the creation of this mod's GUIs.
 
 
-FOR FOUND BUGS OR ANY PROBLEMS
-
-Please file an issue on the project's github page here https://github.com/ToyWalrus/RequestItems/issues
-
 [img]https://i.imgur.com/Rs6T6cr.png[/img]
 [list]
 [*] See if the the error persists if you just have this mod and its requirements active.
@@ -67,4 +63,3 @@ Please file an issue on the project's github page here https://github.com/ToyWal
 [/list]
 </description>
 </ModMetaData>
-
