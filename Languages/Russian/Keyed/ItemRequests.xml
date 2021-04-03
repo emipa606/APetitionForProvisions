@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <IR.ConfirmRequestWindow.WindowTitle>Вы уверены?</IR.ConfirmRequestWindow.WindowTitle>
+  <IR.ConfirmRequestWindow.WindowMessage>В настоящее время в вашей колонии недостаточно серебра для покупки запрошенных товаров. Конечно, вы всё ещё можете попросить их, моля своих богов, чтобы они сжалились над вашей колонией до прибытия запрошенного каравана. Но если жизнь на этих краях вас чему-то и научила, так это тому, что вы никогда не должны ожидать удачи, когда она больше всего нужна.</IR.ConfirmRequestWindow.WindowMessage>
+  <IR.ConfirmRequestWindow.Confirm>Я знаю, что я делаю</IR.ConfirmRequestWindow.Confirm>
+  <IR.ConfirmRequestWindow.Cancel>Вернуться к запросу</IR.ConfirmRequestWindow.Cancel>
+  <IR.ConfirmEmptyRequestWindow.WindowTitle>До свидания</IR.ConfirmEmptyRequestWindow.WindowTitle>
+  <IR.ConfirmEmptyRequestWindow.WindowMessage>Переговорщик из фракции {0} бормочет что-то о пустой трате времени, когда кладет трубку.</IR.ConfirmEmptyRequestWindow.WindowMessage>
+  <IR.ConfirmEmptyRequestWindow.Confirm>OK</IR.ConfirmEmptyRequestWindow.Confirm>
+  <IR.DialogWindow.RequestItems>Запрос конкретных товаров</IR.DialogWindow.RequestItems>
+  <IR.FulfillItemRequestWindow.ReviewItems>Просмотр запрошенных товаров</IR.FulfillItemRequestWindow.ReviewItems>
+  <IR.FulfillItemRequestWindow.Trade>Принять</IR.FulfillItemRequestWindow.Trade>
+  <IR.FulfillItemRequestWindow.Postpone>Отсрочить</IR.FulfillItemRequestWindow.Postpone>
+  <IR.FulfillItemRequestWindow.Total>Итого</IR.FulfillItemRequestWindow.Total>
+  <IR.FulfillItemRequestWindow.NotEnoughSilverStored>В вашей колонии недостаточно серебра, чтобы заплатить за это!</IR.FulfillItemRequestWindow.NotEnoughSilverStored>
+  <IR.FulfillItemRequestWindow.NotEnoughSilverMessage>В колонии не хватает серебра для оплаты запрошенных предметов!</IR.FulfillItemRequestWindow.NotEnoughSilverMessage>
+  <IR.FulfillRequestFloatMenuOption.MenuText>Обсудить запрошенные товары с фракцией {0}</IR.FulfillRequestFloatMenuOption.MenuText>
+  <IR.FulfillRequestFloatMenuOption.ReservedBy> (Зарезервировано за {0})</IR.FulfillRequestFloatMenuOption.ReservedBy>
+  <IR.ItemRequestWindow.ColonyCountTooltip>Колличество товара, которое в настоящее время храниться в вашей колонии.</IR.ItemRequestWindow.ColonyCountTooltip>
+  <IR.ItemRequestWindow.NegotiatorLabel>Переговорщик: {0}</IR.ItemRequestWindow.NegotiatorLabel>
+  <IR.ItemRequestWindow.TechLevelLabel>Технический уровень: {0}</IR.ItemRequestWindow.TechLevelLabel>
+  <IR.ItemRequestWindow.AmountRequested>Запрошенная сумма</IR.ItemRequestWindow.AmountRequested>
+  <IR.ItemRequestWindow.Filters>Фильтры:</IR.ItemRequestWindow.Filters>
+  <IR.ItemRequestWindow.FilterAll>Всё</IR.ItemRequestWindow.FilterAll>
+  <IR.ItemRequestWindow.Silver>Серебро</IR.ItemRequestWindow.Silver>
+  <IR.ItemRequestWindow.TotalValueRequestedTooltip>Это стоимость всех запрошенных вами товаров.</IR.ItemRequestWindow.TotalValueRequestedTooltip>
+  <IR.ItemRequestWindow.TotalValueRequestedCaution>Внимание: вы все ещё можете запросить эти товары, но в настоящее время у вас недостаточно серебра, чтобы заплатить за них по прибытии каравана.</IR.ItemRequestWindow.TotalValueRequestedCaution>
+  <IR.ItemRequestWindow.Confirm>Подтвердить</IR.ItemRequestWindow.Confirm>
+  <IR.ItemRequestWindow.Cancel>Отмена</IR.ItemRequestWindow.Cancel>
+  <IR.ItemRequestWindow.PriceUponDelivery>Цена, которую вы заплатите при доставке:</IR.ItemRequestWindow.PriceUponDelivery>
+  <IR.ItemRequestWindow.Requesting> (Запрос)</IR.ItemRequestWindow.Requesting>
+  <IR.ItemRequestWindow.DeliveryCharge>Повышение цены в зависимости от расстояния (примерно {0} дней пути)):</IR.ItemRequestWindow.DeliveryCharge>
+  <IR.ItemRequestWindow.FactionRelationOffset>Снижение цены из-за отношения с фракцией:</IR.ItemRequestWindow.FactionRelationOffset>
+  <IR.ItemRequestWindow.ItemsStillLoading>Загрузка товаров...</IR.ItemRequestWindow.ItemsStillLoading>
+  <IR.LordJobFulfillItemRequest.NoFulfillTrade>Не выполнение торгового запроса</IR.LordJobFulfillItemRequest.NoFulfillTrade>
+  <IR.LordJobFulfillItemRequest.NoFulfillAllTrade>Не выполнен полностью торговый запрос</IR.LordJobFulfillItemRequest.NoFulfillAllTrade>
+  <IR.LordJobFulfillItemRequest.AttackingOutOfAnger>Они в гневе нападают на ваших колонистов!</IR.LordJobFulfillItemRequest.AttackingOutOfAnger>
+  <IR.LordJobFulfillItemRequest.RelationsDropped>Отношения с вашей фракцией упали.</IR.LordJobFulfillItemRequest.RelationsDropped>
+  <IR.LordJobFulfillItemRequest.RequestedCaravanLeaving>Запрошенный караван из фракции {0} уходит.</IR.LordJobFulfillItemRequest.RequestedCaravanLeaving>
+  <IR.LordJobFulfillItemRequest.FactionInsulted>{0} был оскорблен вашей халатностью.</IR.LordJobFulfillItemRequest.FactionInsulted>
+  <IR.LordJobFulfillItemRequest.TradersAttacking>Торговцы из фракции {0} атакуют ваших колонистов!</IR.LordJobFulfillItemRequest.TradersAttacking>
+  <IR.LordJobFulfillItemRequest.DisappointedTraders>Караван из {0} разочарован тем, что вы не купили все, о чем просили.</IR.LordJobFulfillItemRequest.DisappointedTraders>
+  <IR.LordJobFulfillItemRequest.AnnoyedTraders>Караван из фракции {0} раздражён тем, что вы купили не всё, о чём просили.</IR.LordJobFulfillItemRequest.AnnoyedTraders>
+  <IR.LordJobFulfillItemRequest.OutragedTraders>Караван из фракции {0} возмущён тем, что вы не купили всё, о чем просили.</IR.LordJobFulfillItemRequest.OutragedTraders>
+  <IR.RequestAcknowledgedWindow.WindowTitle>Запрос подтвержден</IR.RequestAcknowledgedWindow.WindowTitle>
+  <IR.RequestAcknowledgedWindow.WindowMessage>Фракция {0} согласилась на обмен и прибудет в течение нескольких дней.\n\nУбедитесь, что у вас к их приходу будет серебро на ту сумму о которой вы договоривались. В настоящее время у вас может быть достаточно ресурсов для сделки, но жизнь в этих краях может быть весьма опасна и вы никогда не знаете, какие несчастья ждут вас в следующие несколько дней.</IR.RequestAcknowledgedWindow.WindowMessage>
+  <IR.RequestAcknowledgedWindow.CloseText>OK</IR.RequestAcknowledgedWindow.CloseText>
+  <IR.RequestSession.CannotRequestAgainYet>Вы не можете запросить дополнительные товары у фракции {0}, пока они не осуществят ваш предыдущий запрос.</IR.RequestSession.CannotRequestAgainYet>
+  <IR.ThingType.Resources>Ресурсы</IR.ThingType.Resources>
+  <IR.ThingType.Food>Еда</IR.ThingType.Food>
+  <IR.ThingType.Weapons>Оружие</IR.ThingType.Weapons>
+  <IR.ThingType.Apparel>Одежда</IR.ThingType.Apparel>
+  <IR.ThingType.Medical>Медицина</IR.ThingType.Medical>
+  <IR.ThingType.Buildings>Строения</IR.ThingType.Buildings>
+  <IR.ThingType.Animals>Животные</IR.ThingType.Animals>
+  <IR.ThingType.Other>Другое</IR.ThingType.Other>
+</LanguageData>

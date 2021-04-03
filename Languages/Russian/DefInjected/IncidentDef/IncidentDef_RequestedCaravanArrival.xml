@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <RequestCaravanArrival.label>прибытие каравана по запросу</RequestCaravanArrival.label>
+  <RequestCaravanArrival.letterText>Прибыл торговый караван с запрошенными вами товарами.\n\nПоговорите с лидером каравана, чтобы торговать. Однако будьте осторожны, если у вас недостаточно серебра для оплаты того, что вы просили, это разозлите фракцию, что может привести к ... нежелательным результатам.</RequestCaravanArrival.letterText>
+  <RequestCaravanArrival.letterLabel>Прибытие каравана по запросу</RequestCaravanArrival.letterLabel>
+</LanguageData>
