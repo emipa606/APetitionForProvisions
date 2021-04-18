@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
   <name>A Petition for Provisions (Continued)</name>
   <packageId>Mlie.APetitionForProvisions</packageId>
@@ -17,6 +17,9 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=1904213444
 that is no longer being maintained.
 
 - Short-hash errors and the infinite caravans should be fixed
+- The stuff filter should now work
+- Available items should now be more correct based on the factions tech-level
+- Russian translation added, thanks Tkhakiro!
 
 [img]https://i.imgur.com/7Gzt3Rg.png[/img]
 
