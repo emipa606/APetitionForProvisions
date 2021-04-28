@@ -1,5 +1,8 @@
 # Changelog for APetitionForProvisions
 
+1.0.5.0 - Added tooltip on current petitioned caravans
+
+
 1.0.4.0 - Using Esc or Enter keys should no longer make permanent blank requests
 
 

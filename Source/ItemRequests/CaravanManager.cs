@@ -9,7 +9,7 @@ namespace ItemRequests
     public class CaravanManager
     {
         public static readonly int fullDayInTicks = 60000;
-        private static readonly Dictionary<Faction, int> factionTravelTime = new();
+        private static readonly Dictionary<Faction, int> factionTravelTime = new Dictionary<Faction, int>();
 
         public static void SendRequestedCaravan(Faction faction, Map playerMap)
         {

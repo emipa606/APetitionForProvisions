@@ -54,4 +54,12 @@
   <IR.ThingType.Buildings>Buildings</IR.ThingType.Buildings>
   <IR.ThingType.Animals>Animals</IR.ThingType.Animals>
   <IR.ThingType.Other>Other</IR.ThingType.Other>
+  <IR.NearDatePatch.Title>Caravan requests</IR.NearDatePatch.Title>
+  <IR.NearDatePatch.CaravanInfo>{0} in {1}</IR.NearDatePatch.CaravanInfo>
+  <IR.NearDatePatch.ItemInfo>and {0} more items</IR.NearDatePatch.ItemInfo>
+  <IR.Value>Total value: {0}</IR.Value>
+  <IR.LessThanOneHour>less than an hour</IR.LessThanOneHour>
+  <IR.AboutOneHour>about an hour</IR.AboutOneHour>
+  <IR.Hours>hours</IR.Hours>
+  <IR.Days>days</IR.Days>
 </LanguageData>

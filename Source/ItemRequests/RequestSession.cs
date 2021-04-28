@@ -25,7 +25,7 @@ namespace ItemRequests
             timeOfOccurences = new Dictionary<RequestDeal, float>();
         }
 
-        private IEnumerable<RequestDeal> openDeals
+        public IEnumerable<RequestDeal> openDeals
         {
             get
             {

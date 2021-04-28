@@ -73,26 +73,26 @@ namespace ItemRequests
             var slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
             slotGroups.ForEach(
                 group =>
-                    {
-                        group.HeldThings.ToList().ForEach(
-                            thing =>
-                                {
-                                    var key = thing.def.label;
-                                    if (thing.Stuff != null)
-                                    {
-                                        key += thing.Stuff.label;
-                                    }
+                {
+                    group.HeldThings.ToList().ForEach(
+                        thing =>
+                        {
+                            var key = thing.def.label;
+                            if (thing.Stuff != null)
+                            {
+                                key += thing.Stuff.label;
+                            }
 
-                                    if (colonyItemCount.ContainsKey(key))
-                                    {
-                                        colonyItemCount[key] += thing.stackCount;
-                                    }
-                                    else
-                                    {
-                                        colonyItemCount.Add(key, thing.stackCount);
-                                    }
-                                });
-                    });
+                            if (colonyItemCount.ContainsKey(key))
+                            {
+                                colonyItemCount[key] += thing.stackCount;
+                            }
+                            else
+                            {
+                                colonyItemCount.Add(key, thing.stackCount);
+                            }
+                        });
+                });
 
             AttemptDatabaseReload();
             Resize();
@@ -206,7 +206,7 @@ namespace ItemRequests
                 if (thingEntry.pawnDef != null)
                 {
                     var pawn = thingEntry.thing as Pawn;
-                    var trad = new Tradeable(pawn, pawn) { thingsColony = new List<Thing>() };
+                    var trad = new Tradeable(pawn, pawn) {thingsColony = new List<Thing>()};
                     thingEntry.tradeable = trad;
                     allRequestableItems.Add(thingEntry);
                 }
@@ -246,7 +246,7 @@ namespace ItemRequests
         private float DetermineDistMultiplier(out float daysToTravel)
         {
             var distToColonyInTicks = CaravanManager.DetermineJourneyTime(faction, map);
-            daysToTravel = (float)distToColonyInTicks / CaravanManager.fullDayInTicks;
+            daysToTravel = (float) distToColonyInTicks / CaravanManager.fullDayInTicks;
             float distMultiplier = 1;
 
             if (daysToTravel >= 4)
@@ -327,11 +327,11 @@ namespace ItemRequests
                         new RequestAcknowledgedWindow(
                             faction,
                             () =>
-                                {
-                                    requestSession.SetTimeOfOccurence(faction, Find.TickManager.TicksGame + CaravanManager.DetermineJourneyTime(faction, map));
-                                    Close(false);
-                                    CaravanManager.SendRequestedCaravan(faction, map);
-                                }));
+                            {
+                                requestSession.SetTimeOfOccurence(faction, Find.TickManager.TicksGame + CaravanManager.DetermineJourneyTime(faction, map));
+                                Close(false);
+                                CaravanManager.SendRequestedCaravan(faction, map);
+                            }));
                 }
 
                 void OnCancelled()
@@ -354,11 +354,11 @@ namespace ItemRequests
                     Find.WindowStack.Add(
                         new ConfirmRequestWindow(
                             () =>
-                                {
-                                    Close(false);
-                                    requestSession.CloseOpenDealWith(faction);
-                                    requestSession.CloseSession();
-                                },
+                            {
+                                Close(false);
+                                requestSession.CloseOpenDealWith(faction);
+                                requestSession.CloseSession();
+                            },
                             null,
                             title,
                             message,
@@ -408,18 +408,18 @@ namespace ItemRequests
                         new FloatMenuOption(
                             type.Translate(),
                             () =>
+                            {
+                                if (thingTypeFilter == type)
                                 {
-                                    if (thingTypeFilter == type)
-                                    {
-                                        return;
-                                    }
+                                    return;
+                                }
 
-                                    thingTypeFilter = type;
-                                    FilterRequestableItems();
-                                    UpdateAvailableMaterials();
+                                thingTypeFilter = type;
+                                FilterRequestableItems();
+                                UpdateAvailableMaterials();
 
-                                    // FilterRequestableItems();
-                                }));
+                                // FilterRequestableItems();
+                            }));
                 }
 
                 Find.WindowStack.Add(new FloatMenu(filterOptions, null));
@@ -435,20 +435,20 @@ namespace ItemRequests
             }
 
             var stuffFilterOptions = new List<FloatMenuOption>
-                                         {
-                                             new FloatMenuOption(
-                                                 "IR.ItemRequestWindow.FilterAll".Translate(),
-                                                 () =>
-                                                     {
-                                                         if (stuffTypeFilter == null)
-                                                         {
-                                                             return;
-                                                         }
+            {
+                new FloatMenuOption(
+                    "IR.ItemRequestWindow.FilterAll".Translate(),
+                    () =>
+                    {
+                        if (stuffTypeFilter == null)
+                        {
+                            return;
+                        }
 
-                                                         stuffTypeFilter = null;
-                                                         FilterRequestableItems();
-                                                     })
-                                         };
+                        stuffTypeFilter = null;
+                        FilterRequestableItems();
+                    })
+            };
 
             foreach (var item in stuffFilterSet.OrderBy(def => def.label))
             {
@@ -456,15 +456,15 @@ namespace ItemRequests
                     new FloatMenuOption(
                         item.label,
                         () =>
+                        {
+                            if (stuffTypeFilter == item)
                             {
-                                if (stuffTypeFilter == item)
-                                {
-                                    return;
-                                }
+                                return;
+                            }
 
-                                stuffTypeFilter = item;
-                                FilterRequestableItems();
-                            }));
+                            stuffTypeFilter = item;
+                            FilterRequestableItems();
+                        }));
             }
 
             Find.WindowStack.Add(new FloatMenu(stuffFilterOptions, null));
@@ -586,21 +586,21 @@ namespace ItemRequests
                 rowRect,
                 new TipSignal(
                     () =>
+                    {
+                        if (!localTrad.HasAnyThing)
                         {
-                            if (!localTrad.HasAnyThing)
-                            {
-                                return string.Empty;
-                            }
+                            return string.Empty;
+                        }
 
-                            var text = trade.LabelCap;
-                            var tipDescription = localTrad.TipDescription;
-                            if (!tipDescription.NullOrEmpty())
-                            {
-                                text = text + ": " + tipDescription;
-                            }
+                        var text = trade.LabelCap;
+                        var tipDescription = localTrad.TipDescription;
+                        if (!tipDescription.NullOrEmpty())
+                        {
+                            text = text + ": " + tipDescription;
+                        }
 
-                            return text;
-                        },
+                        return text;
+                    },
                     localTrad.GetHashCode()));
         }
 
@@ -793,7 +793,7 @@ namespace ItemRequests
 
             var text2 = text;
 
-            text = string.Concat(new string[] { text2, "\n  x ", requestingItemMarkupMultiplier.ToString("F2"), "IR.ItemRequestWindow.Requesting".Translate() });
+            text = string.Concat(new string[] {text2, "\n  x ", requestingItemMarkupMultiplier.ToString("F2"), "IR.ItemRequestWindow.Requesting".Translate()});
 
             if (Find.Storyteller.difficulty.tradePriceFactorLoss != 0f)
             {

@@ -10,6 +10,8 @@ that is no longer being maintained.
 - The stuff filter should now work
 - Available items should now be more correct based on the factions tech-level
 - Russian translation added, thanks Tkhakiro!
+- Fixed Esc/Enter working as they should in the trade-window
+- Added tooltip on current petitioned caravans
 
 ![Image](https://i.imgur.com/7Gzt3Rg.png)
 

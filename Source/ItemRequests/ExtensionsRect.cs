@@ -77,12 +77,12 @@ namespace ItemRequests
         public static void SetRandomQualityWeighted(this Thing thing, QualityCategory minQuality = QualityCategory.Awful, QualityCategory maxQuality = QualityCategory.Legendary)
         {
             var val = Random.Range(0, 1f);
-            var min = (int)minQuality;
-            var max = (int)maxQuality;
+            var min = (int) minQuality;
+            var max = (int) maxQuality;
 
             QualityCategory clamp(int toClamp)
             {
-                return (QualityCategory)Mathf.Max(Mathf.Min(toClamp, max), min);
+                return (QualityCategory) Mathf.Max(Mathf.Min(toClamp, max), min);
             }
 
             if (val < .05)

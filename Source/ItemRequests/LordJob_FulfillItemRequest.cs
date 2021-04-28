@@ -126,8 +126,8 @@ namespace ItemRequests
             stateGraph.AddTransition(leaveIfRequestFulfilled);
 
             var ticksUntilBadThings = Rand.Range(
-                Mathf.RoundToInt((float)CaravanManager.fullDayInTicks / 2), // 0.5  days
-                CaravanManager.fullDayInTicks + Mathf.RoundToInt((float)CaravanManager.fullDayInTicks / 4)); // 1.25 days
+                Mathf.RoundToInt((float) CaravanManager.fullDayInTicks / 2), // 0.5  days
+                CaravanManager.fullDayInTicks + Mathf.RoundToInt((float) CaravanManager.fullDayInTicks / 4)); // 1.25 days
 
             // Determine actions if request goes unfulfilled based on faction relation
             var ticksPassed = new Trigger_TicksPassed(ticksUntilBadThings);

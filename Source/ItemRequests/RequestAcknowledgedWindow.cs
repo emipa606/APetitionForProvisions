@@ -17,7 +17,7 @@ namespace ItemRequests
             absorbInputAroundWindow = true;
         }
 
-        public override Vector2 InitialSize => new(500, 500);
+        public override Vector2 InitialSize => new Vector2(500, 500);
 
         public override void DoWindowContents(Rect inRect)
         {

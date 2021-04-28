@@ -14,16 +14,16 @@ namespace ItemRequests
     {
         private static ThingDatabase instance;
 
-        private readonly HashSet<string> categoryLookup = new();
-        private readonly CostCalculator costs = new();
-        private readonly Dictionary<ThingKey, ThingEntry> entries = new();
-        private readonly List<ThingDef> stuff = new();
-        private readonly HashSet<ThingDef> stuffLookup = new();
+        private readonly HashSet<string> categoryLookup = new HashSet<string>();
+        private readonly CostCalculator costs = new CostCalculator();
+        private readonly Dictionary<ThingKey, ThingEntry> entries = new Dictionary<ThingKey, ThingEntry>();
+        private readonly List<ThingDef> stuff = new List<ThingDef>();
+        private readonly HashSet<ThingDef> stuffLookup = new HashSet<ThingDef>();
         private readonly ThingCategoryDef thingCategoryMeatRaw;
 
         private readonly ThingCategoryDef thingCategorySweetMeals;
 
-        protected List<ThingEntry> resources = new();
+        protected List<ThingEntry> resources = new List<ThingEntry>();
 
         private ThingDatabase()
         {
@@ -45,7 +45,7 @@ namespace ItemRequests
             }
         }
 
-        private LoadingState LoadingProgress { get; } = new();
+        private LoadingState LoadingProgress { get; } = new LoadingState();
         public bool Loaded => LoadingProgress.phase == LoadingPhase.Loaded;
 
         public void LoadFrame()

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+	<HugsLib.UpdateFeatureDef Abstract="true" Name="UpdateFeatureBase">
+		<modNameReadable>APetitionForProvisions</modNameReadable>
+		<linkUrl>https://steamcommunity.com/sharedfiles/filedetails/?id=2444190820</linkUrl>
+	</HugsLib.UpdateFeatureDef>
+	<HugsLib.UpdateFeatureDef ParentName="UpdateFeatureBase">
+		<defName>APetitionForProvisions_1_0_5_0</defName>
+		<assemblyVersion>1.0.5.0</assemblyVersion>
+		<content>There is now a tooltip added that shows info on current petitioned caravans.
+This shows the faction, estimated time until arrival, the required silver to pay and a short summary of the items.
+</content>
+	</HugsLib.UpdateFeatureDef>
+</Defs>
+

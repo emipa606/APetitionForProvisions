@@ -14,7 +14,7 @@ namespace ItemRequests
         private const float offsetFromBottom = 90;
         private static readonly float PartialFulfillmentCutoff_S = 400;
         private static readonly float PartialFulfillmentCutoff_M = 1200;
-        private readonly List<Thing> colonySilverStacks = new();
+        private readonly List<Thing> colonySilverStacks = new List<Thing>();
 
         private readonly Pawn playerPawn;
         private readonly List<RequestItem> requestedItems;
@@ -35,7 +35,7 @@ namespace ItemRequests
 
         private Faction traderFaction => traderPawn.Faction;
 
-        public override Vector2 InitialSize => new(500, 700);
+        public override Vector2 InitialSize => new Vector2(500, 700);
 
         public override void DoWindowContents(Rect inRect)
         {

@@ -6,8 +6,6 @@ namespace ItemRequests
 {
     public class CostDetails
     {
-        public Pawn pawn = null;
-
         private readonly List<ColonistCostDetails> colonistDetails = new List<ColonistCostDetails>();
 
         private double animals;
@@ -19,6 +17,7 @@ namespace ItemRequests
         private double colonists;
 
         private double equipment;
+        public Pawn pawn = null;
 
         private double total;
 

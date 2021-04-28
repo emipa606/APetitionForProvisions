@@ -9,9 +9,8 @@ namespace ItemRequests
     // https://github.com/edbmods/EdBPrepareCarefully/blob/develop/Source/CostCalculator.cs
     public class CostCalculator
     {
-        protected HashSet<string> freeApparel = new HashSet<string>();
-
         private readonly HashSet<string> cheapApparel = new HashSet<string>();
+        protected HashSet<string> freeApparel = new HashSet<string>();
 
         public CostCalculator()
         {

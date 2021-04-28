@@ -74,7 +74,7 @@ namespace ItemRequests
             }
         }
 
-        public ThingKey ThingKey => new(def, stuffDef, gender);
+        public ThingKey ThingKey => new ThingKey(def, stuffDef, gender);
 
         public void ExposeData()
         {

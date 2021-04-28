@@ -4,6 +4,7 @@ namespace ItemRequests
 {
     public class ColonistCostDetails
     {
+        private double animals;
         public double apparel;
 
         public double bionics;
@@ -14,11 +15,9 @@ namespace ItemRequests
 
         public double passionCount = 0;
 
-        public double total;
-
-        private double animals;
-
         private double passions;
+
+        public double total;
 
         private double traits;
 

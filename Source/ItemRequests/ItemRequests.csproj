@@ -69,6 +69,7 @@
     <Compile Include="JobDriver_FulfillItemRequestWithFaction.cs" />
     <Compile Include="LordJob_FulfillItemRequest.cs" />
     <Compile Include="LordToil_DefendTraderCaravan.cs" />
+    <Compile Include="CaravanInfo_NearDatePostfix.cs" />
     <Compile Include="RequestAcknowledgedWindow.cs" />
     <Compile Include="RequestDeal.cs" />
     <Compile Include="RequestItem.cs" />
