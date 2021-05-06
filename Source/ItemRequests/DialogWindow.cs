@@ -17,6 +17,11 @@ namespace ItemRequests
                 return;
             }
 
+            if (!faction.def.pawnGroupMakers.Any(maker => maker.kindDef == PawnGroupKindDefOf.Trader))
+            {
+                return;
+            }
+
             var map = negotiator.Map;
             var newOption = RequestItemOption(map, faction, negotiator);
 

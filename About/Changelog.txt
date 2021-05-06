@@ -1,5 +1,8 @@
 # Changelog for APetitionForProvisions
 
+1.0.6.0 - Should no longer be possible to request a caravan from factions without trader-groupmakers
+
+
 1.0.5.0 - Added tooltip on current petitioned caravans
 
 
