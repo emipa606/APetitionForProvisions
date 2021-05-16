@@ -12,6 +12,7 @@ that is no longer being maintained.
 - Russian translation added, thanks Tkhakiro!
 - Fixed Esc/Enter working as they should in the trade-window
 - Added tooltip on current petitioned caravans
+- Factions without traders should no longer be possible to request from
 
 ![Image](https://i.imgur.com/7Gzt3Rg.png)
 

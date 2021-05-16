@@ -54,4 +54,12 @@
   <IR.ThingType.Buildings>家具</IR.ThingType.Buildings>
   <IR.ThingType.Animals>动物</IR.ThingType.Animals>
   <IR.ThingType.Other>其他</IR.ThingType.Other>
+  <IR.NearDatePatch.Title>物资申请列表</IR.NearDatePatch.Title>
+  <IR.NearDatePatch.CaravanInfo>{0} 将于 {1} 内抵达</IR.NearDatePatch.CaravanInfo>
+  <IR.NearDatePatch.ItemInfo>以及其余 {0} 件物品</IR.NearDatePatch.ItemInfo>
+  <IR.Value>合计: {0} 白银</IR.Value>
+  <IR.LessThanOneHour>1 小时</IR.LessThanOneHour>
+  <IR.AboutOneHour>约 1 小时</IR.AboutOneHour>
+  <IR.Hours>小时</IR.Hours>
+  <IR.Days>天</IR.Days>
 </LanguageData>

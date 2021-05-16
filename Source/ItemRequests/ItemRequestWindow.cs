@@ -137,7 +137,8 @@ namespace ItemRequests
                 GUI.color = Color.white;
                 var addedMainRectPadding = 30f;
                 var buttonHeight = 38f;
-                var mainArea = new Rect(x, headerRowHeight + addedMainRectPadding, inRect.width - x, inRect.height - headerRowHeight - buttonHeight - addedMainRectPadding - 20f);
+                var mainArea = new Rect(x, headerRowHeight + addedMainRectPadding, inRect.width - x,
+                    inRect.height - headerRowHeight - buttonHeight - addedMainRectPadding - 20f);
                 DrawTradeableContent(mainArea);
             }
             else
@@ -198,7 +199,10 @@ namespace ItemRequests
                 return;
             }
 
-            var thingEntries = (from x in ThingDatabase.Instance.AllThings() where hasMaximumTechLevel(x, faction.def.techLevel) where isBuyableItem(x) select x).ToList();
+            var thingEntries = (from x in ThingDatabase.Instance.AllThings()
+                where hasMaximumTechLevel(x, faction.def.techLevel)
+                where isBuyableItem(x)
+                select x).ToList();
 
             foreach (var originalEntry in thingEntries)
             {
@@ -317,7 +321,8 @@ namespace ItemRequests
 
         private void DrawButtons(Rect inRect, Rect rowRect)
         {
-            var confirmButtonRect = new Rect(inRect.width - AcceptButtonSize.x, inRect.height - AcceptButtonSize.y, AcceptButtonSize.x, AcceptButtonSize.y);
+            var confirmButtonRect = new Rect(inRect.width - AcceptButtonSize.x, inRect.height - AcceptButtonSize.y,
+                AcceptButtonSize.x, AcceptButtonSize.y);
             if (Widgets.ButtonText(confirmButtonRect, "IR.ItemRequestWindow.Confirm".Translate(), true, false))
             {
                 void OnConfirmed()
@@ -328,7 +333,8 @@ namespace ItemRequests
                             faction,
                             () =>
                             {
-                                requestSession.SetTimeOfOccurence(faction, Find.TickManager.TicksGame + CaravanManager.DetermineJourneyTime(faction, map));
+                                requestSession.SetTimeOfOccurence(faction,
+                                    Find.TickManager.TicksGame + CaravanManager.DetermineJourneyTime(faction, map));
                                 Close(false);
                                 CaravanManager.SendRequestedCaravan(faction, map);
                             }));
@@ -344,7 +350,8 @@ namespace ItemRequests
                     string message = "IR.ConfirmRequestWindow.WindowMessage".Translate();
                     string confirmString = "IR.ConfirmRequestWindow.Confirm".Translate();
                     string cancelString = "IR.ConfirmRequestWindow.Cancel".Translate();
-                    Find.WindowStack.Add(new ConfirmRequestWindow(OnConfirmed, OnCancelled, title, message, confirmString, cancelString));
+                    Find.WindowStack.Add(new ConfirmRequestWindow(OnConfirmed, OnCancelled, title, message,
+                        confirmString, cancelString));
                 }
                 else if (requestSession.deal.GetRequestedItems().Count == 0)
                 {
@@ -371,7 +378,8 @@ namespace ItemRequests
                 }
             }
 
-            var cancelButtonRect = new Rect(rowRect.x, confirmButtonRect.y, OtherBottomButtonSize.x, OtherBottomButtonSize.y);
+            var cancelButtonRect = new Rect(rowRect.x, confirmButtonRect.y, OtherBottomButtonSize.x,
+                OtherBottomButtonSize.y);
             if (!Widgets.ButtonText(cancelButtonRect, "IR.ItemRequestWindow.Cancel".Translate(), true, false))
             {
                 return;
@@ -392,8 +400,10 @@ namespace ItemRequests
             float filterDropdownHeight = 27;
             float filterDropdownWidth = 130;
             Text.Anchor = TextAnchor.UpperLeft;
-            var thingFilterDropdownArea = new Rect(filterLabelArea.width + 20, rectArea.y - 6, filterDropdownWidth, filterDropdownHeight);
-            if (WidgetDropdown.Button(thingFilterDropdownArea, thingTypeFilter.Translate(), true, false, ThingDatabase.Instance.Loaded))
+            var thingFilterDropdownArea = new Rect(filterLabelArea.width + 20, rectArea.y - 6, filterDropdownWidth,
+                filterDropdownHeight);
+            if (WidgetDropdown.Button(thingFilterDropdownArea, thingTypeFilter.Translate(), true, false,
+                ThingDatabase.Instance.Loaded))
             {
                 var thingTypes = Enum.GetValues(typeof(ThingType));
                 var filterOptions = new List<FloatMenuOption>();
@@ -429,7 +439,8 @@ namespace ItemRequests
             var stuffFilterDropdownArea = thingFilterDropdownArea;
             stuffFilterDropdownArea.x += thingFilterDropdownArea.width + 10;
             var stuffFilterLabel = stuffTypeFilter?.label ?? "IR.ItemRequestWindow.FilterAll".Translate();
-            if (!WidgetDropdown.Button(stuffFilterDropdownArea, stuffFilterLabel, true, false, ThingDatabase.Instance.Loaded))
+            if (!WidgetDropdown.Button(stuffFilterDropdownArea, stuffFilterLabel, true, false,
+                ThingDatabase.Instance.Loaded))
             {
                 return;
             }
@@ -480,7 +491,8 @@ namespace ItemRequests
 
             var priceType = GetPriceTypeFor(trad);
             var finalPrice = CalcRequestedItemPrice(trad);
-            TooltipHandler.TipRegion(rect, new TipSignal(() => GetPriceTooltip(faction, negotiator, trad, finalPrice), trad.GetHashCode() * 297));
+            TooltipHandler.TipRegion(rect,
+                new TipSignal(() => GetPriceTooltip(faction, negotiator, trad, finalPrice), trad.GetHashCode() * 297));
             switch (priceType)
             {
                 case PriceType.VeryCheap:
@@ -649,7 +661,8 @@ namespace ItemRequests
 
             // Draw the input box to select number of requests
             var countAdjustInterfaceRect = new Rect(rightAlignOffset, 0, rightContentSize, rowRect.height);
-            var interactiveNumericFieldArea = new Rect(countAdjustInterfaceRect.center.x - 45f, countAdjustInterfaceRect.center.y - 12.5f, 90f, 25f).Rounded();
+            var interactiveNumericFieldArea = new Rect(countAdjustInterfaceRect.center.x - 45f,
+                countAdjustInterfaceRect.center.y - 12.5f, 90f, 25f).Rounded();
             var paddedNumericFieldArea = interactiveNumericFieldArea.ContractedBy(2f);
             paddedNumericFieldArea.xMax -= 15f;
             paddedNumericFieldArea.xMin += 16f;
@@ -658,7 +671,8 @@ namespace ItemRequests
             {
                 var amountRequested = requestSession.deal.GetCountForItem(thingTypeFilter, trade);
                 var amountAsString = amountRequested.ToString();
-                Widgets.TextFieldNumeric(paddedNumericFieldArea, ref amountRequested, ref amountAsString, 0, float.MaxValue);
+                Widgets.TextFieldNumeric(paddedNumericFieldArea, ref amountRequested, ref amountAsString, 0,
+                    float.MaxValue);
                 requestSession.deal.AdjustItemRequest(thingTypeFilter, entry, amountRequested, price);
 
                 // Draw the reset to zero button by input field
@@ -693,7 +707,8 @@ namespace ItemRequests
             Widgets.Label(playerFactionNameArea, Faction.OfPlayer.Name.Truncate(playerFactionNameArea.width));
 
             // Draw trader name
-            var tradingFactionNameArea = new Rect(headerRowRect.width / 2, 0, headerRowRect.width / 2, headerRowRect.height);
+            var tradingFactionNameArea =
+                new Rect(headerRowRect.width / 2, 0, headerRowRect.width / 2, headerRowRect.height);
             Text.Anchor = TextAnchor.UpperRight;
             var tradingFactionName = faction.Name;
             if (Text.CalcSize(tradingFactionName).x > tradingFactionNameArea.width)
@@ -713,19 +728,23 @@ namespace ItemRequests
 
             // Draw just below trader name
             Text.Anchor = TextAnchor.UpperRight;
-            var factionTechLevelArea = new Rect(headerRowRect.width / 2, secondRowY - 2, headerRowRect.width / 2, secondRowY);
-            Widgets.Label(factionTechLevelArea, "IR.ItemRequestWindow.TechLevelLabel".Translate(faction.def.techLevel.ToString()));
+            var factionTechLevelArea =
+                new Rect(headerRowRect.width / 2, secondRowY - 2, headerRowRect.width / 2, secondRowY);
+            Widgets.Label(factionTechLevelArea,
+                "IR.ItemRequestWindow.TechLevelLabel".Translate(faction.def.techLevel.ToString()));
 
             // Draw the filter dropdowns
             Text.Anchor = TextAnchor.MiddleLeft;
-            var filterDropdownArea = new Rect(0, headerRowHeight - amountRequestedTextHeight, headerRowRect.width - rightContentSize, amountRequestedTextHeight);
+            var filterDropdownArea = new Rect(0, headerRowHeight - amountRequestedTextHeight,
+                headerRowRect.width - rightContentSize, amountRequestedTextHeight);
             DrawFilterDropdowns(filterDropdownArea);
 
             // Draw the amount requested text
             GUI.color = new Color(1f, 1f, 1f, 0.6f);
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.MiddleCenter;
-            var clarificationTextArea = new Rect(rightAlignOffset, headerRowHeight - amountRequestedTextHeight, rightContentSize, amountRequestedTextHeight);
+            var clarificationTextArea = new Rect(rightAlignOffset, headerRowHeight - amountRequestedTextHeight,
+                rightContentSize, amountRequestedTextHeight);
             Widgets.Label(clarificationTextArea, "IR.ItemRequestWindow.AmountRequested".Translate());
 
             // End Header group
@@ -742,7 +761,9 @@ namespace ItemRequests
             }
 
             filteredRequestableItems.Clear();
-            var thingEntries = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter) where hasMaximumTechLevel(x, faction.def.techLevel) select x).ToList();
+            var thingEntries = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter)
+                where hasMaximumTechLevel(x, faction.def.techLevel)
+                select x).ToList();
 
             foreach (var thingEntry in thingEntries)
             {
@@ -758,7 +779,8 @@ namespace ItemRequests
                 }
                 else
                 {
-                    var madeOfRightStuff = stuffTypeFilter == null || foundEntry.tradeable.FirstThingTrader.Stuff == stuffTypeFilter;
+                    var madeOfRightStuff = stuffTypeFilter == null ||
+                                           foundEntry.tradeable.FirstThingTrader.Stuff == stuffTypeFilter;
                     if (madeOfRightStuff)
                     {
                         filteredRequestableItems.Add(foundEntry);
@@ -793,28 +815,38 @@ namespace ItemRequests
 
             var text2 = text;
 
-            text = string.Concat(new string[] {text2, "\n  x ", requestingItemMarkupMultiplier.ToString("F2"), "IR.ItemRequestWindow.Requesting".Translate()});
+            text = string.Concat(new string[]
+            {
+                text2, "\n  x ", requestingItemMarkupMultiplier.ToString("F2"),
+                "IR.ItemRequestWindow.Requesting".Translate()
+            });
 
             if (Find.Storyteller.difficulty.tradePriceFactorLoss != 0f)
             {
                 text2 = text;
-                text = string.Concat(text2, "\n  x ", (1f + Find.Storyteller.difficulty.tradePriceFactorLoss).ToString("F2"), " (", "DifficultyLevel".Translate(), ")");
+                text = string.Concat(text2, "\n  x ",
+                    (1f + Find.Storyteller.difficulty.tradePriceFactorLoss).ToString("F2"), " (",
+                    "DifficultyLevel".Translate(), ")");
             }
 
             var distPriceOffset = DetermineDistMultiplier(out var daysToTravel);
             text += "\n";
             text2 = text;
-            text = string.Concat(text2, "\n", "IR.ItemRequestWindow.DeliveryCharge".Translate(daysToTravel.ToString("F1")), " x", distPriceOffset.ToString("F2"));
+            text = string.Concat(text2, "\n",
+                "IR.ItemRequestWindow.DeliveryCharge".Translate(daysToTravel.ToString("F1")), " x",
+                distPriceOffset.ToString("F2"));
 
             text += "\n";
             text2 = text;
-            text = string.Concat(text2, "\n", "YourNegotiatorBonus".Translate(), ": -", priceNegotiator.GetStatValue(StatDefOf.TradePriceImprovement).ToStringPercent());
+            text = string.Concat(text2, "\n", "YourNegotiatorBonus".Translate(), ": -",
+                priceNegotiator.GetStatValue(StatDefOf.TradePriceImprovement).ToStringPercent());
 
             var priceGainSettlement = GetOfferPriceImprovementOffsetForFaction(priceFaction);
             if (priceGainSettlement != 0f)
             {
                 text2 = text;
-                text = string.Concat(text2, "\n", "IR.ItemRequestWindow.FactionRelationOffset".Translate(), " ", Mathf.Sign(priceGainSettlement) >= 0 ? "-" : "+", Mathf.Abs(priceGainSettlement).ToStringPercent());
+                text = string.Concat(text2, "\n", "IR.ItemRequestWindow.FactionRelationOffset".Translate(), " ",
+                    Mathf.Sign(priceGainSettlement) >= 0 ? "-" : "+", Mathf.Abs(priceGainSettlement).ToStringPercent());
             }
 
             text += "\n\n";
@@ -858,17 +890,20 @@ namespace ItemRequests
                 return false;
             }
 
-            if (RestrictedItems.researchTechCache.ContainsKey(entry.def) && RestrictedItems.researchTechCache[entry.def] > tLevel)
+            if (RestrictedItems.researchTechCache.ContainsKey(entry.def) &&
+                RestrictedItems.researchTechCache[entry.def] > tLevel)
             {
                 return false;
             }
 
-            if ((entry.def.intricate || entry.def.thingCategories?.Contains(ThingCategoryDefOf.Techprints) == true) && tLevel < TechLevel.Industrial)
+            if ((entry.def.intricate || entry.def.thingCategories?.Contains(ThingCategoryDefOf.Techprints) == true) &&
+                tLevel < TechLevel.Industrial)
             {
                 return false;
             }
 
-            if (entry.def.thingClass == typeof(Building) && (!entry.def.Minifiable || entry.def.designationCategory == null))
+            if (entry.def.thingClass == typeof(Building) &&
+                (!entry.def.Minifiable || entry.def.designationCategory == null))
             {
                 return false;
             }
@@ -916,7 +951,8 @@ namespace ItemRequests
             var FooterHeight = 40f;
             float WindowPadding = 18;
             WindowSize = new Vector2(800, 800);
-            var ContentSize = new Vector2(WindowSize.x - (WindowPadding * 2) - (ContentMargin.x * 2), WindowSize.y - (WindowPadding * 2) - (ContentMargin.y * 2) - FooterHeight - HeaderHeight);
+            var ContentSize = new Vector2(WindowSize.x - (WindowPadding * 2) - (ContentMargin.x * 2),
+                WindowSize.y - (WindowPadding * 2) - (ContentMargin.y * 2) - FooterHeight - HeaderHeight);
 
             ContentRect = new Rect(ContentMargin.x, ContentMargin.y + HeaderHeight, ContentSize.x, ContentSize.y);
 
