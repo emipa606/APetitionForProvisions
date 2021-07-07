@@ -273,7 +273,8 @@ namespace ItemRequests
                     return thing.MarketValue;
                 }
 
-                Log.Warning("Failed when calling MakeThing(" + def.defName + ", ...) to calculate a ThingDef's market value");
+                Log.Warning("Failed when calling MakeThing(" + def.defName +
+                            ", ...) to calculate a ThingDef's market value");
                 return 0;
             }
             catch (Exception e)

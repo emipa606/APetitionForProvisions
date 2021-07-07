@@ -16,7 +16,7 @@ namespace ItemRequests
         public static void ModifyTradeOption(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
         {
             var requestSession = Find.World.GetComponent<RequestSession>();
-            var localTradeTargets = GenUI.TargetsAt_NewTemp(clickPos, TargetingParameters.ForTrade(), true).ToList();
+            var localTradeTargets = GenUI.TargetsAt(clickPos, TargetingParameters.ForTrade(), true).ToList();
             if (localTradeTargets.Count == 0)
             {
                 return;

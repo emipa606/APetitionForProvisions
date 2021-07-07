@@ -58,7 +58,7 @@ namespace ItemRequests
                 return mustWaitOption;
             }
 
-            if (faction == Faction.Empire)
+            if (faction == Faction.OfEmpire)
             {
                 var pawnHasRequiredTitle = false;
                 var traderKind = faction.def.caravanTraderKinds[0];

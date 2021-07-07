@@ -61,14 +61,7 @@ namespace ItemRequests
                 }
             }
 
-            if (drawBackground)
-            {
-                Text.Anchor = TextAnchor.MiddleCenter;
-            }
-            else
-            {
-                Text.Anchor = TextAnchor.MiddleLeft;
-            }
+            Text.Anchor = drawBackground ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft;
 
             var textRect = new Rect(rect.x, rect.y, rect.width - 12, rect.height);
             Widgets.Label(textRect, label);

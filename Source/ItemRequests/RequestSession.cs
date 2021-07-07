@@ -42,7 +42,9 @@ namespace ItemRequests
                 }
                 catch
                 {
-                    Log.ErrorOnce("Unable to access any existing deals with factions. It's possible the last time this game was saved a different version of this mod was running. Try saving and quitting, then coming back.", "no_open_deals".GetHashCode());
+                    Log.ErrorOnce(
+                        "Unable to access any existing deals with factions. It's possible the last time this game was saved a different version of this mod was running. Try saving and quitting, then coming back.",
+                        "no_open_deals".GetHashCode());
                     return new List<RequestDeal>();
                 }
             }
@@ -72,7 +74,8 @@ namespace ItemRequests
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Collections.Look(ref timeOfOccurences, "timeOfOccurences", LookMode.Deep, LookMode.Value, ref deals, ref travelTimes);
+            Scribe_Collections.Look(ref timeOfOccurences, "timeOfOccurences", LookMode.Deep, LookMode.Value, ref deals,
+                ref travelTimes);
             Scribe_References.Look(ref negotiator, "negotiator");
             Scribe_References.Look(ref faction, "setupFaction");
         }
@@ -121,7 +124,8 @@ namespace ItemRequests
             var openDealWith = GetOpenDealWith(occuranceFaction);
             if (openDealWith == null)
             {
-                Log.Warning("Trying to set time of arrival for requested setupFaction arrival, but no open deal with setupFaction exists!");
+                Log.Warning(
+                    "Trying to set time of arrival for requested setupFaction arrival, but no open deal with setupFaction exists!");
                 return;
             }
 
@@ -132,7 +136,8 @@ namespace ItemRequests
         {
             if (HasOpenDealWith(setupFaction))
             {
-                Messages.Message("IR.RequestSession.CannotRequestAgainYet".Translate(setupFaction.Name), MessageTypeDefOf.CautionInput, false);
+                Messages.Message("IR.RequestSession.CannotRequestAgainYet".Translate(setupFaction.Name),
+                    MessageTypeDefOf.CautionInput, false);
                 success = false;
                 return;
             }

@@ -52,7 +52,8 @@ namespace ItemRequests
         public void ExposeData()
         {
             Scribe_References.Look(ref faction, "setupFaction");
-            Scribe_Collections.Look(ref requestedItems, "requestedItems", LookMode.Value, LookMode.Deep, ref thingTypes, ref requestedItemsDicts);
+            Scribe_Collections.Look(ref requestedItems, "requestedItems", LookMode.Value, LookMode.Deep, ref thingTypes,
+                ref requestedItemsDicts);
         }
 
         public void AdjustItemRequest(ThingType thingTypeFilter, ThingEntry entry, int numRequested, float price)
@@ -74,14 +75,16 @@ namespace ItemRequests
                 }
                 else
                 {
-                    requestedItems[thingTypeFilter].dict[key] = new RequestItem {item = entry, amount = amount, pricePerItem = price, isPawn = entry.pawnDef != null};
+                    requestedItems[thingTypeFilter].dict[key] = new RequestItem
+                        {item = entry, amount = amount, pricePerItem = price, isPawn = entry.pawnDef != null};
 
                     // Log.Message("Colony just adjusted request for " + entry.tradeable.ThingDef.LabelCap + " to " + numRequested);
                 }
             }
             else if (numRequested > 0)
             {
-                requestedItems[thingTypeFilter].dict[key] = new RequestItem {item = entry, amount = numRequested, pricePerItem = price, isPawn = entry.pawnDef != null};
+                requestedItems[thingTypeFilter].dict[key] = new RequestItem
+                    {item = entry, amount = numRequested, pricePerItem = price, isPawn = entry.pawnDef != null};
 
                 // Log.Message("Colony just requested " + entry.tradeable.ThingDef.LabelCap + " x" + numRequested + (entry.pawnDef != null ? " (" + entry.gender + ")" : ""));
             }

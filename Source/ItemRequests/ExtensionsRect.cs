@@ -74,7 +74,8 @@ namespace ItemRequests
             return new Rect(rect.position + new Vector2(x, y), rect.size);
         }
 
-        public static void SetRandomQualityWeighted(this Thing thing, QualityCategory minQuality = QualityCategory.Awful, QualityCategory maxQuality = QualityCategory.Legendary)
+        public static void SetRandomQualityWeighted(this Thing thing,
+            QualityCategory minQuality = QualityCategory.Awful, QualityCategory maxQuality = QualityCategory.Legendary)
         {
             var val = Random.Range(0, 1f);
             var min = (int) minQuality;
@@ -122,15 +123,19 @@ namespace ItemRequests
 
         private static Rect InsetBy(this Rect rect, Vector2 topLeft, Vector2 bottomRight)
         {
-            return new Rect(rect.x + topLeft.x, rect.y + topLeft.y, rect.width - topLeft.x - bottomRight.x, rect.height - topLeft.y - bottomRight.y);
+            return new Rect(rect.x + topLeft.x, rect.y + topLeft.y, rect.width - topLeft.x - bottomRight.x,
+                rect.height - topLeft.y - bottomRight.y);
         }
 
         private static void SetQuality(this Thing thing, QualityCategory quality)
         {
-            var compQuality = !(thing is MinifiedThing minifiedThing) ? thing.TryGetComp<CompQuality>() : minifiedThing.InnerThing.TryGetComp<CompQuality>();
+            var compQuality = !(thing is MinifiedThing minifiedThing)
+                ? thing.TryGetComp<CompQuality>()
+                : minifiedThing.InnerThing.TryGetComp<CompQuality>();
             if (compQuality != null)
             {
-                typeof(CompQuality).GetField("qualityInt", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(compQuality, quality);
+                typeof(CompQuality).GetField("qualityInt", BindingFlags.Instance | BindingFlags.NonPublic)
+                    ?.SetValue(compQuality, quality);
             }
         }
     }

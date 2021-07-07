@@ -794,7 +794,7 @@ namespace ItemRequests
 
         private float GetOfferPriceImprovementOffsetForFaction(Faction factionForOffset)
         {
-            var goodwill = factionForOffset.RelationWith(Faction.OfPlayer).goodwill;
+            var goodwill = factionForOffset.RelationWith(Faction.OfPlayer).baseGoodwill;
             var allyGoodwillThreshold = 75;
             var maxImprovementOffset = .60f;
             var priceImprovementRatio = maxImprovementOffset * 100 / allyGoodwillThreshold;
@@ -908,7 +908,7 @@ namespace ItemRequests
                 return false;
             }
 
-            if (entry.def.destroyOnDrop || entry.def.menuHidden)
+            if (entry.def.destroyOnDrop)
             {
                 return false;
             }

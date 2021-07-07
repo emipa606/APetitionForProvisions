@@ -80,7 +80,8 @@ namespace ItemRequests
             }
         }
 
-        public static void SetGUIColorForButton(Rect rect, bool selected, Color color, Color hoverColor, Color selectedColor)
+        public static void SetGUIColorForButton(Rect rect, bool selected, Color color, Color hoverColor,
+            Color selectedColor)
         {
             if (selected)
             {

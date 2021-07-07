@@ -39,7 +39,8 @@ namespace ItemRequests
                         pawn2.mindState.duty.locomotion = LocomotionUrgency.Walk;
                         break;
                     case TraderCaravanRole.Guard:
-                        pawn2.mindState.duty = new PawnDuty(DutyDefOf.Defend, toilData.defendPoint, toilData.defendRadius);
+                        pawn2.mindState.duty =
+                            new PawnDuty(DutyDefOf.Defend, toilData.defendPoint, toilData.defendRadius);
                         break;
                     case TraderCaravanRole.Chattel:
                         pawn2.mindState.duty = new PawnDuty(DutyDefOf.Escort, pawn, 5f);

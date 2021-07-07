@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
 using UnityEngine;
@@ -203,7 +202,7 @@ namespace ItemRequests
                     }
                 }
             }
-            catch (Exception)
+            catch
             {
                 if (def != null)
                 {
@@ -663,7 +662,7 @@ namespace ItemRequests
                     result.thing = pawn;
                     result.pawnDef = pawn.kindDef;
                 }
-                catch (Exception)
+                catch
                 {
                     Log.Warning("Failed to create a pawn for animal thing entry: " + def.defName);
                     //Log.Message("  Exception message: " + e);

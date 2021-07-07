@@ -64,7 +64,8 @@ namespace ItemRequests
                 }
 
                 var currentTime = Find.TickManager.TicksGame;
-                foreach (var requestSessionOpenDeal in requestSession.openDeals.OrderBy(deal => requestSession.GetTimeOfOccurenceWithFaction(deal.Faction)))
+                foreach (var requestSessionOpenDeal in requestSession.openDeals.OrderBy(deal =>
+                    requestSession.GetTimeOfOccurenceWithFaction(deal.Faction)))
                 {
                     var timeOfOccurance = requestSession.GetTimeOfOccurenceWithFaction(requestSessionOpenDeal.Faction);
                     if (currentDealMessage != string.Empty)
@@ -72,13 +73,15 @@ namespace ItemRequests
                         currentDealMessage += "\n";
                     }
 
-                    currentDealMessage += $"{"IR.NearDatePatch.CaravanInfo".Translate(requestSessionOpenDeal.Faction.NameColored, TicksToHumanTime(timeOfOccurance - currentTime))}";
+                    currentDealMessage +=
+                        $"{"IR.NearDatePatch.CaravanInfo".Translate(requestSessionOpenDeal.Faction.NameColored, TicksToHumanTime(timeOfOccurance - currentTime))}";
                     var counter = maxItemsToShow;
                     foreach (var requestedItem in requestSessionOpenDeal.GetRequestedItems())
                     {
                         if (counter == 0)
                         {
-                            currentDealMessage += $"\n...{"IR.NearDatePatch.ItemInfo".Translate(requestSessionOpenDeal.GetRequestedItems().Count - maxItemsToShow)}";
+                            currentDealMessage +=
+                                $"\n...{"IR.NearDatePatch.ItemInfo".Translate(requestSessionOpenDeal.GetRequestedItems().Count - maxItemsToShow)}";
                             break;
                         }
 
@@ -86,7 +89,8 @@ namespace ItemRequests
                         counter--;
                     }
 
-                    currentDealMessage += $"\n{"IR.Value".Translate(Math.Round(requestSessionOpenDeal.TotalRequestedValue))}\n";
+                    currentDealMessage +=
+                        $"\n{"IR.Value".Translate(Math.Round(requestSessionOpenDeal.TotalRequestedValue))}\n";
                 }
             }
 
