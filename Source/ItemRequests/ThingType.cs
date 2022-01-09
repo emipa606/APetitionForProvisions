@@ -1,27 +1,26 @@
-namespace ItemRequests
+namespace ItemRequests;
+
+// This enum was adapted from the class EquipmentType
+// from the mod EdB Prepare Carefully by edbmods
+// https://github.com/edbmods/EdBPrepareCarefully/blob/develop/Source/EquipmentType.cs
+public enum ThingType
 {
-    // This enum was adapted from the class EquipmentType
-    // from the mod EdB Prepare Carefully by edbmods
-    // https://github.com/edbmods/EdBPrepareCarefully/blob/develop/Source/EquipmentType.cs
-    public enum ThingType
-    {
-        // All,
-        Resources,
+    // All,
+    Resources,
 
-        Food,
+    Food,
 
-        Weapons,
+    Weapons,
 
-        Apparel,
+    Apparel,
 
-        Medical,
+    Medical,
 
-        Buildings,
+    Buildings,
 
-        Animals,
+    Animals,
 
-        Other,
+    Other,
 
-        Discard
-    }
+    Discard
 }

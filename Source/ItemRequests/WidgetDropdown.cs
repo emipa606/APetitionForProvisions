@@ -2,80 +2,79 @@
 using Verse;
 using Verse.Sound;
 
-namespace ItemRequests
+namespace ItemRequests;
+
+[StaticConstructorOnStartup]
+public static class WidgetDropdown
 {
-    [StaticConstructorOnStartup]
-    public static class WidgetDropdown
+    private static Texture2D TextureButtonBGAtlas;
+
+    private static Texture2D TextureButtonBGAtlasClick;
+
+    private static Texture2D TextureButtonBGAtlasMouseover;
+
+    private static Texture2D TextureDropdownIndicator;
+
+    static WidgetDropdown()
     {
-        private static Texture2D TextureButtonBGAtlas;
+        LoadTextures();
+    }
 
-        private static Texture2D TextureButtonBGAtlasClick;
+    public static bool Button(Rect rect, string label)
+    {
+        return Button(rect, label, true, false, true);
+    }
 
-        private static Texture2D TextureButtonBGAtlasMouseover;
+    public static bool Button(Rect rect, string label, bool drawBackground, bool doMouseoverSound, bool active)
+    {
+        var anchor = Text.Anchor;
+        var color = GUI.color;
 
-        private static Texture2D TextureDropdownIndicator;
-
-        static WidgetDropdown()
+        if (drawBackground)
         {
-            LoadTextures();
-        }
-
-        public static bool Button(Rect rect, string label)
-        {
-            return Button(rect, label, true, false, true);
-        }
-
-        public static bool Button(Rect rect, string label, bool drawBackground, bool doMouseoverSound, bool active)
-        {
-            var anchor = Text.Anchor;
-            var color = GUI.color;
-
-            if (drawBackground)
+            var atlas = TextureButtonBGAtlas;
+            if (Mouse.IsOver(rect))
             {
-                var atlas = TextureButtonBGAtlas;
-                if (Mouse.IsOver(rect))
+                atlas = TextureButtonBGAtlasMouseover;
+                if (Input.GetMouseButton(0))
                 {
-                    atlas = TextureButtonBGAtlasMouseover;
-                    if (Input.GetMouseButton(0))
-                    {
-                        atlas = TextureButtonBGAtlasClick;
-                    }
-                }
-
-                Widgets.DrawAtlas(rect, atlas);
-                var indicator = new Rect(rect.xMax - 21, rect.MiddleY() - 4, 11, 8);
-                GUI.DrawTexture(indicator, TextureDropdownIndicator);
-            }
-
-            if (doMouseoverSound)
-            {
-                MouseoverSounds.DoRegion(rect);
-            }
-
-            if (!drawBackground)
-            {
-                GUI.color = new Color(0.8f, 0.85f, 1f);
-                if (Mouse.IsOver(rect))
-                {
-                    GUI.color = Widgets.MouseoverOptionColor;
+                    atlas = TextureButtonBGAtlasClick;
                 }
             }
 
-            Text.Anchor = drawBackground ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft;
-
-            var textRect = new Rect(rect.x, rect.y, rect.width - 12, rect.height);
-            Widgets.Label(textRect, label);
-            Text.Anchor = anchor;
-            GUI.color = color;
-            return active && Widgets.ButtonInvisible(rect, false);
+            Widgets.DrawAtlas(rect, atlas);
+            var indicator = new Rect(rect.xMax - 21, rect.MiddleY() - 4, 11, 8);
+            GUI.DrawTexture(indicator, TextureDropdownIndicator);
         }
 
-        private static void LoadTextures()
+        if (doMouseoverSound)
         {
-            TextureButtonBGAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBG");
-            TextureButtonBGAtlasMouseover = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGMouseover");
-            TextureButtonBGAtlasClick = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGClick");
-            TextureDropdownIndicator = ContentFinder<Texture2D>.Get("ItemRequests/DropdownIndicator");
+            MouseoverSounds.DoRegion(rect);
         }
+
+        if (!drawBackground)
+        {
+            GUI.color = new Color(0.8f, 0.85f, 1f);
+            if (Mouse.IsOver(rect))
+            {
+                GUI.color = Widgets.MouseoverOptionColor;
+            }
+        }
+
+        Text.Anchor = drawBackground ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft;
+
+        var textRect = new Rect(rect.x, rect.y, rect.width - 12, rect.height);
+        Widgets.Label(textRect, label);
+        Text.Anchor = anchor;
+        GUI.color = color;
+        return active && Widgets.ButtonInvisible(rect, false);
+    }
+
+    private static void LoadTextures()
+    {
+        TextureButtonBGAtlas = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBG");
+        TextureButtonBGAtlasMouseover = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGMouseover");
+        TextureButtonBGAtlasClick = ContentFinder<Texture2D>.Get("UI/Widgets/ButtonBGClick");
+        TextureDropdownIndicator = ContentFinder<Texture2D>.Get("ItemRequests/DropdownIndicator");
     }
 }

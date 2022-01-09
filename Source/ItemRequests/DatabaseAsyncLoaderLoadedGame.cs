@@ -1,16 +1,15 @@
 ﻿using HarmonyLib;
 using Verse;
 
-namespace ItemRequests
+namespace ItemRequests;
+
+[HarmonyPatch(typeof(Game))]
+[HarmonyPatch("UpdatePlay")]
+public static class DatabaseAsyncLoaderLoadedGame
 {
-    [HarmonyPatch(typeof(Game))]
-    [HarmonyPatch("UpdatePlay")]
-    public static class DatabaseAsyncLoaderLoadedGame
+    [HarmonyPostfix]
+    public static void LoadDBFrame()
     {
-        [HarmonyPostfix]
-        public static void LoadDBFrame()
-        {
-            ThingDatabase.Instance.LoadFrame();
-        }
+        ThingDatabase.Instance.LoadFrame();
     }
 }

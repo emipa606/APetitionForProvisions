@@ -1,10 +1,9 @@
-﻿namespace ItemRequests
+﻿namespace ItemRequests;
+
+public static class ExtensionsString
 {
-    public static class ExtensionsString
+    public static string GenderString(this ThingEntry entry)
     {
-        public static string GenderString(this ThingEntry entry)
-        {
-            return entry.gender.ToString().ToLower();
-        }
+        return entry.gender.ToString().ToLower();
     }
 }

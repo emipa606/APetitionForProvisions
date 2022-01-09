@@ -1,12 +1,11 @@
 ﻿using RimWorld;
 using Verse;
 
-namespace ItemRequests
+namespace ItemRequests;
+
+[DefOf]
+public static class ItemRequestsDefOf
 {
-    [DefOf]
-    public static class ItemRequestsDefOf
-    {
-        public static IncidentDef RequestCaravanArrival;
-        public static JobDef FulfillItemRequestWithFaction;
-    }
+    public static IncidentDef RequestCaravanArrival;
+    public static JobDef FulfillItemRequestWithFaction;
 }

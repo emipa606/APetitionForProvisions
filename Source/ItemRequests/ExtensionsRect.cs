@@ -3,140 +3,139 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace ItemRequests
+namespace ItemRequests;
+
+public static class ExtensionsRect
 {
-    public static class ExtensionsRect
+    public static Rect Combined(this Rect rect, Rect other)
     {
-        public static Rect Combined(this Rect rect, Rect other)
+        var min = new Vector2(Mathf.Min(rect.xMin, other.xMin), Mathf.Min(rect.yMin, other.yMin));
+        var max = new Vector2(Mathf.Max(rect.xMax, other.xMax), Mathf.Max(rect.yMax, other.yMax));
+        return new Rect(min, max - min);
+    }
+
+    public static float HalfHeight(this Rect rect)
+    {
+        return rect.height * 0.5f;
+    }
+
+    public static float HalfWidth(this Rect rect)
+    {
+        return rect.width * 0.5f;
+    }
+
+    public static Rect InsetBy(this Rect rect, float amount)
+    {
+        return rect.InsetBy(amount, amount, amount, amount);
+    }
+
+    public static Rect InsetBy(this Rect rect, Vector2 amount)
+    {
+        return rect.InsetBy(amount, amount);
+    }
+
+    public static Rect InsetBy(this Rect rect, float xAmount, float yAmount)
+    {
+        return rect.InsetBy(new Vector2(xAmount, yAmount), new Vector2(xAmount, yAmount));
+    }
+
+    public static float MiddleX(this Rect rect)
+    {
+        return rect.x + (rect.width * 0.5f);
+    }
+
+    public static float MiddleY(this Rect rect)
+    {
+        return rect.y + (rect.height * 0.5f);
+    }
+
+    public static bool Mouseover(this Rect rect)
+    {
+        return rect.Contains(Event.current.mousePosition);
+    }
+
+    public static Rect MoveTo(this Rect rect, Vector2 position)
+    {
+        return new Rect(position, rect.size);
+    }
+
+    public static Rect MoveTo(this Rect rect, float x, float y)
+    {
+        return new Rect(new Vector2(x, y), rect.size);
+    }
+
+    public static Rect OffsetBy(this Rect rect, Vector2 offset)
+    {
+        return new Rect(rect.position + offset, rect.size);
+    }
+
+    public static Rect OffsetBy(this Rect rect, float x, float y)
+    {
+        return new Rect(rect.position + new Vector2(x, y), rect.size);
+    }
+
+    public static void SetRandomQualityWeighted(this Thing thing,
+        QualityCategory minQuality = QualityCategory.Awful, QualityCategory maxQuality = QualityCategory.Legendary)
+    {
+        var val = Random.Range(0, 1f);
+        var min = (int)minQuality;
+        var max = (int)maxQuality;
+
+        QualityCategory clamp(int toClamp)
         {
-            var min = new Vector2(Mathf.Min(rect.xMin, other.xMin), Mathf.Min(rect.yMin, other.yMin));
-            var max = new Vector2(Mathf.Max(rect.xMax, other.xMax), Mathf.Max(rect.yMax, other.yMax));
-            return new Rect(min, max - min);
+            return (QualityCategory)Mathf.Max(Mathf.Min(toClamp, max), min);
         }
 
-        public static float HalfHeight(this Rect rect)
+        if (val < .05)
         {
-            return rect.height * 0.5f;
+            thing.SetQuality(clamp(0));
         }
-
-        public static float HalfWidth(this Rect rect)
+        else if (val < .2)
         {
-            return rect.width * 0.5f;
+            thing.SetQuality(clamp(1));
         }
-
-        public static Rect InsetBy(this Rect rect, float amount)
+        else if (val < .6)
         {
-            return rect.InsetBy(amount, amount, amount, amount);
+            thing.SetQuality(clamp(2));
         }
-
-        public static Rect InsetBy(this Rect rect, Vector2 amount)
+        else if (val < .85)
         {
-            return rect.InsetBy(amount, amount);
+            thing.SetQuality(clamp(3));
         }
-
-        public static Rect InsetBy(this Rect rect, float xAmount, float yAmount)
+        else if (val < .95)
         {
-            return rect.InsetBy(new Vector2(xAmount, yAmount), new Vector2(xAmount, yAmount));
+            thing.SetQuality(clamp(4));
         }
-
-        public static float MiddleX(this Rect rect)
+        else if (val < .98)
         {
-            return rect.x + (rect.width * 0.5f);
+            thing.SetQuality(clamp(5));
         }
-
-        public static float MiddleY(this Rect rect)
+        else
         {
-            return rect.y + (rect.height * 0.5f);
+            thing.SetQuality(clamp(6));
         }
+    }
 
-        public static bool Mouseover(this Rect rect)
+    private static Rect InsetBy(this Rect rect, float left, float top, float right, float bottom)
+    {
+        return new Rect(rect.x + left, rect.y + top, rect.width - left - right, rect.height - top - bottom);
+    }
+
+    private static Rect InsetBy(this Rect rect, Vector2 topLeft, Vector2 bottomRight)
+    {
+        return new Rect(rect.x + topLeft.x, rect.y + topLeft.y, rect.width - topLeft.x - bottomRight.x,
+            rect.height - topLeft.y - bottomRight.y);
+    }
+
+    private static void SetQuality(this Thing thing, QualityCategory quality)
+    {
+        var compQuality = !(thing is MinifiedThing minifiedThing)
+            ? thing.TryGetComp<CompQuality>()
+            : minifiedThing.InnerThing.TryGetComp<CompQuality>();
+        if (compQuality != null)
         {
-            return rect.Contains(Event.current.mousePosition);
-        }
-
-        public static Rect MoveTo(this Rect rect, Vector2 position)
-        {
-            return new Rect(position, rect.size);
-        }
-
-        public static Rect MoveTo(this Rect rect, float x, float y)
-        {
-            return new Rect(new Vector2(x, y), rect.size);
-        }
-
-        public static Rect OffsetBy(this Rect rect, Vector2 offset)
-        {
-            return new Rect(rect.position + offset, rect.size);
-        }
-
-        public static Rect OffsetBy(this Rect rect, float x, float y)
-        {
-            return new Rect(rect.position + new Vector2(x, y), rect.size);
-        }
-
-        public static void SetRandomQualityWeighted(this Thing thing,
-            QualityCategory minQuality = QualityCategory.Awful, QualityCategory maxQuality = QualityCategory.Legendary)
-        {
-            var val = Random.Range(0, 1f);
-            var min = (int) minQuality;
-            var max = (int) maxQuality;
-
-            QualityCategory clamp(int toClamp)
-            {
-                return (QualityCategory) Mathf.Max(Mathf.Min(toClamp, max), min);
-            }
-
-            if (val < .05)
-            {
-                thing.SetQuality(clamp(0));
-            }
-            else if (val < .2)
-            {
-                thing.SetQuality(clamp(1));
-            }
-            else if (val < .6)
-            {
-                thing.SetQuality(clamp(2));
-            }
-            else if (val < .85)
-            {
-                thing.SetQuality(clamp(3));
-            }
-            else if (val < .95)
-            {
-                thing.SetQuality(clamp(4));
-            }
-            else if (val < .98)
-            {
-                thing.SetQuality(clamp(5));
-            }
-            else
-            {
-                thing.SetQuality(clamp(6));
-            }
-        }
-
-        private static Rect InsetBy(this Rect rect, float left, float top, float right, float bottom)
-        {
-            return new Rect(rect.x + left, rect.y + top, rect.width - left - right, rect.height - top - bottom);
-        }
-
-        private static Rect InsetBy(this Rect rect, Vector2 topLeft, Vector2 bottomRight)
-        {
-            return new Rect(rect.x + topLeft.x, rect.y + topLeft.y, rect.width - topLeft.x - bottomRight.x,
-                rect.height - topLeft.y - bottomRight.y);
-        }
-
-        private static void SetQuality(this Thing thing, QualityCategory quality)
-        {
-            var compQuality = !(thing is MinifiedThing minifiedThing)
-                ? thing.TryGetComp<CompQuality>()
-                : minifiedThing.InnerThing.TryGetComp<CompQuality>();
-            if (compQuality != null)
-            {
-                typeof(CompQuality).GetField("qualityInt", BindingFlags.Instance | BindingFlags.NonPublic)
-                    ?.SetValue(compQuality, quality);
-            }
+            typeof(CompQuality).GetField("qualityInt", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(compQuality, quality);
         }
     }
 }
