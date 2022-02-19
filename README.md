@@ -14,6 +14,7 @@ that is no longer being maintained.
 - Fixed Esc/Enter working as they should in the trade-window
 - Added tooltip on current petitioned caravans
 - Factions without traders should no longer be possible to request from
+- Added search-bar in the trade-window
 
 ![Image](https://i.imgur.com/pufA0kM.png)
 
