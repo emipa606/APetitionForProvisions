@@ -261,7 +261,7 @@ public class CostCalculator
 
         if (def.thingClass == null)
         {
-            Log.Warning("Trying to calculate the cost of a ThingDef with null thingClass: " + def.defName);
+            Log.Warning($"Trying to calculate the cost of a ThingDef with null thingClass: {def.defName}");
             return 0;
         }
 
@@ -273,13 +273,12 @@ public class CostCalculator
                 return thing.MarketValue;
             }
 
-            Log.Warning("Failed when calling MakeThing(" + def.defName +
-                        ", ...) to calculate a ThingDef's market value");
+            Log.Warning($"Failed when calling MakeThing({def.defName}, ...) to calculate a ThingDef's market value");
             return 0;
         }
         catch (Exception e)
         {
-            Log.Warning("Failed to calculate the cost of a ThingDef (" + def.defName + "): ");
+            Log.Warning($"Failed to calculate the cost of a ThingDef ({def.defName}): ");
             Log.Warning(e.ToString());
             return 0;
         }

@@ -51,14 +51,7 @@ public class Style
 
     public static void SetGUIColorForButton(Rect rect)
     {
-        if (rect.Contains(Event.current.mousePosition))
-        {
-            GUI.color = ColorButtonHighlight;
-        }
-        else
-        {
-            GUI.color = ColorButton;
-        }
+        GUI.color = rect.Contains(Event.current.mousePosition) ? ColorButtonHighlight : ColorButton;
     }
 
     public static void SetGUIColorForButton(Rect rect, bool selected)
@@ -69,14 +62,7 @@ public class Style
         }
         else
         {
-            if (rect.Contains(Event.current.mousePosition))
-            {
-                GUI.color = ColorButtonHighlight;
-            }
-            else
-            {
-                GUI.color = ColorButton;
-            }
+            GUI.color = rect.Contains(Event.current.mousePosition) ? ColorButtonHighlight : ColorButton;
         }
     }
 
@@ -89,14 +75,7 @@ public class Style
         }
         else
         {
-            if (rect.Contains(Event.current.mousePosition))
-            {
-                GUI.color = hoverColor;
-            }
-            else
-            {
-                GUI.color = color;
-            }
+            GUI.color = rect.Contains(Event.current.mousePosition) ? hoverColor : color;
         }
     }
 }

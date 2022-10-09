@@ -29,7 +29,7 @@ public static class FulfillRequestFloatMenuOption
                 var pTarg = (Pawn)localTarget.Thing;
                 if (
                     option.Label.Contains(
-                        "TradeWith".Translate(pTarg.LabelShort + ", " + pTarg.TraderKind.label)) &&
+                        "TradeWith".Translate($"{pTarg.LabelShort}, {pTarg.TraderKind.label}")) &&
                     requestSession.HasOpenDealWith(pTarg.Faction) &&
                     Find.TickManager.TicksGame >= requestSession.GetTimeOfOccurenceWithFaction(pTarg.Faction) &&
                     pTarg.GetTraderCaravanRole() == TraderCaravanRole.Trader &&

@@ -59,17 +59,17 @@ public class ThingDatabase
             UpdateLoadingPhase(LoadingPhase.CountingDefs);
         }
 
-        if (LoadingProgress.phase == LoadingPhase.CountingDefs)
+        switch (LoadingProgress.phase)
         {
-            CountDefs();
-        }
-        else if (LoadingProgress.phase == LoadingPhase.ProcessingStuff)
-        {
-            ProcessStuff();
-        }
-        else if (LoadingProgress.phase == LoadingPhase.ProcessingThings)
-        {
-            ProcessThings();
+            case LoadingPhase.CountingDefs:
+                CountDefs();
+                break;
+            case LoadingPhase.ProcessingStuff:
+                ProcessStuff();
+                break;
+            case LoadingPhase.ProcessingThings:
+                ProcessThings();
+                break;
         }
     }
 
@@ -86,21 +86,20 @@ public class ThingDatabase
 
     private void NextPhase()
     {
-        if (LoadingProgress.phase == LoadingPhase.NotStarted)
+        switch (LoadingProgress.phase)
         {
-            UpdateLoadingPhase(LoadingPhase.CountingDefs);
-        }
-        else if (LoadingProgress.phase == LoadingPhase.CountingDefs)
-        {
-            UpdateLoadingPhase(LoadingPhase.ProcessingStuff);
-        }
-        else if (LoadingProgress.phase == LoadingPhase.ProcessingStuff)
-        {
-            UpdateLoadingPhase(LoadingPhase.ProcessingThings);
-        }
-        else if (LoadingProgress.phase == LoadingPhase.ProcessingThings)
-        {
-            UpdateLoadingPhase(LoadingPhase.Loaded);
+            case LoadingPhase.NotStarted:
+                UpdateLoadingPhase(LoadingPhase.CountingDefs);
+                break;
+            case LoadingPhase.CountingDefs:
+                UpdateLoadingPhase(LoadingPhase.ProcessingStuff);
+                break;
+            case LoadingPhase.ProcessingStuff:
+                UpdateLoadingPhase(LoadingPhase.ProcessingThings);
+                break;
+            case LoadingPhase.ProcessingThings:
+                UpdateLoadingPhase(LoadingPhase.Loaded);
+                break;
         }
     }
 
@@ -154,12 +153,7 @@ public class ThingDatabase
 
     public ThingEntry Find(ThingKey key)
     {
-        if (entries.TryGetValue(key, out var result))
-        {
-            return result;
-        }
-
-        return null;
+        return entries.TryGetValue(key, out var result) ? result : null;
     }
 
     public void PreloadDefinition(ThingDef def)
@@ -206,7 +200,7 @@ public class ThingDatabase
         {
             if (def != null)
             {
-                Log.Warning("Failed to process thing definition while building equipment lists: " + def.defName);
+                Log.Warning($"Failed to process thing definition while building equipment lists: {def.defName}");
             }
 
             //Log.Message("  Exception: " + e);
@@ -228,12 +222,7 @@ public class ThingDatabase
             return true;
         }
 
-        if ((foodTypes & (int)FoodTypeFlags.VegetableOrFruit) > 0)
-        {
-            return true;
-        }
-
-        return false;
+        return (foodTypes & (int)FoodTypeFlags.VegetableOrFruit) > 0;
     }
 
     private ThingType ClassifyThingDef(ThingDef def)
@@ -248,7 +237,7 @@ public class ThingDatabase
             return ThingType.Resources;
         }
 
-        if (def.weaponTags != null && def.weaponTags.Count > 0 && def.IsWeapon)
+        if (def.weaponTags is { Count: > 0 } && def.IsWeapon)
         {
             return ThingType.Weapons;
         }
@@ -301,12 +290,9 @@ public class ThingDatabase
                 return ThingType.Medical;
             }
 
-            if (def.ingestible.preferability == FoodPreferability.DesperateOnly)
-            {
-                return ThingType.Resources;
-            }
-
-            return ThingType.Food;
+            return def.ingestible.preferability == FoodPreferability.DesperateOnly
+                ? ThingType.Resources
+                : ThingType.Food;
         }
 
         if (def.CountAsResource)
@@ -317,12 +303,7 @@ public class ThingDatabase
                 return ThingType.Weapons;
             }
 
-            if (def.IsShell)
-            {
-                return ThingType.Weapons;
-            }
-
-            return ThingType.Resources;
+            return def.IsShell ? ThingType.Weapons : ThingType.Resources;
         }
 
         if (def.building != null && def.Minifiable)
@@ -330,7 +311,7 @@ public class ThingDatabase
             return ThingType.Buildings;
         }
 
-        if (def.race != null && def.race.Animal)
+        if (def.race is { Animal: true })
         {
             return ThingType.Animals;
         }
@@ -360,12 +341,7 @@ public class ThingDatabase
             return ThingType.Medical;
         }
 
-        if (BelongsToCategoryEndingWith(def, "Organs"))
-        {
-            return ThingType.Medical;
-        }
-
-        return ThingType.Resources;
+        return BelongsToCategoryEndingWith(def, "Organs") ? ThingType.Medical : ThingType.Resources;
     }
 
     // A duplicate of ThingDef.IsWithinCategory(), but with checks to prevent infinite recursion.
@@ -466,12 +442,7 @@ public class ThingDatabase
 
     public ThingEntry LookupThingEntry(ThingKey key)
     {
-        if (entries.TryGetValue(key, out var result))
-        {
-            return result;
-        }
-
-        return null;
+        return entries.TryGetValue(key, out var result) ? result : null;
     }
 
     public ThingEntry AddThingDefWithStuff(ThingDef def, ThingDef defStuff, ThingType type)
@@ -525,7 +496,7 @@ public class ThingDatabase
                 }
             }
         }
-        else if (def.race != null && def.race.Animal)
+        else if (def.race is { Animal: true })
         {
             if (def.race.hasGenders)
             {
@@ -623,7 +594,7 @@ public class ThingDatabase
             result.gear = true;
         }
 
-        if (def.weaponTags != null && def.weaponTags.Count > 0)
+        if (def.weaponTags is { Count: > 0 })
         {
             result.stacks = false;
             result.gear = true;
@@ -647,7 +618,7 @@ public class ThingDatabase
             result.hideFromPortrait = true;
         }
 
-        if (def.race != null && def.race.Animal)
+        if (def.race is { Animal: true })
         {
             result.animal = true;
             result.gender = gender;
@@ -664,7 +635,7 @@ public class ThingDatabase
             }
             catch
             {
-                Log.Warning("Failed to create a pawn for animal thing entry: " + def.defName);
+                Log.Warning($"Failed to create a pawn for animal thing entry: {def.defName}");
                 //Log.Message("  Exception message: " + e);
                 return null;
             }

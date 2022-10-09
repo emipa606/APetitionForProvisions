@@ -65,7 +65,7 @@ public class CaravanManager
 
             if (closestFactionBase == 0)
             {
-                Log.Error("Couldn't find faction base within " + radius + " tiles");
+                Log.Error($"Couldn't find faction base within {radius} tiles");
                 // Fallback travel time 3.5 days
                 factionTravelTime.Add(faction, Mathf.FloorToInt(3.5f * fullDayInTicks));
                 return;
@@ -75,8 +75,8 @@ public class CaravanManager
         }
         catch
         {
-            Log.Error("Error calculating dist to nearest settlement for " + faction.Name +
-                      ". Defaulting travel time to 3.5 days");
+            Log.Error(
+                $"Error calculating dist to nearest settlement for {faction.Name}. Defaulting travel time to 3.5 days");
             factionTravelTime.Add(faction, Mathf.FloorToInt(3.5f * fullDayInTicks));
         }
     }

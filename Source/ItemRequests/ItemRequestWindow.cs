@@ -571,11 +571,10 @@ public class ItemRequestWindow : Window
 
         for (var i = 0; i < filteredItems.Count; i++)
         {
-            var counter = i;
             if (y > bottom && y < top)
             {
                 var rect = new Rect(mainRect.x, y, contentRect.width, 30f);
-                DrawTradeableRow(rect, filteredItems[i], counter);
+                DrawTradeableRow(rect, filteredItems[i], i);
             }
 
             y += 30f;
@@ -608,7 +607,7 @@ public class ItemRequestWindow : Window
         var itemLabel = trade.LabelCap;
         if (entry.animal)
         {
-            itemLabel += " (" + entry.GenderString() + ")";
+            itemLabel += $" ({entry.GenderString()})";
         }
         else if (entry.type.HasQuality() && itemLabel.IndexOf("(normal)", StringComparison.Ordinal) != -1)
         {
@@ -633,7 +632,7 @@ public class ItemRequestWindow : Window
                     var tipDescription = localTrad.TipDescription;
                     if (!tipDescription.NullOrEmpty())
                     {
-                        text = text + ": " + tipDescription;
+                        text = $"{text}: {tipDescription}";
                     }
 
                     return text;
@@ -657,7 +656,7 @@ public class ItemRequestWindow : Window
         // Draw item icon and info icon
         Text.Anchor = TextAnchor.MiddleLeft;
         var idRect = new Rect(x, 0, iconNameAreaWidth, rowRect.height);
-        TransferableUIUtility.DoExtraAnimalIcons(trade, rowRect, ref x);
+        TransferableUIUtility.DoExtraIcons(trade, rowRect, ref x);
         DrawTradeableLabels(idRect, entry);
 
         x += iconNameAreaWidth;
@@ -849,36 +848,34 @@ public class ItemRequestWindow : Window
         if (Find.Storyteller.difficulty.tradePriceFactorLoss != 0f)
         {
             text2 = text;
-            text = string.Concat(text2, "\n  x ",
-                (1f + Find.Storyteller.difficulty.tradePriceFactorLoss).ToString("F2"), " (",
-                "DifficultyLevel".Translate(), ")");
+            text =
+                $"{text2}\n  x {1f + Find.Storyteller.difficulty.tradePriceFactorLoss:F2} ({"DifficultyLevel".Translate()})";
         }
 
         var distPriceOffset = DetermineDistMultiplier(out var daysToTravel);
         text += "\n";
         text2 = text;
-        text = string.Concat(text2, "\n",
-            "IR.ItemRequestWindow.DeliveryCharge".Translate(daysToTravel.ToString("F1")), " x",
-            distPriceOffset.ToString("F2"));
+        text =
+            $"{text2}\n{"IR.ItemRequestWindow.DeliveryCharge".Translate(daysToTravel.ToString("F1"))} x{distPriceOffset:F2}";
 
         text += "\n";
         text2 = text;
-        text = string.Concat(text2, "\n", "YourNegotiatorBonus".Translate(), ": -",
-            priceNegotiator.GetStatValue(StatDefOf.TradePriceImprovement).ToStringPercent());
+        text =
+            $"{text2}\n{"YourNegotiatorBonus".Translate()}: -{priceNegotiator.GetStatValue(StatDefOf.TradePriceImprovement).ToStringPercent()}";
 
         var priceGainSettlement = GetOfferPriceImprovementOffsetForFaction(priceFaction);
         if (priceGainSettlement != 0f)
         {
             text2 = text;
-            text = string.Concat(text2, "\n", "IR.ItemRequestWindow.FactionRelationOffset".Translate(), " ",
-                Mathf.Sign(priceGainSettlement) >= 0 ? "-" : "+", Mathf.Abs(priceGainSettlement).ToStringPercent());
+            text =
+                $"{text2}\n{"IR.ItemRequestWindow.FactionRelationOffset".Translate()} {(Mathf.Sign(priceGainSettlement) >= 0 ? "-" : "+")}{Mathf.Abs(priceGainSettlement).ToStringPercent()}";
         }
 
         text += "\n\n";
         text = text + "FinalPrice".Translate() + ": " + priceFor.ToStringMoney("F2");
         if (priceFor <= 0.01f)
         {
-            text = text + " (" + "minimum".Translate() + ")";
+            text = $"{text} (" + "minimum".Translate() + ")";
         }
 
         return text;
@@ -887,12 +884,7 @@ public class ItemRequestWindow : Window
     private PriceType GetPriceTypeFor(Tradeable trad)
     {
         var thingDef = trad.ThingDef;
-        if (thingDef == ThingDefOf.Silver)
-        {
-            return PriceType.Undefined;
-        }
-
-        return PriceType.Normal;
+        return thingDef == ThingDefOf.Silver ? PriceType.Undefined : PriceType.Normal;
     }
 
     private ThingEntry GetTradeableThingEntry(Thing fromThing)
@@ -933,12 +925,7 @@ public class ItemRequestWindow : Window
             return false;
         }
 
-        if (entry.def.destroyOnDrop)
-        {
-            return false;
-        }
-
-        return true;
+        return !entry.def.destroyOnDrop;
 
         /*
                     var lvl = (int)entry.def.techLevel;

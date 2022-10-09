@@ -40,17 +40,11 @@ public readonly struct ThingKey
 
     public override bool Equals(object o)
     {
-        if (o == null)
+        if (o is not ThingKey pair)
         {
             return false;
         }
 
-        if (!(o is ThingKey))
-        {
-            return false;
-        }
-
-        var pair = (ThingKey)o;
         return ThingDef == pair.ThingDef && StuffDef == pair.StuffDef;
     }
 

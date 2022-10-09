@@ -6,7 +6,7 @@ public static class ThingTypeExtension
 {
     public static bool HasQuality(this ThingType t)
     {
-        return t == ThingType.Apparel || t == ThingType.Buildings || t == ThingType.Weapons;
+        return t is ThingType.Apparel or ThingType.Buildings or ThingType.Weapons;
     }
 
     public static string Translate(this ThingType t)

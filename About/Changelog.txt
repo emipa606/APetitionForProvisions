@@ -1,5 +1,9 @@
 # Changelog for APetitionForProvisions
 
+1.4.1 - Mod updated for 1.4 and passed autotests.
+Used DeepL to update translations for ChineseSimplified, Russian
+
+
 1.3.2 - More unique defname for the HugLib-news base-definition, to avoid conflicts with other mods
 
 

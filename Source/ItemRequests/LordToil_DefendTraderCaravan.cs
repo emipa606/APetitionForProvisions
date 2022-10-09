@@ -35,16 +35,20 @@ public class LordToil_DefendTraderCaravan : LordToil_DefendPoint
             switch (pawn2.GetTraderCaravanRole())
             {
                 case TraderCaravanRole.Carrier:
-                    pawn2.mindState.duty = new PawnDuty(DutyDefOf.Follow, pawn, 5f);
-                    pawn2.mindState.duty.locomotion = LocomotionUrgency.Walk;
+                    pawn2.mindState.duty = new PawnDuty(DutyDefOf.Follow, pawn, 5f)
+                    {
+                        locomotion = LocomotionUrgency.Walk
+                    };
                     break;
                 case TraderCaravanRole.Guard:
                     pawn2.mindState.duty =
                         new PawnDuty(DutyDefOf.Defend, toilData.defendPoint, toilData.defendRadius);
                     break;
                 case TraderCaravanRole.Chattel:
-                    pawn2.mindState.duty = new PawnDuty(DutyDefOf.Escort, pawn, 5f);
-                    pawn2.mindState.duty.locomotion = LocomotionUrgency.Walk;
+                    pawn2.mindState.duty = new PawnDuty(DutyDefOf.Escort, pawn, 5f)
+                    {
+                        locomotion = LocomotionUrgency.Walk
+                    };
                     break;
             }
         }

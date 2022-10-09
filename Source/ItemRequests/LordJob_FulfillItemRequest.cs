@@ -246,7 +246,7 @@ internal class LordJob_FulfillItemRequest : LordJob
         continueToLeaveMap.AddTrigger(new Trigger_PawnLost());
         continueToLeaveMap.AddTrigger(new Trigger_TickCondition(
             () => LordToil_ExitMapAndEscortCarriers.IsAnyDefendingPosition(lord.ownedPawns) &&
-                  !GenHostility.AnyHostileActiveThreatTo_NewTemp(Map, faction), 60));
+                  !GenHostility.AnyHostileActiveThreatTo(Map, faction), 60));
         continueToLeaveMap.AddPostAction(clearCaravanRequest);
         stateGraph.AddTransition(continueToLeaveMap);
 

@@ -73,11 +73,10 @@ internal class FulfillItemRequestWindow : Window
 
         for (var i = 0; i < requestedItems.Count; i++)
         {
-            var counter = i;
             if (y > bottom && y < top)
             {
                 var rect = new Rect(mainRect.x, y, scrollRect.width, 30f);
-                DrawRequestedItem(rect, requestedItems[i], counter);
+                DrawRequestedItem(rect, requestedItems[i], i);
             }
 
             y += 30f;
@@ -150,14 +149,14 @@ internal class FulfillItemRequestWindow : Window
         var itemTitle = requested.item.thing.LabelCapNoCount;
         if (requested.isPawn)
         {
-            itemTitle += " (" + requested.item.GenderString() + ")";
+            itemTitle += $" ({requested.item.GenderString()})";
         }
         else if (requested.item.type.HasQuality() && itemTitle.IndexOf("(normal", StringComparison.Ordinal) != -1)
         {
             itemTitle = itemTitle.Substring(0, itemTitle.IndexOf("(normal)", StringComparison.Ordinal));
         }
 
-        itemTitle += " x" + requested.amount;
+        itemTitle += $" x{requested.amount}";
         Widgets.Label(itemNameArea, itemTitle);
 
         x = rowRect.width - offsetFromRight;
@@ -267,14 +266,14 @@ internal class FulfillItemRequestWindow : Window
                     if (!GenPlace.TryPlaceThing(minifiedThing, traderPawn.Position, traderPawn.Map,
                             ThingPlaceMode.Near))
                     {
-                        Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                        Log.Error($"Could not spawn {thing.LabelCap} near trader!");
                     }
                 }
                 else
                 {
                     if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
                     {
-                        Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                        Log.Error($"Could not spawn {thing.LabelCap} near trader!");
                     }
                 }
             }
@@ -285,7 +284,7 @@ internal class FulfillItemRequestWindow : Window
             thing.stackCount = requested.amount;
             if (!GenPlace.TryPlaceThing(thing, traderPawn.Position, traderPawn.Map, ThingPlaceMode.Near))
             {
-                Log.Error("Could not spawn " + thing.LabelCap + " near trader!");
+                Log.Error($"Could not spawn {thing.LabelCap} near trader!");
             }
         }
     }
@@ -314,12 +313,9 @@ internal class FulfillItemRequestWindow : Window
             return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_S;
         }
 
-        if (removedItemsValue < PartialFulfillmentCutoff_M)
-        {
-            return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_M;
-        }
-
-        return LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_L;
+        return removedItemsValue < PartialFulfillmentCutoff_M
+            ? LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_M
+            : LordJob_FulfillItemRequest.MemoOnPartiallyFulfilled_L;
     }
 
     private void UpdateColonyCurrency(int amountToRemove)
