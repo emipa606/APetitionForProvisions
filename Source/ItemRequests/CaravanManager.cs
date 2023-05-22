@@ -83,9 +83,9 @@ public class CaravanManager
 
     public static int DetermineJourneyTime(Faction faction, Map playerMap)
     {
-        if (factionTravelTime.ContainsKey(faction))
+        if (factionTravelTime.TryGetValue(faction, out var time))
         {
-            return factionTravelTime[faction];
+            return time;
         }
 
         DetermineCaravanTravelTimeFromFaction(faction, playerMap);

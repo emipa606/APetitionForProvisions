@@ -48,40 +48,38 @@ public static class FulfillRequestFloatMenuOption
             return;
         }
 
+        foreach (var targetInfo in localTradeTargets)
         {
-            foreach (var targetInfo in localTradeTargets)
+            var localTargetInfo = targetInfo;
+            var pTarg = (Pawn)localTargetInfo.Thing;
+
+            if (!requestSession.HasOpenDealWith(pTarg.Faction) || !(Find.TickManager.TicksGame >=
+                                                                    requestSession
+                                                                        .GetTimeOfOccurenceWithFaction(
+                                                                            pTarg.Faction)))
             {
-                var localTargetInfo = targetInfo;
-                var pTarg = (Pawn)localTargetInfo.Thing;
-
-                if (!requestSession.HasOpenDealWith(pTarg.Faction) || !(Find.TickManager.TicksGame >=
-                                                                        requestSession
-                                                                            .GetTimeOfOccurenceWithFaction(
-                                                                                pTarg.Faction)))
-                {
-                    continue;
-                }
-
-                void TakeOrderedJob()
-                {
-                    var job = new Job(ItemRequestsDefOf.FulfillItemRequestWithFaction, pTarg) { playerForced = true };
-                    pawn.jobs.TryTakeOrderedJob(job);
-                    PlayerKnowledgeDatabase.KnowledgeDemonstrated(ConceptDefOf.InteractingWithTraders,
-                        KnowledgeAmount.Total);
-                }
-
-                var reservedBy = pawn.Map.reservationManager.FirstRespectedReserver(pTarg, pawn);
-                string label = "IR.FulfillRequestFloatMenuOption.MenuText".Translate(pTarg.Faction.Name);
-                if (reservedBy != null)
-                {
-                    label += "IR.FulfillRequestFloatMenuOption.ReservedBy".Translate(reservedBy.LabelShort);
-                }
-
-                var thing = localTargetInfo.Thing;
-                var priority = MenuOptionPriority.InitiateSocial;
-                opts.Add(new FloatMenuOption(label, TakeOrderedJob, priority, null, thing));
-                opts.Remove(optToRemove);
+                continue;
             }
+
+            void TakeOrderedJob()
+            {
+                var job = new Job(ItemRequestsDefOf.FulfillItemRequestWithFaction, pTarg) { playerForced = true };
+                pawn.jobs.TryTakeOrderedJob(job);
+                PlayerKnowledgeDatabase.KnowledgeDemonstrated(ConceptDefOf.InteractingWithTraders,
+                    KnowledgeAmount.Total);
+            }
+
+            var reservedBy = pawn.Map.reservationManager.FirstRespectedReserver(pTarg, pawn);
+            string label = "IR.FulfillRequestFloatMenuOption.MenuText".Translate(pTarg.Faction.Name);
+            if (reservedBy != null)
+            {
+                label += "IR.FulfillRequestFloatMenuOption.ReservedBy".Translate(reservedBy.LabelShort);
+            }
+
+            var thing = localTargetInfo.Thing;
+            var priority = MenuOptionPriority.InitiateSocial;
+            opts.Add(new FloatMenuOption(label, TakeOrderedJob, priority, null, thing));
+            //opts.Remove(optToRemove);
         }
     }
 }

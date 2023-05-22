@@ -191,7 +191,7 @@ internal class FulfillItemRequestWindow : Window
         var totalRequestedValue = deal.TotalRequestedValue;
         var lord = traderPawn.GetLord();
 
-        if (playerPawn.Map.resourceCounter.Silver < totalRequestedValue)
+        if (colonySilver < totalRequestedValue)
         {
             Messages.Message("IR.FulfillItemRequestWindow.NotEnoughSilverMessage".Translate(),
                 MessageTypeDefOf.NegativeEvent);

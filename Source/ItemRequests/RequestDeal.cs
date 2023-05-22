@@ -93,9 +93,9 @@ public class RequestDeal : IExposable
     public int GetCountForItem(ThingType thingTypeFilter, Tradeable tradeable)
     {
         var key = tradeable.GetHashCode();
-        if (requestedItems[thingTypeFilter].dict.ContainsKey(key))
+        if (requestedItems[thingTypeFilter].dict.TryGetValue(key, out var value))
         {
-            return requestedItems[thingTypeFilter].dict[key].amount;
+            return value.amount;
         }
 
         return 0;

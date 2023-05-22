@@ -59,3 +59,4 @@ Huge thanks to the developer(s) of the EdB Prepare Carefully mod, whose code hel
 
 
 
+https://steamcommunity.com/sharedfiles/filedetails/changelog/2444190820]Last updated 2023-05-22

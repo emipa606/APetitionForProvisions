@@ -235,10 +235,10 @@ public class ItemRequestWindow : Window
                         key += thing.Stuff.label;
                     }
 
-                    if (colonyItemCount.ContainsKey(key))
+                    if (colonyItemCount.TryGetValue(key, out var value))
                     {
                         var colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
-                        colonyThing.stackCount = colonyItemCount[key];
+                        colonyThing.stackCount = value;
                         trad.thingsColony.Add(colonyThing);
                     }
                 }
@@ -926,24 +926,6 @@ public class ItemRequestWindow : Window
         }
 
         return !entry.def.destroyOnDrop;
-
-        /*
-                    var lvl = (int)entry.def.techLevel;
-        
-                    // there's probably a better way to test for an advanced component but oh well
-                    if (entry.thing.def.label == "advanced component" && (int)tLevel < (int)TechLevel.Industrial)
-                    {
-                        return false;
-                    }
-        
-                    if (lvl > 1)
-                    {
-                        // Current tech level or one level beneath
-                        return lvl <= (int)tLevel && lvl >= (int)tLevel - 1;
-                    }
-        
-                    return lvl <= (int)tLevel;
-        */
     }
 
     private bool isBuyableItem(ThingEntry entry)
