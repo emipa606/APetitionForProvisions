@@ -4,12 +4,11 @@ using Verse;
 
 namespace ItemRequests;
 
-[HarmonyPatch(typeof(FactionDialogMaker))]
-[HarmonyPatch("FactionDialogFor")]
+[HarmonyPatch(typeof(FactionDialogMaker), nameof(FactionDialogMaker.FactionDialogFor))]
 public static class DialogWindow
 {
     [HarmonyPostfix]
-    public static void AddOption(DiaNode __instance, ref DiaNode __result, Pawn negotiator, Faction faction)
+    public static void AddOption(ref DiaNode __result, Pawn negotiator, Faction faction)
     {
         if (faction.PlayerRelationKind != FactionRelationKind.Ally &&
             faction.PlayerRelationKind != FactionRelationKind.Neutral)
@@ -26,7 +25,7 @@ public static class DialogWindow
         var newOption = RequestItemOption(map, faction, negotiator);
 
         // If there's a third option for requesting the AI Persona Core
-        // then put it after that. Otherwise put it after first two
+        // then put it after that. Otherwise, put it after first two
         // options (Request caravan & request military aid).
         var insertAtIndex = DefDatabase<ResearchProjectDef>.AllDefsListForReading.Any(rp =>
             rp.HasTag(ResearchProjectTagDefOf.ShipRelated) && rp.IsFinished)

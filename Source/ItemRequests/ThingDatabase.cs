@@ -153,7 +153,7 @@ public class ThingDatabase
 
     public ThingEntry Find(ThingKey key)
     {
-        return entries.TryGetValue(key, out var result) ? result : null;
+        return entries.GetValueOrDefault(key);
     }
 
     public void PreloadDefinition(ThingDef def)
@@ -442,7 +442,7 @@ public class ThingDatabase
 
     public ThingEntry LookupThingEntry(ThingKey key)
     {
-        return entries.TryGetValue(key, out var result) ? result : null;
+        return entries.GetValueOrDefault(key);
     }
 
     public ThingEntry AddThingDefWithStuff(ThingDef def, ThingDef defStuff, ThingType type)
@@ -679,7 +679,7 @@ public class ThingDatabase
         }
 
         pawn.gender = gender;
-        pawn.Drawer.renderer.graphics.ResolveAllGraphics();
+        pawn.Drawer.renderer.SetAllGraphicsDirty();
         return pawn;
     }
 

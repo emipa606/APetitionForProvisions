@@ -3,8 +3,7 @@ using Verse;
 
 namespace ItemRequests;
 
-[HarmonyPatch(typeof(Game))]
-[HarmonyPatch("UpdatePlay")]
+[HarmonyPatch(typeof(Game), nameof(Game.UpdatePlay))]
 public static class DatabaseAsyncLoaderLoadedGame
 {
     [HarmonyPostfix]

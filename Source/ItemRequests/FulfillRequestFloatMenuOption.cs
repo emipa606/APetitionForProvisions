@@ -8,8 +8,7 @@ using Verse.AI;
 
 namespace ItemRequests;
 
-[HarmonyPatch(typeof(FloatMenuMakerMap))]
-[HarmonyPatch("AddHumanlikeOrders")]
+[HarmonyPatch(typeof(FloatMenuMakerMap), "AddHumanlikeOrders")]
 public static class FulfillRequestFloatMenuOption
 {
     [HarmonyPostfix]
@@ -61,14 +60,6 @@ public static class FulfillRequestFloatMenuOption
                 continue;
             }
 
-            void TakeOrderedJob()
-            {
-                var job = new Job(ItemRequestsDefOf.FulfillItemRequestWithFaction, pTarg) { playerForced = true };
-                pawn.jobs.TryTakeOrderedJob(job);
-                PlayerKnowledgeDatabase.KnowledgeDemonstrated(ConceptDefOf.InteractingWithTraders,
-                    KnowledgeAmount.Total);
-            }
-
             var reservedBy = pawn.Map.reservationManager.FirstRespectedReserver(pTarg, pawn);
             string label = "IR.FulfillRequestFloatMenuOption.MenuText".Translate(pTarg.Faction.Name);
             if (reservedBy != null)
@@ -79,7 +70,16 @@ public static class FulfillRequestFloatMenuOption
             var thing = localTargetInfo.Thing;
             var priority = MenuOptionPriority.InitiateSocial;
             opts.Add(new FloatMenuOption(label, TakeOrderedJob, priority, null, thing));
+            continue;
             //opts.Remove(optToRemove);
+
+            void TakeOrderedJob()
+            {
+                var job = new Job(ItemRequestsDefOf.FulfillItemRequestWithFaction, pTarg) { playerForced = true };
+                pawn.jobs.TryTakeOrderedJob(job);
+                PlayerKnowledgeDatabase.KnowledgeDemonstrated(ConceptDefOf.InteractingWithTraders,
+                    KnowledgeAmount.Total);
+            }
         }
     }
 }

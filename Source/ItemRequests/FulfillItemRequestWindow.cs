@@ -14,7 +14,7 @@ internal class FulfillItemRequestWindow : Window
     private const float offsetFromBottom = 90;
     private static readonly float PartialFulfillmentCutoff_S = 400;
     private static readonly float PartialFulfillmentCutoff_M = 1200;
-    private readonly List<Thing> colonySilverStacks = new List<Thing>();
+    private readonly List<Thing> colonySilverStacks = [];
 
     private readonly Pawn playerPawn;
     private readonly List<RequestItem> requestedItems;

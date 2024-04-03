@@ -2,40 +2,24 @@
 
 namespace ItemRequests;
 
-public readonly struct ThingKey
+public readonly struct ThingKey(ThingDef thingDef, ThingDef stuffDef, Gender gender)
 {
-    public ThingDef ThingDef { get; }
+    public ThingDef ThingDef { get; } = thingDef;
 
-    public ThingDef StuffDef { get; }
+    public ThingDef StuffDef { get; } = stuffDef;
 
-    public Gender Gender { get; }
+    public Gender Gender { get; } = gender;
 
-    public ThingKey(ThingDef thingDef, ThingDef stuffDef, Gender gender)
+    public ThingKey(ThingDef thingDef, ThingDef stuffDef) : this(thingDef, stuffDef, Gender.None)
     {
-        ThingDef = thingDef;
-        StuffDef = stuffDef;
-        Gender = gender;
     }
 
-    public ThingKey(ThingDef thingDef, ThingDef stuffDef)
+    public ThingKey(ThingDef thingDef) : this(thingDef, null, Gender.None)
     {
-        ThingDef = thingDef;
-        StuffDef = stuffDef;
-        Gender = Gender.None;
     }
 
-    public ThingKey(ThingDef thingDef)
+    public ThingKey(ThingDef thingDef, Gender gender) : this(thingDef, null, gender)
     {
-        ThingDef = thingDef;
-        StuffDef = null;
-        Gender = Gender.None;
-    }
-
-    public ThingKey(ThingDef thingDef, Gender gender)
-    {
-        ThingDef = thingDef;
-        StuffDef = null;
-        Gender = gender;
     }
 
     public override bool Equals(object o)

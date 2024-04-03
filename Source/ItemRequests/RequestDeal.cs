@@ -78,7 +78,7 @@ public class RequestDeal : IExposable
                 requestedItems[thingTypeFilter].dict[key] = new RequestItem
                     { item = entry, amount = amount, pricePerItem = price, isPawn = entry.pawnDef != null };
 
-                // Log.Message("Colony just adjusted request for " + entry.tradeable.ThingDef.LabelCap + " to " + numRequested);
+                // Log.Message "Colony just adjusted request for " + entry.tradeable.ThingDef.LabelCap + " to " + numRequested);
             }
         }
         else if (numRequested > 0)
@@ -93,12 +93,7 @@ public class RequestDeal : IExposable
     public int GetCountForItem(ThingType thingTypeFilter, Tradeable tradeable)
     {
         var key = tradeable.GetHashCode();
-        if (requestedItems[thingTypeFilter].dict.TryGetValue(key, out var value))
-        {
-            return value.amount;
-        }
-
-        return 0;
+        return requestedItems[thingTypeFilter].dict.TryGetValue(key, out var value) ? value.amount : 0;
     }
 
     public List<RequestItem> GetRequestedItems()

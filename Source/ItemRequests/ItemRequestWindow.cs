@@ -29,7 +29,7 @@ public class ItemRequestWindow : Window
     private static string searchText = "";
 
     // For listing the items
-    private readonly List<ThingEntry> allRequestableItems = new List<ThingEntry>();
+    private readonly List<ThingEntry> allRequestableItems = [];
 
     private readonly string colonyCountTooltipText = "IR.ItemRequestWindow.ColonyCountTooltip".Translate();
 
@@ -40,7 +40,7 @@ public class ItemRequestWindow : Window
 
     private readonly Faction faction;
 
-    private readonly List<ThingEntry> filteredRequestableItems = new List<ThingEntry>();
+    private readonly List<ThingEntry> filteredRequestableItems = [];
 
     private readonly Map map;
 
@@ -48,7 +48,7 @@ public class ItemRequestWindow : Window
 
     private readonly RequestSession requestSession;
 
-    private readonly HashSet<ThingDef> stuffFilterSet = new HashSet<ThingDef>();
+    private readonly HashSet<ThingDef> stuffFilterSet = [];
 
     // For UI layout
     private float rightAlignOffset;
@@ -108,7 +108,7 @@ public class ItemRequestWindow : Window
 
     private Rect ScrollRect { [UsedImplicitly] get; set; }
 
-    // For being a sub class of Window
+    // For being a subclass of Window
     private Vector2 WindowSize { get; set; }
 
     public override void DoWindowContents(Rect inRect)
@@ -212,7 +212,7 @@ public class ItemRequestWindow : Window
             if (thingEntry.pawnDef != null)
             {
                 var pawn = thingEntry.thing as Pawn;
-                var trad = new Tradeable(pawn, pawn) { thingsColony = new List<Thing>() };
+                var trad = new Tradeable(pawn, pawn) { thingsColony = [] };
                 thingEntry.tradeable = trad;
                 allRequestableItems.Add(thingEntry);
             }
@@ -226,7 +226,7 @@ public class ItemRequestWindow : Window
                     continue;
                 }
 
-                trad.thingsColony = new List<Thing>();
+                trad.thingsColony = [];
                 var key = thing.def.label;
                 if (key != null)
                 {
@@ -839,11 +839,10 @@ public class ItemRequestWindow : Window
 
         var text2 = text;
 
-        text = string.Concat(new string[]
-        {
+        text = string.Concat([
             text2, "\n  x ", requestingItemMarkupMultiplier.ToString("F2"),
             "IR.ItemRequestWindow.Requesting".Translate()
-        });
+        ]);
 
         if (Find.Storyteller.difficulty.tradePriceFactorLoss != 0f)
         {

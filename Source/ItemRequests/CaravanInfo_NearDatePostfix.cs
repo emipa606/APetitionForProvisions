@@ -7,7 +7,7 @@ using Verse;
 
 namespace ItemRequests;
 
-[HarmonyPatch(typeof(GlobalControlsUtility), "DoDate")]
+[HarmonyPatch(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DoDate))]
 internal class CaravanInfo_NearDatePostfix
 {
     private static TaggedString currentDealMessage = string.Empty;
@@ -38,7 +38,7 @@ internal class CaravanInfo_NearDatePostfix
     {
         var map = Find.CurrentMap;
 
-        if (map == null || !map.IsPlayerHome)
+        if (map is not { IsPlayerHome: true })
         {
             return;
         }

@@ -9,8 +9,8 @@ namespace ItemRequests;
 // https://github.com/edbmods/EdBPrepareCarefully/blob/develop/Source/CostCalculator.cs
 public class CostCalculator
 {
-    private readonly HashSet<string> cheapApparel = new HashSet<string>();
-    protected HashSet<string> freeApparel = new HashSet<string>();
+    private readonly HashSet<string> cheapApparel = [];
+    protected HashSet<string> freeApparel = [];
 
     public CostCalculator()
     {
@@ -20,7 +20,7 @@ public class CostCalculator
     }
 
     // public void Calculate(CostDetails cost, List<CustomPawn> pawns, List<EquipmentSelection> equipment, List<SelectedAnimal> animals)
-    // {
+    // 
     // cost.Clear(pawns.Where(pawn => pawn.Type == CustomPawnType.Colonist).Count());
 
     // int i = 0;
@@ -55,8 +55,8 @@ public class CostCalculator
 
         // double passionateSkillCount = 0;
         // foreach (SkillDef def in pawn.currentPassions.Keys)
-        // {
-        // Passion passion = pawn.currentPassions[def];
+        // 
+        // Passion = pawn.currentPassions[def];
         // int level = pawn.GetSkillLevel(def);
 
         // if (passion == Passion.Major)
@@ -200,17 +200,17 @@ public class CostCalculator
         {
             if (def.IsApparel)
             {
-                cost = cost * 1;
+                cost *= 1;
             }
             else
             {
-                cost = cost * 0.5;
+                cost *= 0.5;
             }
         }
 
         if (def.IsRangedWeapon)
         {
-            cost = cost * 2;
+            cost *= 2;
         }
 
         // cost = cost * 1.25;

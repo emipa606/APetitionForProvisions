@@ -5,7 +5,7 @@ using Verse;
 
 namespace ItemRequests;
 
-public class RequestSession : WorldComponent
+public class RequestSession(World world) : WorldComponent(world)
 {
     public RequestDeal deal;
 
@@ -15,15 +15,9 @@ public class RequestSession : WorldComponent
 
     private Pawn negotiator;
 
-    private Dictionary<RequestDeal, float> timeOfOccurences;
+    private Dictionary<RequestDeal, float> timeOfOccurences = new Dictionary<RequestDeal, float>();
 
     private List<float> travelTimes;
-
-    public RequestSession(World world)
-        : base(world)
-    {
-        timeOfOccurences = new Dictionary<RequestDeal, float>();
-    }
 
     public IEnumerable<RequestDeal> openDeals
     {
@@ -106,12 +100,7 @@ public class RequestSession : WorldComponent
     public float GetTimeOfOccurenceWithFaction(Faction occuranceFaction)
     {
         var openDealWith = GetOpenDealWith(occuranceFaction);
-        if (openDealWith == null)
-        {
-            return float.MaxValue;
-        }
-
-        return timeOfOccurences[openDealWith];
+        return openDealWith == null ? float.MaxValue : timeOfOccurences[openDealWith];
     }
 
     public bool HasOpenDealWith(Faction dealFaction)

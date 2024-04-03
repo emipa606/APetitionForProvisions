@@ -6,7 +6,7 @@ namespace ItemRequests;
 
 public class CostDetails
 {
-    private readonly List<ColonistCostDetails> colonistDetails = new List<ColonistCostDetails>();
+    private readonly List<ColonistCostDetails> colonistDetails = [];
 
     private double animals;
 

@@ -7,10 +7,10 @@ namespace ItemRequests;
 
 public class RestrictedItems
 {
-    public static Dictionary<ThingDef, TechLevel> researchTechCache = new Dictionary<ThingDef, TechLevel>();
-    public static List<ThingDef> GetThings { get; } = new List<ThingDef>();
+    public static readonly Dictionary<ThingDef, TechLevel> researchTechCache = new Dictionary<ThingDef, TechLevel>();
+    public static List<ThingDef> GetThings { get; } = [];
 
-    public static List<PawnKindDef> GetPawns { get; } = new List<PawnKindDef>();
+    public static List<PawnKindDef> GetPawns { get; } = [];
 
     public static void Add(ThingDef def)
     {
@@ -46,11 +46,11 @@ public class RestrictedItems
     public static void Init()
     {
         GetThings.Add(ThingDefOf.AIPersonaCore);
-        GetThings.Add(ThingDefOf.OrbitalTargeterBombardment);
-        GetThings.Add(ThingDefOf.OrbitalTargeterPowerBeam);
-        GetThings.Add(ThingDefOf.TechprofSubpersonaCore);
-        GetThings.Add(ThingDefOf.VanometricPowerCell);
-        GetThings.Add(ThingDefOf.InfiniteChemreactor);
+        GetThings.Add(ThingDef.Named("OrbitalTargeterBombardment"));
+        GetThings.Add(ThingDef.Named("OrbitalTargeterPowerBeam"));
+        GetThings.Add(ThingDef.Named("TechprofSubpersonaCore"));
+        GetThings.Add(ThingDef.Named("VanometricPowerCell"));
+        GetThings.Add(ThingDef.Named("InfiniteChemreactor"));
         GetThings.Add(ThingDefOf.PsychicEmanator);
         GetThings.Add(ThingDefOf.PowerBeam);
 
