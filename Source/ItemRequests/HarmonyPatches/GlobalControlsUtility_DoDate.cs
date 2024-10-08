@@ -5,10 +5,10 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 
-namespace ItemRequests;
+namespace ItemRequests.HarmonyPatches;
 
 [HarmonyPatch(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DoDate))]
-internal class CaravanInfo_NearDatePostfix
+internal class GlobalControlsUtility_DoDate
 {
     private static TaggedString currentDealMessage = string.Empty;
 

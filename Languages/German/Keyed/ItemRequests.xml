@@ -64,4 +64,11 @@
   <IR.Hours>Stunden</IR.Hours>
   <IR.Days>Tage</IR.Days>
   <IR.search>Suche</IR.search>
+  <IR.reset>Zurücksetzen</IR.reset>
+  <IR.resetToDefault>Auf Standardwerte zurücksetzen</IR.resetToDefault>
+  <IR.priceMultiplier>Preis-Multiplikator: {0}</IR.priceMultiplier>
+  <IR.apparelMultiplier>Preismultiplikator (Bekleidung): {0}</IR.apparelMultiplier>
+  <IR.weaponMultiplier>Preis-Multiplikator (Fernkampf): {0}</IR.weaponMultiplier>
+  <IR.priceMultiplierTT>Wie viel höher der Grundpreis ist, wenn man einen Antrag stellt</IR.priceMultiplierTT>
+  <IR.CurrentModVersion>Installierte Mod-Version: {0}</IR.CurrentModVersion>
 </LanguageData>

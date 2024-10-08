@@ -13,16 +13,16 @@ public class ThingDatabase
 {
     private static ThingDatabase instance;
 
-    private readonly HashSet<string> categoryLookup = new HashSet<string>();
+    private readonly HashSet<string> categoryLookup = [];
     private readonly CostCalculator costs = new CostCalculator();
     private readonly Dictionary<ThingKey, ThingEntry> entries = new Dictionary<ThingKey, ThingEntry>();
-    private readonly List<ThingDef> stuff = new List<ThingDef>();
-    private readonly HashSet<ThingDef> stuffLookup = new HashSet<ThingDef>();
+    private readonly List<ThingDef> stuff = [];
+    private readonly HashSet<ThingDef> stuffLookup = [];
     private readonly ThingCategoryDef thingCategoryMeatRaw;
 
     private readonly ThingCategoryDef thingCategorySweetMeals;
 
-    protected List<ThingEntry> resources = new List<ThingEntry>();
+    protected List<ThingEntry> resources = [];
 
     private ThingDatabase()
     {
@@ -270,12 +270,7 @@ public class ThingDatabase
                 return ThingType.Food;
             }
 
-            if (FoodTypeIsClassifiedAsFood(def))
-            {
-                return ThingType.Food;
-            }
-
-            return ThingType.Medical;
+            return FoodTypeIsClassifiedAsFood(def) ? ThingType.Food : ThingType.Medical;
         }
 
         if (def.ingestible != null)
@@ -467,12 +462,11 @@ public class ThingDatabase
 
     private bool AddStuffIfNotThereAlready(ThingDef def)
     {
-        if (stuffLookup.Contains(def))
+        if (!stuffLookup.Add(def))
         {
             return false;
         }
 
-        stuffLookup.Add(def);
         stuff.Add(def);
         return true;
     }
@@ -524,7 +518,7 @@ public class ThingDatabase
         }
         else
         {
-            var key = new ThingKey(def, null);
+            var key = new ThingKey(def);
             var entry = CreateThingEntry(def, null, Gender.None, type);
             if (entry != null)
             {
@@ -559,7 +553,7 @@ public class ThingDatabase
             def = def,
             stuffDef = stuffDef,
             stackSize = stackSize,
-            cost = costs.CalculateStackCost(def, stuffDef, baseCost),
+            cost = costs.CalculateStackCost(def, baseCost),
             stacks = true,
             gear = false,
             animal = false

@@ -64,4 +64,11 @@
   <IR.Hours>heures</IR.Hours>
   <IR.Days>jours</IR.Days>
   <IR.search>Recherche</IR.search>
+  <IR.reset>Remise à zéro</IR.reset>
+  <IR.resetToDefault>Rétablissement des valeurs par défaut</IR.resetToDefault>
+  <IR.priceMultiplier>Multiplicateur de prix : {0}</IR.priceMultiplier>
+  <IR.apparelMultiplier>Multiplicateur de prix (Apparel) : {0}</IR.apparelMultiplier>
+  <IR.weaponMultiplier>Multiplicateur de prix (à distance) : {0}</IR.weaponMultiplier>
+  <IR.priceMultiplierTT>Quelle est l'augmentation du prix de base lors d'une demande d'aide ?</IR.priceMultiplierTT>
+  <IR.CurrentModVersion>Version installée du mod : {0}</IR.CurrentModVersion>
 </LanguageData>

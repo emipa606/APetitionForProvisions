@@ -252,7 +252,7 @@ public class ItemRequestWindow : Window
     private float DetermineDistMultiplier(out float daysToTravel)
     {
         var distToColonyInTicks = CaravanManager.DetermineJourneyTime(faction, map);
-        daysToTravel = (float)distToColonyInTicks / CaravanManager.fullDayInTicks;
+        daysToTravel = (float)distToColonyInTicks / GenDate.TicksPerDay;
         float distMultiplier = 1;
 
         if (daysToTravel >= 4)

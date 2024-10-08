@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <RequestCaravanArrival.label>請求物資抵達</RequestCaravanArrival.label>
   <RequestCaravanArrival.letterText>一支你請求的商隊已經到達\n\n與商隊負責人進行交易.不過要小心，如果沒有足夠的白銀來支付派系要求的金額，則會激怒該派系, 這可能會導致...不良後果.</RequestCaravanArrival.letterText>

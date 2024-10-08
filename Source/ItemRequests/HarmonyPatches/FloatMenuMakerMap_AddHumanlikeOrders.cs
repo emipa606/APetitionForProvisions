@@ -6,13 +6,12 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 
-namespace ItemRequests;
+namespace ItemRequests.HarmonyPatches;
 
 [HarmonyPatch(typeof(FloatMenuMakerMap), "AddHumanlikeOrders")]
-public static class FulfillRequestFloatMenuOption
+public static class FloatMenuMakerMap_AddHumanlikeOrders
 {
-    [HarmonyPostfix]
-    public static void ModifyTradeOption(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
+    public static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
     {
         var requestSession = Find.World.GetComponent<RequestSession>();
         var localTradeTargets = GenUI.TargetsAt(clickPos, TargetingParameters.ForTrade(), true).ToList();

@@ -139,9 +139,9 @@ internal class LordJob_FulfillItemRequest : LordJob
         stateGraph.AddTransition(leaveIfRequestFulfilled);
 
         var ticksUntilBadThings = Rand.Range(
-            Mathf.RoundToInt((float)CaravanManager.fullDayInTicks / 2), // 0.5  days
-            CaravanManager.fullDayInTicks +
-            Mathf.RoundToInt((float)CaravanManager.fullDayInTicks / 4)); // 1.25 days
+            Mathf.RoundToInt((float)GenDate.TicksPerDay / 2), // 0.5  days
+            GenDate.TicksPerDay +
+            Mathf.RoundToInt((float)GenDate.TicksPerDay / 4)); // 1.25 days
 
         // Determine actions if request goes unfulfilled based on faction relation
         var ticksPassed = new Trigger_TicksPassed(ticksUntilBadThings);

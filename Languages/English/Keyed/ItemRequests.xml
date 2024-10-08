@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <IR.ConfirmRequestWindow.WindowTitle>Are you sure?</IR.ConfirmRequestWindow.WindowTitle>
   <IR.ConfirmRequestWindow.WindowMessage>Your colony doesn't currently have enough silver to buy the requested items. You can still request them of course, praying to your gods that they have pity on your colony before the requested caravan arrives. But if life on the Rim has taught you anything, it's that you should never anticipate good fortune when it's most needed.</IR.ConfirmRequestWindow.WindowMessage>
@@ -63,4 +63,11 @@
   <IR.Hours>hours</IR.Hours>
   <IR.Days>days</IR.Days>
   <IR.search>Search</IR.search>
+  <IR.reset>Reset</IR.reset>
+  <IR.resetToDefault>Reset to default</IR.resetToDefault>
+  <IR.priceMultiplier>Price multiplier: {0}</IR.priceMultiplier>
+  <IR.apparelMultiplier>Price multiplier (Apparel): {0}</IR.apparelMultiplier>
+  <IR.weaponMultiplier>Price multiplier (Ranged): {0}</IR.weaponMultiplier>
+  <IR.priceMultiplierTT>How much higher the base-price is when requesting</IR.priceMultiplierTT>
+  <IR.CurrentModVersion>Installed mod-version: {0}</IR.CurrentModVersion>
 </LanguageData>

@@ -8,7 +8,6 @@ namespace ItemRequests;
 
 public class CaravanManager
 {
-    public static readonly int fullDayInTicks = 60000;
     private static readonly Dictionary<Faction, int> factionTravelTime = new Dictionary<Faction, int>();
 
     public static void SendRequestedCaravan(Faction faction, Map playerMap)
@@ -67,7 +66,7 @@ public class CaravanManager
             {
                 Log.Error($"Couldn't find faction base within {radius} tiles");
                 // Fallback travel time 3.5 days
-                factionTravelTime.Add(faction, Mathf.FloorToInt(3.5f * fullDayInTicks));
+                factionTravelTime.Add(faction, Mathf.FloorToInt(3.5f * GenDate.TicksPerDay));
                 return;
             }
 
@@ -77,7 +76,7 @@ public class CaravanManager
         {
             Log.Error(
                 $"Error calculating dist to nearest settlement for {faction.Name}. Defaulting travel time to 3.5 days");
-            factionTravelTime.Add(faction, Mathf.FloorToInt(3.5f * fullDayInTicks));
+            factionTravelTime.Add(faction, Mathf.FloorToInt(3.5f * GenDate.TicksPerDay));
         }
     }
 

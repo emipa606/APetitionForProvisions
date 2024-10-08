@@ -64,4 +64,11 @@
   <IR.Hours>часы</IR.Hours>
   <IR.Days>дней</IR.Days>
   <IR.search>Поиск</IR.search>
+  <IR.reset>Сброс</IR.reset>
+  <IR.resetToDefault>Сброс настроек по умолчанию</IR.resetToDefault>
+  <IR.priceMultiplier>Мультипликатор цены: {0}</IR.priceMultiplier>
+  <IR.apparelMultiplier>Ценовой мультипликатор (Apparel): {0}</IR.apparelMultiplier>
+  <IR.weaponMultiplier>Множитель цены (в радиусе действия): {0}</IR.weaponMultiplier>
+  <IR.priceMultiplierTT>Насколько увеличивается базовая цена при запросе</IR.priceMultiplierTT>
+  <IR.CurrentModVersion>Установленная версия мода: {0}</IR.CurrentModVersion>
 </LanguageData>

@@ -20,12 +20,8 @@ public static class WidgetDropdown
         LoadTextures();
     }
 
-    public static bool Button(Rect rect, string label)
-    {
-        return Button(rect, label, true, false, true);
-    }
-
-    public static bool Button(Rect rect, string label, bool drawBackground, bool doMouseoverSound, bool active)
+    public static bool Button(Rect rect, string label, bool drawBackground = true, bool doMouseoverSound = false,
+        bool active = true)
     {
         var anchor = Text.Anchor;
         var color = GUI.color;

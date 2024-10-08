@@ -12,8 +12,17 @@
     <li>1.4</li>
     <li>1.5</li>
   </supportedVersions>
-  <modDependencies />
-  <loadAfter />
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+      <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>brrainz.harmony</li>
+  </loadAfter>
   <description>[img]https://i.imgur.com/buuPQel.png[/img]
 Update of ToyWalruss mod
 https://steamcommunity.com/sharedfiles/filedetails/?id=1904213444
@@ -79,5 +88,5 @@ Huge thanks to the developer(s) of the EdB Prepare Carefully mod, whose code hel
 [/list]
 
 [url=https://steamcommunity.com/sharedfiles/filedetails/changelog/2444190820][img]https://img.shields.io/github/v/release/emipa606/APetitionForProvisions?label=latest%20version&amp;style=plastic&amp;color=9f1111&amp;labelColor=black[/img][/url]</description>
-  <modVersion IgnoreIfNoMatchingField="True">1.5.0</modVersion>
+  <modVersion IgnoreIfNoMatchingField="True">1.5.1</modVersion>
 </ModMetaData>
