@@ -2,6 +2,14 @@
   "Continued": true,
   "CanAdd": "0",
   "CanRemove": "2",
-  "PreviewVersion": "1.5",
-  "SocialImageSet": true
+  "PreviewVersion": "1.6",
+  "SocialImageSet": true,
+  "LastXmlCleaning": "2025-08-08T21:25:59.5637998+02:00",
+  "Patches": false,
+  "Defs": true,
+  "Assemblies": true,
+  "LinesOfCode": 137622,
+  "LinesOfXML": 1108,
+  "CodeBaseSize": 81,
+  "SearchTags": "faction requests"
 }

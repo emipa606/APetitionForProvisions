@@ -14,8 +14,8 @@ public class ThingDatabase
     private static ThingDatabase instance;
 
     private readonly HashSet<string> categoryLookup = [];
-    private readonly CostCalculator costs = new CostCalculator();
-    private readonly Dictionary<ThingKey, ThingEntry> entries = new Dictionary<ThingKey, ThingEntry>();
+    private readonly CostCalculator costs = new();
+    private readonly Dictionary<ThingKey, ThingEntry> entries = new();
     private readonly List<ThingDef> stuff = [];
     private readonly HashSet<ThingDef> stuffLookup = [];
     private readonly ThingCategoryDef thingCategoryMeatRaw;
@@ -35,16 +35,13 @@ public class ThingDatabase
     {
         get
         {
-            if (instance == null)
-            {
-                instance = new ThingDatabase();
-            }
+            instance ??= new ThingDatabase();
 
             return instance;
         }
     }
 
-    private LoadingState LoadingProgress { get; } = new LoadingState();
+    private LoadingState LoadingProgress { get; } = new();
     public bool Loaded => LoadingProgress.phase == LoadingPhase.Loaded;
 
     public void LoadFrame()
@@ -209,7 +206,7 @@ public class ThingDatabase
         return false;
     }
 
-    private bool FoodTypeIsClassifiedAsFood(ThingDef def)
+    private static bool FoodTypeIsClassifiedAsFood(ThingDef def)
     {
         var foodTypes = (int)def.ingestible.foodType;
         if ((foodTypes & (int)FoodTypeFlags.Liquor) > 0)
@@ -237,12 +234,7 @@ public class ThingDatabase
             return ThingType.Resources;
         }
 
-        if (def.weaponTags is { Count: > 0 } && def.IsWeapon)
-        {
-            return ThingType.Weapons;
-        }
-
-        if (BelongsToCategoryContaining(def, "Weapon"))
+        if (def.weaponTags is { Count: > 0 } && def.IsWeapon || BelongsToCategoryContaining(def, "Weapon"))
         {
             return ThingType.Weapons;
         }
@@ -316,22 +308,8 @@ public class ThingDatabase
             return ThingType.Other;
         }
 
-        if (def.defName.StartsWith("MechSerum"))
-        {
-            return ThingType.Medical;
-        }
-
-        if (BelongsToCategoryStartingWith(def, "BodyParts"))
-        {
-            return ThingType.Medical;
-        }
-
-        if (BelongsToCategoryContaining(def, "Prostheses"))
-        {
-            return ThingType.Medical;
-        }
-
-        if (BelongsToCategory(def, "GlitterworldParts"))
+        if (def.defName.StartsWith("MechSerum") || BelongsToCategoryStartingWith(def, "BodyParts") ||
+            BelongsToCategoryContaining(def, "Prostheses") || BelongsToCategory(def, "GlitterworldParts"))
         {
             return ThingType.Medical;
         }
@@ -365,7 +343,7 @@ public class ThingDatabase
         return false;
     }
 
-    private bool BelongsToCategory(ThingDef def, ThingCategoryDef categoryDef)
+    private static bool BelongsToCategory(ThingDef def, ThingCategoryDef categoryDef)
     {
         if (categoryDef == null || def.thingCategories == null)
         {
@@ -375,7 +353,7 @@ public class ThingDatabase
         return def.thingCategories.FirstOrDefault(d => categoryDef == d) != null;
     }
 
-    private bool BelongsToCategoryStartingWith(ThingDef def, string categoryNamePrefix)
+    private static bool BelongsToCategoryStartingWith(ThingDef def, string categoryNamePrefix)
     {
         if (categoryNamePrefix.NullOrEmpty() || def.thingCategories == null)
         {
@@ -385,7 +363,7 @@ public class ThingDatabase
         return def.thingCategories.FirstOrDefault(d => d.defName.StartsWith(categoryNamePrefix)) != null;
     }
 
-    private bool BelongsToCategoryEndingWith(ThingDef def, string categoryNameSuffix)
+    private static bool BelongsToCategoryEndingWith(ThingDef def, string categoryNameSuffix)
     {
         if (categoryNameSuffix.NullOrEmpty() || def.thingCategories == null)
         {
@@ -395,7 +373,7 @@ public class ThingDatabase
         return def.thingCategories.FirstOrDefault(d => d.defName.EndsWith(categoryNameSuffix)) != null;
     }
 
-    private bool BelongsToCategoryContaining(ThingDef def, string categoryNameSubstring)
+    private static bool BelongsToCategoryContaining(ThingDef def, string categoryNameSubstring)
     {
         if (categoryNameSubstring.NullOrEmpty() || def.thingCategories == null)
         {
@@ -405,7 +383,7 @@ public class ThingDatabase
         return def.thingCategories.FirstOrDefault(d => d.defName.Contains(categoryNameSubstring)) != null;
     }
 
-    private bool BelongsToCategory(ThingDef def, string categoryName)
+    private static bool BelongsToCategory(ThingDef def, string categoryName)
     {
         if (categoryName.NullOrEmpty() || def.thingCategories == null)
         {
@@ -415,7 +393,7 @@ public class ThingDatabase
         return def.thingCategories.FirstOrDefault(d => categoryName == d.defName) != null;
     }
 
-    private bool HasTradeTag(ThingDef def, string tradeTag)
+    private static bool HasTradeTag(ThingDef def, string tradeTag)
     {
         if (tradeTag.NullOrEmpty() || def.tradeTags == null)
         {
@@ -527,19 +505,19 @@ public class ThingDatabase
         }
     }
 
-    private ThingEntry CreateThingEntry(ThingDef def, ThingDef stuffDef, ThingType type)
+    private static ThingEntry CreateThingEntry(ThingDef def, ThingDef stuffDef, ThingType type)
     {
         return CreateThingEntry(def, stuffDef, Gender.None, type);
     }
 
-    private ThingEntry CreateThingEntry(ThingDef def, Gender gender, ThingType type)
+    private static ThingEntry CreateThingEntry(ThingDef def, Gender gender, ThingType type)
     {
         return CreateThingEntry(def, null, gender, type);
     }
 
-    private ThingEntry CreateThingEntry(ThingDef def, ThingDef stuffDef, Gender gender, ThingType type)
+    private static ThingEntry CreateThingEntry(ThingDef def, ThingDef stuffDef, Gender gender, ThingType type)
     {
-        var baseCost = costs.GetBaseThingCost(def, stuffDef);
+        var baseCost = CostCalculator.GetBaseThingCost(def, stuffDef);
         if (baseCost == 0)
         {
             return null;
@@ -553,7 +531,7 @@ public class ThingDatabase
             def = def,
             stuffDef = stuffDef,
             stackSize = stackSize,
-            cost = costs.CalculateStackCost(def, baseCost),
+            cost = CostCalculator.CalculateStackCost(def, baseCost),
             stacks = true,
             gear = false,
             animal = false
@@ -640,12 +618,12 @@ public class ThingDatabase
     }
 
 
-    private int CalculateStackCount()
+    private static int CalculateStackCount()
     {
         return 1;
     }
 
-    private Pawn CreatePawn(ThingDef def, Gender gender)
+    private static Pawn CreatePawn(ThingDef def, Gender gender)
     {
         var kindDef = (from td in DefDatabase<PawnKindDef>.AllDefs
             where td.race == def

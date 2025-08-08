@@ -35,7 +35,7 @@ internal class FulfillItemRequestWindow : Window
 
     private Faction traderFaction => traderPawn.Faction;
 
-    public override Vector2 InitialSize => new Vector2(500, 700);
+    public override Vector2 InitialSize => new(500, 700);
 
     public override void DoWindowContents(Rect inRect)
     {
@@ -122,7 +122,7 @@ internal class FulfillItemRequestWindow : Window
         GUI.EndGroup();
     }
 
-    private void DrawRequestedItem(Rect rowRect, RequestItem requested, int index)
+    private static void DrawRequestedItem(Rect rowRect, RequestItem requested, int index)
     {
         float removeItemButtonSize = 24;
         Text.Font = GameFont.Small;
@@ -153,7 +153,7 @@ internal class FulfillItemRequestWindow : Window
         }
         else if (requested.item.type.HasQuality() && itemTitle.IndexOf("(normal", StringComparison.Ordinal) != -1)
         {
-            itemTitle = itemTitle.Substring(0, itemTitle.IndexOf("(normal)", StringComparison.Ordinal));
+            itemTitle = itemTitle[..itemTitle.IndexOf("(normal)", StringComparison.Ordinal)];
         }
 
         itemTitle += $" x{requested.amount}";

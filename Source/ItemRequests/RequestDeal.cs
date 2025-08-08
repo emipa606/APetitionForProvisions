@@ -123,7 +123,7 @@ public class RequestDeal : IExposable
 
     private class RequestedItemDict : IExposable
     {
-        public Dictionary<int, RequestItem> dict = new Dictionary<int, RequestItem>();
+        public Dictionary<int, RequestItem> dict = new();
 
         private List<int> ints;
 

@@ -22,9 +22,9 @@ public class ItemRequestWindow : Window
 
     private const float resetItemCountAreaWidth = 40;
 
-    private static readonly Vector2 AcceptButtonSize = new Vector2(160, 40f);
+    private static readonly Vector2 AcceptButtonSize = new(160, 40f);
 
-    private static readonly Vector2 OtherBottomButtonSize = new Vector2(160, 40f);
+    private static readonly Vector2 OtherBottomButtonSize = new(160, 40f);
 
     private static string searchText = "";
 
@@ -33,7 +33,7 @@ public class ItemRequestWindow : Window
 
     private readonly string colonyCountTooltipText = "IR.ItemRequestWindow.ColonyCountTooltip".Translate();
 
-    private readonly Dictionary<string, int> colonyItemCount = new Dictionary<string, int>();
+    private readonly Dictionary<string, int> colonyItemCount = new();
 
     // For reference (set in constructor)
     private readonly int colonySilver;
@@ -73,34 +73,32 @@ public class ItemRequestWindow : Window
 
         // Find all items in stockpiles and store counts in dictionary
         var slotGroups = new List<SlotGroup>(map.haulDestinationManager.AllGroups.ToList());
-        slotGroups.ForEach(
-            group =>
+        slotGroups.ForEach(group =>
+        {
+            group.HeldThings.ToList().ForEach(thing =>
             {
-                group.HeldThings.ToList().ForEach(
-                    thing =>
-                    {
-                        var key = thing.def.label;
-                        if (thing.Stuff != null)
-                        {
-                            key += thing.Stuff.label;
-                        }
+                var key = thing.def.label;
+                if (thing.Stuff != null)
+                {
+                    key += thing.Stuff.label;
+                }
 
-                        if (colonyItemCount.ContainsKey(key))
-                        {
-                            colonyItemCount[key] += thing.stackCount;
-                        }
-                        else
-                        {
-                            colonyItemCount.Add(key, thing.stackCount);
-                        }
-                    });
+                if (colonyItemCount.ContainsKey(key))
+                {
+                    colonyItemCount[key] += thing.stackCount;
+                }
+                else
+                {
+                    colonyItemCount.Add(key, thing.stackCount);
+                }
             });
+        });
 
         AttemptDatabaseReload();
         Resize();
     }
 
-    public override Vector2 InitialSize => new Vector2(WindowSize.x, WindowSize.y);
+    public override Vector2 InitialSize => new(WindowSize.x, WindowSize.y);
 
     private Vector2 ContentMargin { get; set; }
 
@@ -214,7 +212,6 @@ public class ItemRequestWindow : Window
                 var pawn = thingEntry.thing as Pawn;
                 var trad = new Tradeable(pawn, pawn) { thingsColony = [] };
                 thingEntry.tradeable = trad;
-                allRequestableItems.Add(thingEntry);
             }
             else
             {
@@ -244,8 +241,9 @@ public class ItemRequestWindow : Window
                 }
 
                 thingEntry.tradeable = trad;
-                allRequestableItems.Add(thingEntry);
             }
+
+            allRequestableItems.Add(thingEntry);
         }
     }
 
@@ -465,7 +463,7 @@ public class ItemRequestWindow : Window
 
         var stuffFilterOptions = new List<FloatMenuOption>
         {
-            new FloatMenuOption(
+            new(
                 "IR.ItemRequestWindow.FilterAll".Translate(),
                 () =>
                 {
@@ -583,7 +581,7 @@ public class ItemRequestWindow : Window
         Widgets.EndScrollView();
     }
 
-    private void DrawTradeableLabels(Rect rowRect, ThingEntry entry)
+    private static void DrawTradeableLabels(Rect rowRect, ThingEntry entry)
     {
         var trade = entry.tradeable;
         if (!trade.HasAnyThing)
@@ -611,7 +609,7 @@ public class ItemRequestWindow : Window
         }
         else if (entry.type.HasQuality() && itemLabel.IndexOf("(normal)", StringComparison.Ordinal) != -1)
         {
-            itemLabel = itemLabel.Substring(0, itemLabel.IndexOf("(normal)", StringComparison.Ordinal));
+            itemLabel = itemLabel[..itemLabel.IndexOf("(normal)", StringComparison.Ordinal)];
         }
 
         Widgets.Label(itemLabelArea, itemLabel);
@@ -816,7 +814,7 @@ public class ItemRequestWindow : Window
         // thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
     }
 
-    private float GetOfferPriceImprovementOffsetForFaction(Faction factionForOffset)
+    private static float GetOfferPriceImprovementOffsetForFaction(Faction factionForOffset)
     {
         var goodwill = factionForOffset.RelationWith(Faction.OfPlayer).baseGoodwill;
         var allyGoodwillThreshold = 75;
@@ -880,7 +878,7 @@ public class ItemRequestWindow : Window
         return text;
     }
 
-    private PriceType GetPriceTypeFor(Tradeable trad)
+    private static PriceType GetPriceTypeFor(Tradeable trad)
     {
         var thingDef = trad.ThingDef;
         return thingDef == ThingDefOf.Silver ? PriceType.Undefined : PriceType.Normal;
@@ -899,7 +897,7 @@ public class ItemRequestWindow : Window
         return null;
     }
 
-    private bool hasMaximumTechLevel(ThingEntry entry, TechLevel tLevel)
+    private static bool hasMaximumTechLevel(ThingEntry entry, TechLevel tLevel)
     {
         if (entry.def.techLevel > tLevel)
         {
@@ -927,7 +925,7 @@ public class ItemRequestWindow : Window
         return !entry.def.destroyOnDrop;
     }
 
-    private bool isBuyableItem(ThingEntry entry)
+    private static bool isBuyableItem(ThingEntry entry)
     {
         if (entry.animal)
         {

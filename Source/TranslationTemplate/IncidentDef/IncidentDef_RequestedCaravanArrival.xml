@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LanguageData>
+  <!-- EN: request caravan arrival -->
+  <RequestCaravanArrival.label>request caravan arrival</RequestCaravanArrival.label>
+  <!-- EN: Request Caravan Arrival -->
+  <RequestCaravanArrival.letterLabel>Request Caravan Arrival</RequestCaravanArrival.letterLabel>
+  <!-- EN: A trade caravan carrying the items you requested has arrived.\n\nTalk to the caravan leader to make your trade. Be careful though, if you don't have enough silver to pay for what you requested you'll anger the faction, which could possibly lead to... undesirable outcomes. -->
+  <RequestCaravanArrival.letterText>A trade caravan carrying the items you requested has arrived.
+
+Talk to the caravan leader to make your trade. Be careful though, if you don't have enough silver to pay for what you requested you'll anger the faction, which could possibly lead to... undesirable outcomes.</RequestCaravanArrival.letterText>
+</LanguageData>

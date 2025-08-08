@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/.github/">
+    <File Path="../.github/copilot-instructions.md" />
+  </Folder>
+  <Configurations>
+    <BuildType Name="Release" />
+    <Platform Name="Any CPU" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="ItemRequests/ItemRequests.csproj">
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
+</Solution>

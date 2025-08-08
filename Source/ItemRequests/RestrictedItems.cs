@@ -7,10 +7,10 @@ namespace ItemRequests;
 
 public class RestrictedItems
 {
-    public static readonly Dictionary<ThingDef, TechLevel> researchTechCache = new Dictionary<ThingDef, TechLevel>();
-    public static List<ThingDef> GetThings { get; } = [];
+    public static readonly Dictionary<ThingDef, TechLevel> researchTechCache = new();
+    private static List<ThingDef> GetThings { get; } = [];
 
-    public static List<PawnKindDef> GetPawns { get; } = [];
+    private static List<PawnKindDef> GetPawns { get; } = [];
 
     public static void Add(ThingDef def)
     {

@@ -5,10 +5,9 @@ using Verse;
 namespace ItemRequests;
 
 [HarmonyPatch(typeof(FactionDialogMaker), nameof(FactionDialogMaker.FactionDialogFor))]
-public static class DialogWindow
+public static class FactionDialogMaker_FactionDialogFor
 {
-    [HarmonyPostfix]
-    public static void AddOption(ref DiaNode __result, Pawn negotiator, Faction faction)
+    public static void Postfix(ref DiaNode __result, Pawn negotiator, Faction faction)
     {
         if (faction.PlayerRelationKind != FactionRelationKind.Ally &&
             faction.PlayerRelationKind != FactionRelationKind.Neutral)
@@ -80,7 +79,7 @@ public static class DialogWindow
             {
                 var noTitle = new DiaOption(text);
                 var noTitleMessage = "CannotTradeMissingTitleAbility".Translate();
-                noTitle.Disable(noTitleMessage.RawText.Substring(noTitleMessage.RawText.IndexOf(':') + 1).Trim());
+                noTitle.Disable(noTitleMessage.RawText[(noTitleMessage.RawText.IndexOf(':') + 1)..].Trim());
                 return noTitle;
             }
         }

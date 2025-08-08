@@ -53,7 +53,7 @@ public class CostCalculator
         cost.ComputeTotal();
     }
 
-    public double CalculateStackCost(ThingDef def, double baseCost)
+    public static double CalculateStackCost(ThingDef def, double baseCost)
     {
         var cost = baseCost;
 
@@ -90,7 +90,7 @@ public class CostCalculator
         return 0;
     }
 
-    public double GetBaseThingCost(ThingDef def, ThingDef stuffDef)
+    public static double GetBaseThingCost(ThingDef def, ThingDef stuffDef)
     {
         if (def == null)
         {

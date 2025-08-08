@@ -4,11 +4,11 @@ namespace ItemRequests;
 
 public readonly struct ThingKey(ThingDef thingDef, ThingDef stuffDef = null, Gender gender = Gender.None)
 {
-    public ThingDef ThingDef { get; } = thingDef;
+    private ThingDef ThingDef { get; } = thingDef;
 
-    public ThingDef StuffDef { get; } = stuffDef;
+    private ThingDef StuffDef { get; } = stuffDef;
 
-    public Gender Gender { get; } = gender;
+    private Gender Gender { get; } = gender;
 
     public ThingKey(ThingDef thingDef, Gender gender) : this(thingDef, null, gender)
     {

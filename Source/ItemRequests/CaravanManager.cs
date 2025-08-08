@@ -8,7 +8,7 @@ namespace ItemRequests;
 
 public class CaravanManager
 {
-    private static readonly Dictionary<Faction, int> factionTravelTime = new Dictionary<Faction, int>();
+    private static readonly Dictionary<Faction, int> factionTravelTime = new();
 
     public static void SendRequestedCaravan(Faction faction, Map playerMap)
     {
@@ -48,7 +48,7 @@ public class CaravanManager
                 var ticks = CaravanArrivalTimeEstimator.EstimatedTicksToArrive(
                     fBase.Tile,
                     playerBase,
-                    Find.WorldPathFinder.FindPath(fBase.Tile, playerBase, null),
+                    fBase.Tile.Layer.Pather.FindPath(fBase.Tile, playerBase, null),
                     0f,
                     CaravanTicksPerMoveUtility.DefaultTicksPerMove,
                     GenTicks.TicksAbs

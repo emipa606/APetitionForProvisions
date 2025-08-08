@@ -15,7 +15,7 @@ public class RequestSession(World world) : WorldComponent(world)
 
     private Pawn negotiator;
 
-    private Dictionary<RequestDeal, float> timeOfOccurences = new Dictionary<RequestDeal, float>();
+    private Dictionary<RequestDeal, float> timeOfOccurences = new();
 
     private List<float> travelTimes;
 

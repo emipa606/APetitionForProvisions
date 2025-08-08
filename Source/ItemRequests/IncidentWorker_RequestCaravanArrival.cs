@@ -23,7 +23,7 @@ internal class IncidentWorker_RequestCaravanArrival : IncidentWorker_NeutralGrou
     protected override bool CanFireNowSub(IncidentParms parms)
     {
         var map = (Map)parms.target;
-        return parms.faction != null || CandidateFactions(map).Any() ||
+        return parms.faction != null || CandidateFactions(parms).Any() ||
                !NeutralGroupIncidentUtility.AnyBlockingHostileLord(map, parms.faction);
     }
 
@@ -65,8 +65,9 @@ internal class IncidentWorker_RequestCaravanArrival : IncidentWorker_NeutralGrou
         return true;
     }
 
-    protected override bool FactionCanBeGroupSource(Faction f, Map map, bool desperate = false)
+    public override bool FactionCanBeGroupSource(Faction f, IncidentParms parms, bool desperate = false)
     {
+        var map = (Map)parms.target;
         return !f.IsPlayer && !f.defeated &&
                (desperate || f.def.allowedArrivalTemperatureRange.Includes(map.mapTemperature.OutdoorTemp)
                    && f.def.allowedArrivalTemperatureRange.Includes(map.mapTemperature.SeasonalTemp)

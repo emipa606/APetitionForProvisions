@@ -37,7 +37,7 @@ internal class LordJob_FulfillItemRequest : LordJob
 
     private bool isFactionNeutral => faction.PlayerRelationKind == FactionRelationKind.Neutral;
 
-    private Faction playerFaction => Faction.OfPlayer;
+    private static Faction playerFaction => Faction.OfPlayer;
 
     public override StateGraph CreateGraph()
     {
