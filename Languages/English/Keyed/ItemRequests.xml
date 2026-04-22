@@ -22,6 +22,7 @@
   <IR.ItemRequestWindow.AmountRequested>Amount requested</IR.ItemRequestWindow.AmountRequested>
   <IR.ItemRequestWindow.Filters>Filters:</IR.ItemRequestWindow.Filters>
   <IR.ItemRequestWindow.FilterAll>All</IR.ItemRequestWindow.FilterAll>
+  <IR.ItemRequestWindow.FilterNone>None</IR.ItemRequestWindow.FilterNone>
   <IR.ItemRequestWindow.Silver>Silver</IR.ItemRequestWindow.Silver>
   <IR.ItemRequestWindow.TotalValueRequestedTooltip>This is the value of all the items you've requested.</IR.ItemRequestWindow.TotalValueRequestedTooltip>
   <IR.ItemRequestWindow.TotalValueRequestedCaution>Caution: You can still request these items, but you don't currently have enough silver to pay for them when they arrive.</IR.ItemRequestWindow.TotalValueRequestedCaution>
@@ -46,6 +47,7 @@
   <IR.RequestAcknowledgedWindow.WindowMessage>{0} has agreed to the exchange and will arrive within a few days.\n\nBe sure to have the silver for the amount you agreed upon when they arrive. You may have enough currently, but life is notoriously perilous on the Rim and you never know what misfortunes await you in the next few days.</IR.RequestAcknowledgedWindow.WindowMessage>
   <IR.RequestAcknowledgedWindow.CloseText>OK</IR.RequestAcknowledgedWindow.CloseText>
   <IR.RequestSession.CannotRequestAgainYet>You can't request more items from {0} until they've satisfied your previous request.</IR.RequestSession.CannotRequestAgainYet>
+  <IR.RequestSession.RequestCancelledLostTile>The requested caravan from {0} has turned back because you no longer have access to the destination tile.</IR.RequestSession.RequestCancelledLostTile>
   <IR.ThingType.Resources>Resources</IR.ThingType.Resources>
   <IR.ThingType.Food>Food</IR.ThingType.Food>
   <IR.ThingType.Weapons>Weapons</IR.ThingType.Weapons>

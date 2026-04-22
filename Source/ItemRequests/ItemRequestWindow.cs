@@ -50,6 +50,8 @@ public class ItemRequestWindow : Window
 
     private readonly HashSet<ThingDef> stuffFilterSet = [];
 
+    private bool noMaterialFilter;
+
     // For UI layout
     private float rightAlignOffset;
 
@@ -169,6 +171,14 @@ public class ItemRequestWindow : Window
     private void AttemptDatabaseReload()
     {
         DetermineAllRequestableItems();
+        FilterRequestableItems();
+        UpdateAvailableMaterials();
+        if (!stuffFilterSet.Any())
+        {
+            return;
+        }
+
+        noMaterialFilter = true;
         FilterRequestableItems();
     }
 
@@ -335,6 +345,7 @@ public class ItemRequestWindow : Window
                         {
                             requestSession.SetTimeOfOccurence(faction,
                                 Find.TickManager.TicksGame + CaravanManager.DetermineJourneyTime(faction, map));
+                            requestSession.SetDestinationTile(faction, map.Tile);
                             Close(false);
                             CaravanManager.SendRequestedCaravan(faction, map);
                         }));
@@ -436,8 +447,14 @@ public class ItemRequestWindow : Window
 
                             thingTypeFilter = type;
                             stuffTypeFilter = null;
+                            noMaterialFilter = false;
                             FilterRequestableItems();
                             UpdateAvailableMaterials();
+                            if (stuffFilterSet.Any())
+                            {
+                                noMaterialFilter = true;
+                                FilterRequestableItems();
+                            }
 
                             // FilterRequestableItems();
                         }));
@@ -454,7 +471,9 @@ public class ItemRequestWindow : Window
         // Draw the stuff filter
         var stuffFilterDropdownArea = thingFilterDropdownArea;
         stuffFilterDropdownArea.x += thingFilterDropdownArea.width + 10;
-        var stuffFilterLabel = stuffTypeFilter?.label ?? "IR.ItemRequestWindow.FilterAll".Translate();
+        var stuffFilterLabel = noMaterialFilter
+            ? "IR.ItemRequestWindow.FilterNone".Translate().ToString()
+            : stuffTypeFilter?.label ?? "IR.ItemRequestWindow.FilterAll".Translate().ToString();
         if (!WidgetDropdown.Button(stuffFilterDropdownArea, stuffFilterLabel, true, false,
                 ThingDatabase.Instance.Loaded))
         {
@@ -467,12 +486,26 @@ public class ItemRequestWindow : Window
                 "IR.ItemRequestWindow.FilterAll".Translate(),
                 () =>
                 {
-                    if (stuffTypeFilter == null)
+                    if (stuffTypeFilter == null && !noMaterialFilter)
                     {
                         return;
                     }
 
                     stuffTypeFilter = null;
+                    noMaterialFilter = false;
+                    FilterRequestableItems();
+                }),
+            new(
+                "IR.ItemRequestWindow.FilterNone".Translate(),
+                () =>
+                {
+                    if (noMaterialFilter)
+                    {
+                        return;
+                    }
+
+                    stuffTypeFilter = null;
+                    noMaterialFilter = true;
                     FilterRequestableItems();
                 })
         };
@@ -484,11 +517,12 @@ public class ItemRequestWindow : Window
                     item.label,
                     () =>
                     {
-                        if (stuffTypeFilter == item)
+                        if (stuffTypeFilter == item && !noMaterialFilter)
                         {
                             return;
                         }
 
+                        noMaterialFilter = false;
                         stuffTypeFilter = item;
                         FilterRequestableItems();
                     }));
@@ -801,8 +835,9 @@ public class ItemRequestWindow : Window
             }
             else
             {
-                var madeOfRightStuff = stuffTypeFilter == null ||
-                                       foundEntry.tradeable.FirstThingTrader.Stuff == stuffTypeFilter;
+                var madeOfRightStuff = noMaterialFilter
+                    ? foundEntry.tradeable.FirstThingTrader.Stuff == null
+                    : stuffTypeFilter == null || foundEntry.tradeable.FirstThingTrader.Stuff == stuffTypeFilter;
                 if (madeOfRightStuff)
                 {
                     filteredRequestableItems.Add(foundEntry);
@@ -956,12 +991,14 @@ public class ItemRequestWindow : Window
     private void UpdateAvailableMaterials()
     {
         stuffFilterSet.Clear();
-        foreach (var thingEntry in filteredRequestableItems)
+        foreach (var thingEntry in allRequestableItems)
         {
-            if (thingEntry.stuffDef != null)
+            if (thingEntry.type != thingTypeFilter || thingEntry.stuffDef == null)
             {
-                stuffFilterSet.Add(thingEntry.stuffDef);
+                continue;
             }
+
+            stuffFilterSet.Add(thingEntry.stuffDef);
         }
 
         if (stuffTypeFilter != null && !stuffFilterSet.Contains(stuffTypeFilter))

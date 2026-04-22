@@ -71,4 +71,6 @@
   <IR.weaponMultiplier>Multiplicateur de prix (à distance) : {0}</IR.weaponMultiplier>
   <IR.priceMultiplierTT>Quelle est l'augmentation du prix de base lors d'une demande d'aide ?</IR.priceMultiplierTT>
   <IR.CurrentModVersion>Version installée du mod : {0}</IR.CurrentModVersion>
+  <IR.ItemRequestWindow.FilterNone>Aucun</IR.ItemRequestWindow.FilterNone>
+  <IR.RequestSession.RequestCancelledLostTile>La caravane demandée en provenance de {0} a fait demi-tour car vous n'avez plus accès à la tuile de destination.</IR.RequestSession.RequestCancelledLostTile>
 </LanguageData>

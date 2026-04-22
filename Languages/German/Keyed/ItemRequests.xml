@@ -71,4 +71,6 @@
   <IR.weaponMultiplier>Preis-Multiplikator (Fernkampf): {0}</IR.weaponMultiplier>
   <IR.priceMultiplierTT>Wie viel höher der Grundpreis ist, wenn man einen Antrag stellt</IR.priceMultiplierTT>
   <IR.CurrentModVersion>Installierte Mod-Version: {0}</IR.CurrentModVersion>
+  <IR.ItemRequestWindow.FilterNone>Keine</IR.ItemRequestWindow.FilterNone>
+  <IR.RequestSession.RequestCancelledLostTile>Die angeforderte Karawane aus {0} hat umgedreht, weil du keinen Zugang mehr zur Zielkachel hast.</IR.RequestSession.RequestCancelledLostTile>
 </LanguageData>

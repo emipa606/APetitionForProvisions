@@ -11,6 +11,12 @@ public class RequestSession(World world) : WorldComponent(world)
 
     private List<RequestDeal> deals;
 
+    private List<RequestDeal> destinationTileDeals;
+
+    private Dictionary<RequestDeal, int> destinationTiles = new();
+
+    private List<int> destinationTileValues;
+
     private Faction faction;
 
     private Pawn negotiator;
@@ -27,11 +33,13 @@ public class RequestSession(World world) : WorldComponent(world)
             {
                 if (timeOfOccurences != null)
                 {
+                    destinationTiles ??= new Dictionary<RequestDeal, int>();
                     return timeOfOccurences.Keys;
                 }
 
                 Log.Warning("Trying to access request deals when they haven't been initialized! Fixing...");
                 timeOfOccurences = new Dictionary<RequestDeal, float>();
+                destinationTiles ??= new Dictionary<RequestDeal, int>();
                 return timeOfOccurences.Keys;
             }
             catch
@@ -47,10 +55,13 @@ public class RequestSession(World world) : WorldComponent(world)
     public void CloseOpenDealWith(Faction dealFaction)
     {
         var openDealWith = GetOpenDealWith(dealFaction);
-        if (openDealWith != null)
+        if (openDealWith == null)
         {
-            timeOfOccurences.Remove(openDealWith);
+            return;
         }
+
+        timeOfOccurences.Remove(openDealWith);
+        destinationTiles?.Remove(openDealWith);
     }
 
     public void CloseSession()
@@ -70,8 +81,21 @@ public class RequestSession(World world) : WorldComponent(world)
         base.ExposeData();
         Scribe_Collections.Look(ref timeOfOccurences, "timeOfOccurences", LookMode.Deep, LookMode.Value, ref deals,
             ref travelTimes);
+        Scribe_Collections.Look(ref destinationTiles, "destinationTiles", LookMode.Deep, LookMode.Value,
+            ref destinationTileDeals, ref destinationTileValues);
         Scribe_References.Look(ref negotiator, "negotiator");
         Scribe_References.Look(ref faction, "setupFaction");
+    }
+
+    public int GetDestinationTileWithFaction(Faction dealFaction)
+    {
+        var openDealWith = GetOpenDealWith(dealFaction);
+        if (openDealWith == null || destinationTiles == null)
+        {
+            return -1;
+        }
+
+        return destinationTiles.GetValueOrDefault(openDealWith, -1);
     }
 
     public RequestDeal GetOpenDealWith(Faction dealFaction)
@@ -108,6 +132,20 @@ public class RequestSession(World world) : WorldComponent(world)
         return GetOpenDealWith(dealFaction) != null;
     }
 
+    public void SetDestinationTile(Faction dealFaction, int tile)
+    {
+        var openDealWith = GetOpenDealWith(dealFaction);
+        if (openDealWith == null)
+        {
+            Log.Warning(
+                "Trying to set destination tile for requested setupFaction arrival, but no open deal with setupFaction exists!");
+            return;
+        }
+
+        destinationTiles ??= new Dictionary<RequestDeal, int>();
+        destinationTiles[openDealWith] = tile;
+    }
+
     public void SetTimeOfOccurence(Faction occuranceFaction, float time)
     {
         var openDealWith = GetOpenDealWith(occuranceFaction);
@@ -135,6 +173,8 @@ public class RequestSession(World world) : WorldComponent(world)
         negotiator = playerNegotiator;
         deal = new RequestDeal(setupFaction);
         timeOfOccurences.Add(deal, float.MaxValue);
+        destinationTiles ??= new Dictionary<RequestDeal, int>();
+        destinationTiles[deal] = -1;
         success = true;
     }
 }

@@ -71,4 +71,6 @@
   <IR.weaponMultiplier>价格乘数（范围）：{0}</IR.weaponMultiplier>
   <IR.priceMultiplierTT>申请时的基准价格要高出多少？</IR.priceMultiplierTT>
   <IR.CurrentModVersion>已安装模块版本：{0}</IR.CurrentModVersion>
+  <IR.ItemRequestWindow.FilterNone>无</IR.ItemRequestWindow.FilterNone>
+  <IR.RequestSession.RequestCancelledLostTile>来自 {0} 的商队请求折返，因为您已无法到达目的地。</IR.RequestSession.RequestCancelledLostTile>
 </LanguageData>

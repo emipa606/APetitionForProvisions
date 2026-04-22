@@ -10,4 +10,16 @@
   <Project Path="ItemRequests/ItemRequests.csproj">
     <Platform Solution="*|x86" Project="x86" />
   </Project>
+  <Folder Name="/XML/Defs/JobDefs/">
+    <File Path="../Defs/JobDefs/JobDef_FulfillItemRequest.xml" />
+  </Folder>
+  <Folder Name="/XML/Languages/English/Keyed/">
+    <File Path="../Languages/English/Keyed/ItemRequests.xml" />
+  </Folder>
+  <Folder Name="/XML/About/">
+    <File Path="../About/about.xml" />
+  </Folder>
+  <Folder Name="/XML/Defs/IncidentDefs/">
+    <File Path="../Defs/IncidentDefs/IncidentDef_RequestedCaravanArrival.xml" />
+  </Folder>
 </Solution>

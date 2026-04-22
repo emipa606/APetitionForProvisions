@@ -71,4 +71,6 @@
   <IR.weaponMultiplier>Множитель цены (в радиусе действия): {0}</IR.weaponMultiplier>
   <IR.priceMultiplierTT>Насколько увеличивается базовая цена при запросе</IR.priceMultiplierTT>
   <IR.CurrentModVersion>Установленная версия мода: {0}</IR.CurrentModVersion>
+  <IR.ItemRequestWindow.FilterNone>Нет</IR.ItemRequestWindow.FilterNone>
+  <IR.RequestSession.RequestCancelledLostTile>Запрошенный караван из {0} повернул назад, потому что у вас больше нет доступа к плитке назначения.</IR.RequestSession.RequestCancelledLostTile>
 </LanguageData>
