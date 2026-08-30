@@ -66,15 +66,6 @@ public static class FactionDialogMaker_FactionDialogFor
                 pawnHasRequiredTitle = true;
             }
 
-            //Find.ColonistBar.Entries.ForEach((ColonistBar.Entry entry) => {
-            //    Pawn p = entry.pawn;
-            //    if (p.royalty != null && p.royalty.HasPermit(traderKind.permitRequiredForTrading, faction))
-            //    {
-            //        hasPawnWithRequiredTitle = true;                        
-            //        return;
-            //    }
-            //});
-
             if (!pawnHasRequiredTitle)
             {
                 var noTitle = new DiaOption(text);

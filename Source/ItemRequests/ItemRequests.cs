@@ -5,7 +5,7 @@ using Verse;
 namespace ItemRequests;
 
 [StaticConstructorOnStartup]
-public class ItemRequests
+public static class ItemRequests
 {
     static ItemRequests()
     {

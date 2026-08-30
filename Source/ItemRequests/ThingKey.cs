@@ -14,9 +14,9 @@ public readonly struct ThingKey(ThingDef thingDef, ThingDef stuffDef = null, Gen
     {
     }
 
-    public override bool Equals(object o)
+    public override bool Equals(object obj)
     {
-        if (o is not ThingKey pair)
+        if (obj is not ThingKey pair)
         {
             return false;
         }

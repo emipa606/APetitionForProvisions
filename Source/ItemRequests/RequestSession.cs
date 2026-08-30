@@ -7,8 +7,6 @@ namespace ItemRequests;
 
 public class RequestSession(World world) : WorldComponent(world)
 {
-    public RequestDeal deal;
-
     private List<RequestDeal> deals;
 
     private List<RequestDeal> destinationTileDeals;
@@ -24,6 +22,7 @@ public class RequestSession(World world) : WorldComponent(world)
     private Dictionary<RequestDeal, float> timeOfOccurences = new();
 
     private List<float> travelTimes;
+    public RequestDeal Deal { get; private set; }
 
     public IEnumerable<RequestDeal> openDeals
     {
@@ -66,14 +65,14 @@ public class RequestSession(World world) : WorldComponent(world)
 
     public void CloseSession()
     {
-        if (GetTimeOfOccurenceWithFaction(faction) == float.MaxValue)
+        if (GetTimeOfOccurenceWithFaction(faction).Equals(float.MaxValue))
         {
             CloseOpenDealWith(faction);
         }
 
         faction = null;
         negotiator = null;
-        deal = null;
+        Deal = null;
     }
 
     public override void ExposeData()
@@ -171,10 +170,10 @@ public class RequestSession(World world) : WorldComponent(world)
 
         faction = setupFaction;
         negotiator = playerNegotiator;
-        deal = new RequestDeal(setupFaction);
-        timeOfOccurences.Add(deal, float.MaxValue);
+        Deal = new RequestDeal(setupFaction);
+        timeOfOccurences.Add(Deal, float.MaxValue);
         destinationTiles ??= new Dictionary<RequestDeal, int>();
-        destinationTiles[deal] = -1;
+        destinationTiles[Deal] = -1;
         success = true;
     }
 }

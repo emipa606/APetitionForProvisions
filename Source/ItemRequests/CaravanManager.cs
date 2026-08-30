@@ -6,7 +6,7 @@ using Verse;
 
 namespace ItemRequests;
 
-public class CaravanManager
+public static class CaravanManager
 {
     private static readonly Dictionary<Faction, int> factionTravelTime = new();
 

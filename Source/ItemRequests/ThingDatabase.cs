@@ -11,8 +11,6 @@ namespace ItemRequests;
 // https://github.com/edbmods/EdBPrepareCarefully/blob/develop/Source/EquipmentDatabase.cs
 public class ThingDatabase
 {
-    private static ThingDatabase instance;
-
     private readonly HashSet<string> categoryLookup = [];
     private readonly CostCalculator costs = new();
     private readonly Dictionary<ThingKey, ThingEntry> entries = new();
@@ -26,7 +24,6 @@ public class ThingDatabase
 
     private ThingDatabase()
     {
-        //Log.Message("Initializing ThingDatabase...");
         thingCategorySweetMeals = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("SweetMeals");
         thingCategoryMeatRaw = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("MeatRaw");
     }
@@ -35,9 +32,9 @@ public class ThingDatabase
     {
         get
         {
-            instance ??= new ThingDatabase();
+            field ??= new ThingDatabase();
 
-            return instance;
+            return field;
         }
     }
 
@@ -72,7 +69,6 @@ public class ThingDatabase
 
     protected void UpdateLoadingPhase(LoadingPhase phase)
     {
-        //Log.Message("UpdateLoadingPhase to " + phase.ToString());
         if (phase != LoadingPhase.Loaded)
         {
             LoadingProgress.enumerator = DefDatabase<ThingDef>.AllDefs.GetEnumerator();
@@ -120,14 +116,11 @@ public class ThingDatabase
         {
             if (!LoadingProgress.enumerator.MoveNext())
             {
-                //Log.Message("Loaded thing database with " + LoadingProgress.stuffCount + " material(s)");
                 NextPhase();
                 return;
             }
 
-            if (AddStuffToThingLists(LoadingProgress.enumerator.Current))
-            {
-            }
+            AddStuffToThingLists(LoadingProgress.enumerator.Current);
         }
     }
 
@@ -137,14 +130,11 @@ public class ThingDatabase
         {
             if (!LoadingProgress.enumerator.MoveNext())
             {
-                //Log.Message("Loaded thing database with " + LoadingProgress.thingCount + " item(s)");
                 NextPhase();
                 return;
             }
 
-            if (AddThingToThingLists(LoadingProgress.enumerator.Current))
-            {
-            }
+            AddThingToThingLists(LoadingProgress.enumerator.Current);
         }
     }
 
@@ -159,39 +149,42 @@ public class ThingDatabase
         AddThingToThingLists(def);
     }
 
-    private bool AddStuffToThingLists(ThingDef def)
+    private void AddStuffToThingLists(ThingDef def)
     {
         if (def == null)
         {
-            return false;
+            return;
         }
 
         if (stuffLookup.Contains(def))
         {
-            return false;
+            return;
         }
 
-        if (def.IsStuff && def.stuffProps != null)
+        if (!def.IsStuff || def.stuffProps == null)
         {
-            return AddStuffIfNotThereAlready(def);
+            return;
         }
 
-        return false;
+        AddStuffIfNotThereAlready(def);
     }
 
-    private bool AddThingToThingLists(ThingDef def)
+    private void AddThingToThingLists(ThingDef def)
     {
         try
         {
-            if (def != null)
+            if (def == null)
             {
-                var type = ClassifyThingDef(def);
-                if (type != ThingType.Other)
-                {
-                    AddThingDef(def, type);
-                    return true;
-                }
+                return;
             }
+
+            var type = ClassifyThingDef(def);
+            if (type == ThingType.Other)
+            {
+                return;
+            }
+
+            AddThingDef(def, type);
         }
         catch
         {
@@ -199,11 +192,7 @@ public class ThingDatabase
             {
                 Log.Warning($"Failed to process thing definition while building equipment lists: {def.defName}");
             }
-
-            //Log.Message("  Exception: " + e);
         }
-
-        return false;
     }
 
     private static bool FoodTypeIsClassifiedAsFood(ThingDef def)
@@ -353,6 +342,16 @@ public class ThingDatabase
         return def.thingCategories.FirstOrDefault(d => categoryDef == d) != null;
     }
 
+    private static bool BelongsToCategory(ThingDef def, string categoryName)
+    {
+        if (categoryName.NullOrEmpty() || def.thingCategories == null)
+        {
+            return false;
+        }
+
+        return def.thingCategories.FirstOrDefault(d => categoryName == d.defName) != null;
+    }
+
     private static bool BelongsToCategoryStartingWith(ThingDef def, string categoryNamePrefix)
     {
         if (categoryNamePrefix.NullOrEmpty() || def.thingCategories == null)
@@ -383,15 +382,6 @@ public class ThingDatabase
         return def.thingCategories.FirstOrDefault(d => d.defName.Contains(categoryNameSubstring)) != null;
     }
 
-    private static bool BelongsToCategory(ThingDef def, string categoryName)
-    {
-        if (categoryName.NullOrEmpty() || def.thingCategories == null)
-        {
-            return false;
-        }
-
-        return def.thingCategories.FirstOrDefault(d => categoryName == d.defName) != null;
-    }
 
     private static bool HasTradeTag(ThingDef def, string tradeTag)
     {
@@ -438,15 +428,14 @@ public class ThingDatabase
         }
     }
 
-    private bool AddStuffIfNotThereAlready(ThingDef def)
+    private void AddStuffIfNotThereAlready(ThingDef def)
     {
         if (!stuffLookup.Add(def))
         {
-            return false;
+            return;
         }
 
         stuff.Add(def);
-        return true;
     }
 
     private void AddThingDef(ThingDef def, ThingType type)
@@ -523,7 +512,7 @@ public class ThingDatabase
             return null;
         }
 
-        var stackSize = CalculateStackCount();
+        var stackSize = 1;
 
         var result = new ThingEntry
         {
@@ -608,7 +597,6 @@ public class ThingDatabase
             catch
             {
                 Log.Warning($"Failed to create a pawn for animal thing entry: {def.defName}");
-                //Log.Message("  Exception message: " + e);
                 return null;
             }
         }
@@ -617,11 +605,6 @@ public class ThingDatabase
         return result;
     }
 
-
-    private static int CalculateStackCount()
-    {
-        return 1;
-    }
 
     private static Pawn CreatePawn(ThingDef def, Gender gender)
     {
@@ -655,7 +638,7 @@ public class ThingDatabase
         return pawn;
     }
 
-    private class LoadingState
+    private sealed class LoadingState
     {
         public readonly int defsToCountPerFrame = 10;
         public readonly int stuffToProcessPerFrame = 10;

@@ -10,7 +10,6 @@ internal class JobDriver_FulfillItemRequestWithFaction : JobDriver
 
     protected override IEnumerable<Toil> MakeNewToils()
     {
-        //Log.Message("Make fulfill trade request");
         this.FailOnDespawnedOrNull(TargetIndex.A);
         yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch).FailOn(() => !Trader.CanTradeNow);
         var trade = new Toil();

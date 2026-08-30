@@ -1,60 +1,47 @@
-# .github/copilot-instructions.md
+# GitHub Copilot Instructions for A Petition for Provisions (Continued)
 
 ## Mod Overview and Purpose
 
 **Mod Name:** A Petition for Provisions (Continued)  
-This RimWorld mod enhances the gameplay by allowing players to request items from non-hostile factions. Instead of always fulfilling external demands, players can now initiate their own requests, urging other factions to traverse the harsh environments of the Rim to deliver desired items. This mod revamps the trade system, adding strategic depth and player agency by enabling request-based interactions with factions.
+**Author:** ToyWalrus  
+**Description:** This mod allows players of RimWorld to request specific items from non-hostile factions, flipping the script on traditional caravan mechanics. Instead of risking your colonists to fulfill faction requests, you can now demand goods from others. The mod ensures that the cost of items is adjusted based on the distance and tech level of the factions, introducing strategic balance to item requests. The overall goal is to enhance gameplay by offering more interactive and valuable interactions with NPC factions.
 
 ## Key Features and Systems
 
-- **Request System:** Initiate item requests from non-hostile factions, making them deliver desired goods. 
-- **Dynamic Pricing:** Item prices increase with distance, introducing strategic considerations in request planning.
-- **Trade-Window Enhancements:** 
-  - Integrated search functionality for easier item navigation.
-  - Added tooltips detailing current petitioned caravans.
-- **Bug Fixes and Improvements:** 
-  - Resolved short-hash errors and infinite caravans issue.
-  - Improved stuff filter functionality.
-  - More accurate item availability based on faction tech levels.
-  - Fixed functionality of Esc/Enter keys in the trade window.
-- **Localization:** Added Russian translation and updated Chinese translation.
+- **Item Requests:** Players can request items from friendly factions using the comms console. Each faction can have one active request at a time.
+- **Dynamic Pricing:** Item costs are influenced by distance from the player's base and the tech level of the faction, promoting strategic planning.
+- **Improved Trade Interface:** A search bar and tooltips enhance usability in the trade window.
+- **Technical Corrections:** Fixed issues like short-hash errors, infinite caravan bugs, and key bindings in the trade window.
 
 ## Coding Patterns and Conventions
 
-- **Class Design:** 
-  - Use static classes for utility functions (e.g., `ExtensionsRect`, `ExtensionsString`).
-  - Implement classes that extend base game classes for interaction with core systems, such as `Window` for UI elements.
-- **Methodology:**
-  - Break down large functionalities into smaller, focused methods for clarity, e.g., `ComputeTotal()` for cost calculations.
-  - Use classes and methods interoperability to keep code modular and manageable.
-- **Conventions:**
-  - Follow C# naming conventions: PascalCase for class names and methods, camelCase for local variables.
-  - Use descriptive method names for understanding purpose and functionality at a glance (e.g., `DrawAvailableColonyCurrency`).
+- **C# Structure:** The source code is divided into classes and methods that handle window contents, caravan management, cost calculations, and UI interactions efficiently.
+- **Clean Code Practices:** Naming conventions follow CamelCase for methods and properties. Class names are descriptive and relate to their functionality, such as `ConfirmRequestWindow` and `CaravanManager`.
+- **Single-Responsibility Principle:** Each class is focused on a specific aspect of the mod, fostering maintainability.
 
 ## XML Integration
 
-- **Defining Items and Requests:** Utilize XML files to define new item types and request behaviors. This allows seamless integration with RimWorld's existing XML-based data structures for modding.
-- Ensure that XML data is loaded and read correctly using methods defined in classes such as `ThingDatabase` and `ThingEntry`.
+- **XML Files:** 
+  - **About.xml:** Contains metadata about the mod.
+  - **IncidentDef_RequestedCaravanArrival.xml** & **JobDef_FulfillItemRequest.xml:** Define events and jobs related to item requests and fulfillments.
+- **Localization:** Supports multiple languages, including Russian and Chinese, enhancing accessibility.
 
 ## Harmony Patching
 
-- Use [Harmony](https://harmony.pardeike.net/) to patch existing methods in RimWorld to seamlessly integrate the mod's functionalities without altering the original game code.
-- Recommended to encapsulate patch-specific logic within dedicated classes such as `IncidentWorker_RequestCaravanArrival`.
+- **Harmony Dependency:** Utilizes Harmony to patch core RimWorld methods without modifying the game's original files directly, ensuring compatibility with updates and other mods.
+- **Focus on Compatibility:** Harmony is used to bridge any gaps between the base game logic and mod mechanics, enhancing the reliability of requested feature integrations.
 
 ## Suggestions for Copilot
 
-- **Code Suggestions:**
-  - Recommend method overrides for existing RimWorld functionalities as needed for integration.
-  - Suggest refactoring opportunities when method bodies grow too complex.
-- **Pattern Recognition:**
-  - Use existing mod coding patterns to generate code that aligns with established practices.
-  - Recognize XML structure and suggest integration points with C# logic.
-- **Error Prevention:**
-  - Suggest compile-time checks and runtime error handling, particularly around interaction with external data (e.g., XML config files).
-- **Localization:**
-  - Recommend format for adding new languages and updating translation files efficiently.
+When generating code snippets related to this mod, consider the following suggestions:
 
-By adhering to these guidelines and suggestions, Copilot can provide useful and contextually relevant code completions that assist in further developing and maintaining the mod efficiently.
+1. **UI Enhancements:** Consider auto-suggesting methods for improving user interface elements like tooltips and search functions within trade and item request windows.
+2. **Localization Support:** Generate code templates that support adding new language translations smoothly.
+3. **Modularity:** Provide patterns for breaking down complex methods into smaller, more manageable pieces in accordance to Single Responsibility Principle.
+4. **Performance Optimization:** Suggest caching strategies for travel time calculations in the `CaravanManager` to reduce redundant calculations.
+5. **Error Handling:** Emphasize robust error handling in code related to trade requests and interactions with other mods to prevent unexpected crashes or conflicts.
+
+These instructions aim to maintain consistency, improve the mod's scalability, and assist in achieving a seamless player experience while using GitHub Copilot.
 
 ## Project Solution Guidelines
 - Relevant mod XML files are included as Solution Items under the solution folder named XML, these can be read and modified from within the solution.
@@ -63,3 +50,9 @@ By adhering to these guidelines and suggestions, Copilot can provide useful and 
 - When making functional changes in this mod, ensure the documented features stay in sync with implementation; use the in-solution `.github` copy as the primary file.
 - In the solution is also a project called Assembly-CSharp, containing a read-only version of the decompiled game source, for reference and debugging purposes.
 - For any new documentation, update this copilot-instructions.md file rather than creating separate documentation files.
+
+
+## Hard rules (must follow)
+- Do NOT run commands that modify the repo (no git commit, git apply, dotnet format) unless explicitly asked.
+- Prefer minimal reads: read only the smallest code region needed (around the suspicious lines).
+

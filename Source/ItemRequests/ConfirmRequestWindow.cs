@@ -51,26 +51,22 @@ public class ConfirmRequestWindow : Window
         var confirmButtonArea = new Rect(x, inRect.height - (contentMargin.y * 2),
             (inRect.width - contentMargin.x) / 2, closeButtonHeight);
 
-        if (!string.IsNullOrEmpty(confirmString) && onConfirm != null)
+        if (!string.IsNullOrEmpty(confirmString) && onConfirm != null &&
+            Widgets.ButtonText(confirmButtonArea, confirmString, false))
         {
-            if (Widgets.ButtonText(confirmButtonArea, confirmString, false))
-            {
-                Close();
-                onConfirm();
-            }
+            Close();
+            onConfirm();
         }
 
         Text.Anchor = TextAnchor.MiddleRight;
         var cancelButtonArea = new Rect(confirmButtonArea.x + confirmButtonArea.width, confirmButtonArea.y,
             confirmButtonArea.width, closeButtonHeight);
 
-        if (!string.IsNullOrEmpty(cancelString) && onCancel != null)
+        if (!string.IsNullOrEmpty(cancelString) && onCancel != null &&
+            Widgets.ButtonText(cancelButtonArea, cancelString, false))
         {
-            if (Widgets.ButtonText(cancelButtonArea, cancelString, false))
-            {
-                Close(false);
-                onCancel();
-            }
+            Close(false);
+            onCancel();
         }
 
         GenUI.ResetLabelAlign();

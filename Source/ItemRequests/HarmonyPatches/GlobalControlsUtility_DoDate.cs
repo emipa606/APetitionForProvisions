@@ -8,7 +8,7 @@ using Verse;
 namespace ItemRequests.HarmonyPatches;
 
 [HarmonyPatch(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DoDate))]
-internal class GlobalControlsUtility_DoDate
+internal static class GlobalControlsUtility_DoDate
 {
     private static TaggedString currentDealMessage = string.Empty;
 
@@ -34,7 +34,7 @@ internal class GlobalControlsUtility_DoDate
         }
     }
 
-    private static void Postfix(ref float curBaseY)
+    public static void Postfix(ref float curBaseY)
     {
         var map = Find.CurrentMap;
 

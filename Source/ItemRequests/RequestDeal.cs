@@ -59,34 +59,28 @@ public class RequestDeal : IExposable
     public void AdjustItemRequest(ThingType thingTypeFilter, ThingEntry entry, int numRequested, float price)
     {
         var key = entry.tradeable.GetHashCode();
-        if (requestedItems[thingTypeFilter].dict.ContainsKey(key))
+        if (!requestedItems[thingTypeFilter].dict.ContainsKey(key))
         {
-            var amount = Mathf.Max(numRequested, 0);
-            if (amount == 0)
-            {
-                // Log.Message("Requested: " + numRequested.ToString());
-                // Log.Message(requestedItems[thingTypeFilter].Count.ToString() + " items in current filter");
-                requestedItems[thingTypeFilter].dict.Remove(key);
-
-                // Log.Message("Colony just removed request for " + entry.tradeable.ThingDef.LabelCap);
-            }
-            else if (amount == requestedItems[thingTypeFilter].dict[key].amount)
-            {
-            }
-            else
+            if (numRequested > 0)
             {
                 requestedItems[thingTypeFilter].dict[key] = new RequestItem
-                    { item = entry, amount = amount, pricePerItem = price, isPawn = entry.pawnDef != null };
-
-                // Log.Message "Colony just adjusted request for " + entry.tradeable.ThingDef.LabelCap + " to " + numRequested);
+                    { item = entry, amount = numRequested, pricePerItem = price, isPawn = entry.pawnDef != null };
             }
+
+            return;
         }
-        else if (numRequested > 0)
+
+        var amount = Mathf.Max(numRequested, 0);
+        if (amount == 0)
+        {
+            requestedItems[thingTypeFilter].dict.Remove(key);
+            return;
+        }
+
+        if (amount != requestedItems[thingTypeFilter].dict[key].amount)
         {
             requestedItems[thingTypeFilter].dict[key] = new RequestItem
-                { item = entry, amount = numRequested, pricePerItem = price, isPawn = entry.pawnDef != null };
-
-            // Log.Message("Colony just requested " + entry.tradeable.ThingDef.LabelCap + " x" + numRequested + (entry.pawnDef != null ? " (" + entry.gender + ")" : ""));
+                { item = entry, amount = amount, pricePerItem = price, isPawn = entry.pawnDef != null };
         }
     }
 
@@ -121,7 +115,7 @@ public class RequestDeal : IExposable
         }
     }
 
-    private class RequestedItemDict : IExposable
+    private sealed class RequestedItemDict : IExposable
     {
         public Dictionary<int, RequestItem> dict = new();
 

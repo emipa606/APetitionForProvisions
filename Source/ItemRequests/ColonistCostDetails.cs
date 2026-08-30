@@ -5,43 +5,43 @@ namespace ItemRequests;
 public class ColonistCostDetails
 {
     private double animals;
-    public double apparel;
-
-    public double bionics;
-
-    public double marketValue;
 
     public string name;
 
-    public double passionCount = 0;
-
     private double passions;
 
-    public double total;
-
     private double traits;
+    public double Apparel { get; set; }
+
+    public double Bionics { get; set; }
+
+    public double MarketValue { get; set; }
+
+    public double PassionCount { get; } = 0;
+
+    public double Total { get; private set; }
 
     public void Clear()
     {
-        total = 0;
+        Total = 0;
         passions = 0;
         traits = 0;
-        apparel = 0;
-        bionics = 0;
+        Apparel = 0;
+        Bionics = 0;
         animals = 0;
-        marketValue = 0;
+        MarketValue = 0;
     }
 
     public void ComputeTotal()
     {
-        total = Math.Ceiling(passions + traits + apparel + bionics + marketValue + animals);
+        Total = Math.Ceiling(passions + traits + Apparel + Bionics + MarketValue + animals);
     }
 
     public void Multiply(double amount)
     {
         passions = Math.Ceiling(passions * amount);
         traits = Math.Ceiling(traits * amount);
-        marketValue = Math.Ceiling(marketValue * amount);
+        MarketValue = Math.Ceiling(MarketValue * amount);
         ComputeTotal();
     }
 }

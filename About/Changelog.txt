@@ -1,5 +1,8 @@
 # Changelog for APetitionForProvisions
 
+1.6.2 - Cost-multiplier mod-options should now work correctly
+
+
 1.6.1 - Stuff type should now default to none. When loosing access to the requested caravan tile the caravan will now be abandoned
 Used DeepL to update translations for ChineseSimplified, French, German, Russian
 

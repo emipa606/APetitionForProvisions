@@ -303,7 +303,7 @@ internal class FulfillItemRequestWindow : Window
             totalItemsValue += item.pricePerItem * item.amount;
         }
 
-        if (removedItemsValue == totalItemsValue)
+        if (removedItemsValue.Equals(totalItemsValue))
         {
             return LordJob_FulfillItemRequest.MemoOnUnfulfilled;
         }

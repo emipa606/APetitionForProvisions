@@ -189,7 +189,9 @@ public class ItemRequestWindow : Window
             return item.BaseMarketValue;
         }
 
-        var basePrice = item.BaseMarketValue;
+        var basePrice = item.FirstThingTrader?.MarketValue ?? item.BaseMarketValue;
+        basePrice = (float)CostCalculator.CalculateStackCost(item.ThingDef, basePrice);
+
         var negotiatorBonus = negotiator.GetStatValue(StatDefOf.TradePriceImprovement);
         var settlementBonus = GetOfferPriceImprovementOffsetForFaction(faction);
         var distMultiplier = DetermineDistMultiplier(out _);
@@ -313,14 +315,14 @@ public class ItemRequestWindow : Window
         // Draw the amount currently requested by colony
         Text.Anchor = TextAnchor.MiddleCenter;
         string tooltipString = "IR.ItemRequestWindow.TotalValueRequestedTooltip".Translate();
-        if (requestSession?.deal?.TotalRequestedValue > availableSilver)
+        if (requestSession?.Deal?.TotalRequestedValue > availableSilver)
         {
             GUI.color = Color.yellow;
             tooltipString += "\n\n" + "IR.ItemRequestWindow.TotalValueRequestedCaution".Translate();
         }
 
         var requestedAmountArea = new Rect(rightAlignOffset, 0, rightContentSize, rowRect.height);
-        Widgets.Label(requestedAmountArea, requestSession?.deal?.TotalRequestedValue.ToStringMoney("F2"));
+        Widgets.Label(requestedAmountArea, requestSession?.Deal?.TotalRequestedValue.ToStringMoney("F2"));
         TooltipHandler.TipRegion(requestedAmountArea, tooltipString);
 
         // Finish row
@@ -355,7 +357,7 @@ public class ItemRequestWindow : Window
             {
             }
 
-            if (colonySilver < requestSession.deal.TotalRequestedValue)
+            if (colonySilver < requestSession.Deal.TotalRequestedValue)
             {
                 string title = "IR.ConfirmRequestWindow.WindowTitle".Translate();
                 string message = "IR.ConfirmRequestWindow.WindowMessage".Translate();
@@ -364,7 +366,7 @@ public class ItemRequestWindow : Window
                 Find.WindowStack.Add(new ConfirmRequestWindow(OnConfirmed, OnCancelled, title, message,
                     confirmString, cancelString));
             }
-            else if (requestSession.deal.GetRequestedItems().Count == 0)
+            else if (requestSession.Deal.GetRequestedItems().Count == 0)
             {
                 string title = "IR.ConfirmEmptyRequestWindow.WindowTitle".Translate();
                 string message = "IR.ConfirmEmptyRequestWindow.WindowMessage".Translate(faction.Name);
@@ -450,13 +452,13 @@ public class ItemRequestWindow : Window
                             noMaterialFilter = false;
                             FilterRequestableItems();
                             UpdateAvailableMaterials();
-                            if (stuffFilterSet.Any())
+                            if (!stuffFilterSet.Any())
                             {
-                                noMaterialFilter = true;
-                                FilterRequestableItems();
+                                return;
                             }
 
-                            // FilterRequestableItems();
+                            noMaterialFilter = true;
+                            FilterRequestableItems();
                         }));
             }
 
@@ -723,13 +725,13 @@ public class ItemRequestWindow : Window
         paddedNumericFieldArea.xMax -= 15f;
         paddedNumericFieldArea.xMin += 16f;
 
-        if (requestSession?.deal != null)
+        if (requestSession?.Deal != null)
         {
-            var amountRequested = requestSession.deal.GetCountForItem(thingTypeFilter, trade);
+            var amountRequested = requestSession.Deal.GetCountForItem(thingTypeFilter, trade);
             var amountAsString = amountRequested.ToString();
             Widgets.TextFieldNumeric(paddedNumericFieldArea, ref amountRequested, ref amountAsString, 0,
                 float.MaxValue);
-            requestSession.deal.AdjustItemRequest(thingTypeFilter, entry, amountRequested, price);
+            requestSession.Deal.AdjustItemRequest(thingTypeFilter, entry, amountRequested, price);
 
             // Draw the reset to zero button by input field
             if (amountRequested > 0)
@@ -739,7 +741,7 @@ public class ItemRequestWindow : Window
                 resetToZeroButton.width = resetItemCountAreaWidth;
                 if (Widgets.ButtonText(resetToZeroButton, "0"))
                 {
-                    requestSession.deal.AdjustItemRequest(thingTypeFilter, entry, 0, price);
+                    requestSession.Deal.AdjustItemRequest(thingTypeFilter, entry, 0, price);
                 }
             }
         }
@@ -831,22 +833,17 @@ public class ItemRequestWindow : Window
             var foundEntry = GetTradeableThingEntry(thingEntry.thing);
             if (foundEntry == null)
             {
-                // Log.Warning("Could not find matching TradeableThingEntry for " + thingEntry.Label);
+                continue;
             }
-            else
+
+            var madeOfRightStuff = noMaterialFilter
+                ? foundEntry.tradeable.FirstThingTrader.Stuff == null
+                : stuffTypeFilter == null || foundEntry.tradeable.FirstThingTrader.Stuff == stuffTypeFilter;
+            if (madeOfRightStuff)
             {
-                var madeOfRightStuff = noMaterialFilter
-                    ? foundEntry.tradeable.FirstThingTrader.Stuff == null
-                    : stuffTypeFilter == null || foundEntry.tradeable.FirstThingTrader.Stuff == stuffTypeFilter;
-                if (madeOfRightStuff)
-                {
-                    filteredRequestableItems.Add(foundEntry);
-                }
+                filteredRequestableItems.Add(foundEntry);
             }
         }
-
-        // Log.Message("There are " + filteredRequestableItems.Count.ToString() + " requestable items to show for filter " +
-        // thingTypeFilter.ToString() + " and for stuff " + (stuffTypeFilter == null ? " all" : stuffTypeFilter.LabelCap));
     }
 
     private static float GetOfferPriceImprovementOffsetForFaction(Faction factionForOffset)

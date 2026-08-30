@@ -47,12 +47,9 @@ internal class IncidentWorker_RequestCaravanArrival : IncidentWorker_NeutralGrou
             return false;
         }
 
-        foreach (var pawn in list)
+        foreach (var needs in list.Select(pawn => pawn.needs))
         {
-            if (pawn.needs?.food != null)
-            {
-                pawn.needs.food.CurLevel = pawn.needs.food.MaxLevel;
-            }
+            needs?.food?.CurLevel = needs.food.MaxLevel;
         }
 
         var arrival = ItemRequestsDefOf.RequestCaravanArrival;

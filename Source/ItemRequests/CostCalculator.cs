@@ -19,19 +19,18 @@ public class CostCalculator
         cheapApparel.Add("Apparel_Jacket");
     }
 
-    public void CalculatePawnCost(ColonistCostDetails cost, Pawn pawn)
+    public static void CalculatePawnCost(ColonistCostDetails cost, Pawn pawn)
     {
         cost.Clear();
         cost.name = pawn.Name.ToString();
 
         // Start with the market value plus a bit of a mark-up.
-        cost.marketValue = pawn.MarketValue;
-        cost.marketValue += 300;
+        cost.MarketValue = pawn.MarketValue;
+        cost.MarketValue += 300;
 
         // Calculate passion cost.  Each passion above 8 makes all passions
         // cost more.  Minor passion counts as one passion.  Major passion
         // counts as 3.
-        // double skillCount = pawn.currentPassions.Keys.Count();
         double passionLevelCount = 0;
         double passionLevelCost = 20;
         var levelCost = passionLevelCost;
@@ -41,10 +40,10 @@ public class CostCalculator
             levelCost += penalty * 0.4;
         }
 
-        cost.marketValue += levelCost * passionLevelCount;
+        cost.MarketValue += levelCost * passionLevelCount;
 
-        cost.apparel = Math.Ceiling(cost.apparel);
-        cost.bionics = Math.Ceiling(cost.bionics);
+        cost.Apparel = Math.Ceiling(cost.Apparel);
+        cost.Bionics = Math.Ceiling(cost.Bionics);
 
         // Use a multiplier to balance pawn cost vs. equipment cost.
         // Disabled for now.
@@ -57,21 +56,17 @@ public class CostCalculator
     {
         var cost = baseCost;
 
-        if (def.MadeFromStuff)
+        if (def.IsApparel)
         {
-            if (def.IsApparel)
-            {
-                cost *= ItemRequestsMod.instance.Settings.ApparelMultiplier;
-            }
-            else
-            {
-                cost *= ItemRequestsMod.instance.Settings.PriceMultiplier;
-            }
+            cost *= ItemRequestsMod.instance.Settings.ApparelMultiplier;
         }
-
-        if (def.IsRangedWeapon)
+        else if (def.IsRangedWeapon)
         {
             cost *= ItemRequestsMod.instance.Settings.WeaponMultiplier;
+        }
+        else
+        {
+            cost *= ItemRequestsMod.instance.Settings.PriceMultiplier;
         }
 
         cost = Math.Round(cost, 1);
@@ -79,7 +74,7 @@ public class CostCalculator
         return cost;
     }
 
-    public double CalculateThingCost(ThingKey thingKey)
+    public static double CalculateThingCost(ThingKey thingKey)
     {
         var entry = ThingDatabase.Instance.LookupThingEntry(thingKey);
         if (entry != null)

@@ -57,10 +57,10 @@ public class CostDetails
         total = equipment + animals;
         foreach (var cost in colonistDetails)
         {
-            total += cost.total;
-            colonists += cost.total;
-            colonistApparel += cost.apparel;
-            colonistBionics += cost.bionics;
+            total += cost.Total;
+            colonists += cost.Total;
+            colonistApparel += cost.Apparel;
+            colonistBionics += cost.Bionics;
         }
 
         total = Math.Ceiling(total);
