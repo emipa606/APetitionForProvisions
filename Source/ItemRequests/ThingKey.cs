@@ -21,7 +21,7 @@ public readonly struct ThingKey(ThingDef thingDef, ThingDef stuffDef = null, Gen
             return false;
         }
 
-        return ThingDef == pair.ThingDef && StuffDef == pair.StuffDef;
+        return ThingDef == pair.ThingDef && StuffDef == pair.StuffDef && Gender == pair.Gender;
     }
 
     public override int GetHashCode()

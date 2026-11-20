@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using RimWorld;
 using UnityEngine;
@@ -50,14 +52,11 @@ public class ThingDatabase
 
         if (LoadingProgress.phase == LoadingPhase.NotStarted)
         {
-            UpdateLoadingPhase(LoadingPhase.CountingDefs);
+            UpdateLoadingPhase(LoadingPhase.ProcessingStuff);
         }
 
         switch (LoadingProgress.phase)
         {
-            case LoadingPhase.CountingDefs:
-                CountDefs();
-                break;
             case LoadingPhase.ProcessingStuff:
                 ProcessStuff();
                 break;
@@ -82,9 +81,6 @@ public class ThingDatabase
         switch (LoadingProgress.phase)
         {
             case LoadingPhase.NotStarted:
-                UpdateLoadingPhase(LoadingPhase.CountingDefs);
-                break;
-            case LoadingPhase.CountingDefs:
                 UpdateLoadingPhase(LoadingPhase.ProcessingStuff);
                 break;
             case LoadingPhase.ProcessingStuff:
@@ -96,24 +92,16 @@ public class ThingDatabase
         }
     }
 
-    private void CountDefs()
-    {
-        for (var i = 0; i < LoadingProgress.defsToCountPerFrame; i++)
-        {
-            if (LoadingProgress.enumerator.MoveNext())
-            {
-                continue;
-            }
-
-            NextPhase();
-            return;
-        }
-    }
-
     private void ProcessStuff()
     {
+        var stopwatch = Stopwatch.StartNew();
         for (var i = 0; i < LoadingProgress.stuffToProcessPerFrame; i++)
         {
+            if (i > 0 && stopwatch.ElapsedMilliseconds >= 2)
+            {
+                return;
+            }
+
             if (!LoadingProgress.enumerator.MoveNext())
             {
                 NextPhase();
@@ -126,15 +114,72 @@ public class ThingDatabase
 
     private void ProcessThings()
     {
+        var stopwatch = Stopwatch.StartNew();
         for (var i = 0; i < LoadingProgress.thingsToProcessPerFrame; i++)
         {
+            if (i > 0 && stopwatch.ElapsedMilliseconds >= 2)
+            {
+                return;
+            }
+
+            if (LoadingProgress.pendingDef != null)
+            {
+                var def = LoadingProgress.pendingDef;
+                try
+                {
+                    var material = stuff[LoadingProgress.stuffIndex++];
+                    if (material.stuffProps.CanMake(def))
+                    {
+                        AddThingDefWithStuff(def, material, LoadingProgress.pendingType, LoadingProgress.baseMarketValue);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Warning($"Failed to process thing definition while building equipment lists: {def.defName}\n{e}");
+                    LoadingProgress.pendingDef = null;
+                    continue;
+                }
+
+                if (LoadingProgress.stuffIndex >= stuff.Count)
+                {
+                    LoadingProgress.pendingDef = null;
+                }
+
+                continue;
+            }
+
             if (!LoadingProgress.enumerator.MoveNext())
             {
                 NextPhase();
                 return;
             }
 
-            AddThingToThingLists(LoadingProgress.enumerator.Current);
+            var current = LoadingProgress.enumerator.Current;
+            if (current == null || !current.MadeFromStuff || stuff.Count == 0)
+            {
+                AddThingToThingLists(current);
+                continue;
+            }
+
+            try
+            {
+                var type = ClassifyThingDef(current);
+                if (type != ThingType.Other)
+                {
+                    var baseMarketValue = current.BaseMarketValue;
+                    if (baseMarketValue > 0)
+                    {
+                        LoadingProgress.pendingDef = current;
+                        LoadingProgress.pendingType = type;
+                        LoadingProgress.baseMarketValue = baseMarketValue;
+                        LoadingProgress.stuffIndex = 0;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Warning($"Failed to process thing definition while building equipment lists: {current.defName}\n{e}");
+            }
         }
     }
 
@@ -410,8 +455,14 @@ public class ThingDatabase
 
     public ThingEntry AddThingDefWithStuff(ThingDef def, ThingDef defStuff, ThingType type)
     {
+        return AddThingDefWithStuff(def, defStuff, type, null);
+    }
+
+    private ThingEntry AddThingDefWithStuff(ThingDef def, ThingDef defStuff, ThingType type,
+        float? knownBaseMarketValue)
+    {
         var key = new ThingKey(def, defStuff);
-        var entry = CreateThingEntry(def, defStuff, type);
+        var entry = CreateThingEntry(def, defStuff, type, knownBaseMarketValue);
         if (entry != null)
         {
             AddRecordIfNotThereAlready(key, entry);
@@ -442,6 +493,17 @@ public class ThingDatabase
     {
         if (def.MadeFromStuff)
         {
+            if (stuff.Count == 0)
+            {
+                return;
+            }
+
+            var baseMarketValue = def.BaseMarketValue;
+            if (!(baseMarketValue > 0))
+            {
+                return;
+            }
+
             foreach (var s in stuff)
             {
                 if (!s.stuffProps.CanMake(def))
@@ -450,7 +512,7 @@ public class ThingDatabase
                 }
 
                 var key = new ThingKey(def, s);
-                var entry = CreateThingEntry(def, s, type);
+                var entry = CreateThingEntry(def, s, type, baseMarketValue);
                 if (entry != null)
                 {
                     AddRecordIfNotThereAlready(key, entry);
@@ -494,9 +556,10 @@ public class ThingDatabase
         }
     }
 
-    private static ThingEntry CreateThingEntry(ThingDef def, ThingDef stuffDef, ThingType type)
+    private static ThingEntry CreateThingEntry(ThingDef def, ThingDef stuffDef, ThingType type,
+        float? knownBaseMarketValue = null)
     {
-        return CreateThingEntry(def, stuffDef, Gender.None, type);
+        return CreateThingEntry(def, stuffDef, Gender.None, type, knownBaseMarketValue);
     }
 
     private static ThingEntry CreateThingEntry(ThingDef def, Gender gender, ThingType type)
@@ -504,9 +567,16 @@ public class ThingDatabase
         return CreateThingEntry(def, null, gender, type);
     }
 
-    private static ThingEntry CreateThingEntry(ThingDef def, ThingDef stuffDef, Gender gender, ThingType type)
+    private static ThingEntry CreateThingEntry(ThingDef def, ThingDef stuffDef, Gender gender, ThingType type,
+        float? knownBaseMarketValue = null)
     {
-        var baseCost = CostCalculator.GetBaseThingCost(def, stuffDef);
+        if (def.thingClass == null)
+        {
+            Log.Warning($"Cannot add thing definition with null thingClass to request catalogue: {def.defName}");
+            return null;
+        }
+
+        var baseCost = CostCalculator.GetBaseThingCost(def, stuffDef, knownBaseMarketValue);
         if (baseCost == 0)
         {
             return null;
@@ -521,6 +591,7 @@ public class ThingDatabase
             stuffDef = stuffDef,
             stackSize = stackSize,
             cost = CostCalculator.CalculateStackCost(def, baseCost),
+            baseMarketValue = (float)baseCost,
             stacks = true,
             gear = false,
             animal = false
@@ -583,74 +654,31 @@ public class ThingDatabase
         {
             result.animal = true;
             result.gender = gender;
-            try
+            result.pawnDef = def.race.AnyPawnKind;
+            if (result.pawnDef == null || result.pawnDef.RaceProps.GetNameGenerator(gender) == null)
             {
-                var pawn = CreatePawn(def, gender);
-                if (pawn == null)
-                {
-                    return null;
-                }
-
-                result.thing = pawn;
-                result.pawnDef = pawn.kindDef;
-            }
-            catch
-            {
-                Log.Warning($"Failed to create a pawn for animal thing entry: {def.defName}");
                 return null;
             }
         }
 
-        result.thing ??= ThingMaker.MakeThing(def, stuffDef);
         return result;
-    }
-
-
-    private static Pawn CreatePawn(ThingDef def, Gender gender)
-    {
-        var kindDef = (from td in DefDatabase<PawnKindDef>.AllDefs
-            where td.race == def
-            select td).FirstOrDefault();
-
-        if (kindDef != null)
-        {
-            var nameGenerator = kindDef.RaceProps.GetNameGenerator(gender);
-            if (nameGenerator == null)
-            {
-                return null;
-            }
-        }
-
-        if (kindDef == null)
-        {
-            return null;
-        }
-
-        var request = new PawnGenerationRequest(kindDef);
-        var pawn = PawnGenerator.GeneratePawn(request);
-        if (pawn.Dead || pawn.Downed)
-        {
-            return null;
-        }
-
-        pawn.gender = gender;
-        pawn.Drawer.renderer.SetAllGraphicsDirty();
-        return pawn;
     }
 
     private sealed class LoadingState
     {
-        public readonly int defsToCountPerFrame = 10;
-        public readonly int stuffToProcessPerFrame = 10;
-        public readonly int thingsToProcessPerFrame = 10;
+        public readonly int stuffToProcessPerFrame = 1000;
+        public readonly int thingsToProcessPerFrame = 100;
         public IEnumerator<ThingDef> enumerator;
+        public ThingDef pendingDef;
+        public ThingType pendingType;
+        public float baseMarketValue;
+        public int stuffIndex;
         public LoadingPhase phase = LoadingPhase.NotStarted;
     }
 
     protected enum LoadingPhase
     {
         NotStarted,
-        CountingDefs,
         ProcessingStuff,
         ProcessingThings,
         Loaded

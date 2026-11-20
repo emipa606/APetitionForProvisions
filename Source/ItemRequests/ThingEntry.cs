@@ -9,14 +9,15 @@ public class ThingEntry : IExposable
     public bool animal;
     public Color color = Color.white;
     public double cost;
+    public float baseMarketValue;
     public ThingDef def;
     public bool gear;
     public Gender gender = Gender.None;
     public bool hideFromPortrait;
     private string label;
     public PawnKindDef pawnDef;
-    public bool stacks = true;
     public int stackSize;
+    public bool stacks = true;
     public ThingDef stuffDef;
     public Thing thing;
     public Tradeable tradeable;
@@ -33,9 +34,9 @@ public class ThingEntry : IExposable
                 return label;
             }
 
-            if (thing != null && animal)
+            if (animal && pawnDef != null)
             {
-                return LabelForAnimal;
+                return pawnDef.label.CapitalizeFirst();
             }
 
             return GenLabel.ThingLabel(def, stuffDef, stackSize).CapitalizeFirst();
@@ -51,26 +52,12 @@ public class ThingEntry : IExposable
                 return label;
             }
 
-            if (thing != null && animal)
+            if (animal && pawnDef != null)
             {
-                return LabelForAnimal;
+                return pawnDef.label.CapitalizeFirst();
             }
 
             return GenLabel.ThingLabel(def, stuffDef).CapitalizeFirst();
-        }
-    }
-
-    private string LabelForAnimal
-    {
-        get
-        {
-            var pawn = thing as Pawn;
-            if (pawn != null && pawn.def.race.hasGenders)
-            {
-                return pawn.kindDef.label.CapitalizeFirst();
-            }
-
-            return pawn?.LabelCap;
         }
     }
 
@@ -87,6 +74,7 @@ public class ThingEntry : IExposable
         Scribe_Values.Look(ref type, "type", ThingType.Other);
         Scribe_Values.Look(ref stackSize, "stackSize");
         Scribe_Values.Look(ref cost, "cost");
+        Scribe_Values.Look(ref baseMarketValue, "baseMarketValue");
         Scribe_Values.Look(ref color, "color");
         Scribe_Values.Look(ref stacks, "stacks");
         Scribe_Values.Look(ref gear, "gear");
@@ -110,6 +98,7 @@ public class ThingEntry : IExposable
             type = type,
             stackSize = stackSize,
             cost = cost,
+            baseMarketValue = baseMarketValue,
             color = color,
             stacks = stacks,
             gear = gear,

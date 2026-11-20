@@ -5,7 +5,7 @@ using Verse;
 
 namespace ItemRequests;
 
-public class RestrictedItems
+public static class RestrictedItems
 {
     public static readonly Dictionary<ThingDef, TechLevel> researchTechCache = new();
     private static List<ThingDef> GetThings { get; } = [];
@@ -42,7 +42,6 @@ public class RestrictedItems
         return GetPawns.Contains(def);
     }
 
-    // TODO: learn how to add to option menu in game for modifying
     public static void Init()
     {
         GetThings.Add(ThingDefOf.AIPersonaCore);
@@ -69,22 +68,22 @@ public class RestrictedItems
             var currentTechLevel = TechLevel.Neolithic;
             if (validThing.researchPrerequisites?.Count > 0)
             {
-                foreach (var validThingResearchPrerequisite in validThing.researchPrerequisites)
+                foreach (var techLevel in validThing.researchPrerequisites.Select(r => r.techLevel))
                 {
-                    if (validThingResearchPrerequisite.techLevel > currentTechLevel)
+                    if (techLevel > currentTechLevel)
                     {
-                        currentTechLevel = validThingResearchPrerequisite.techLevel;
+                        currentTechLevel = techLevel;
                     }
                 }
             }
 
             if (validThing.recipeMaker?.researchPrerequisites?.Count > 0)
             {
-                foreach (var validThingResearchPrerequisite in validThing.recipeMaker.researchPrerequisites)
+                foreach (var techLevel in validThing.recipeMaker.researchPrerequisites.Select(r => r.techLevel))
                 {
-                    if (validThingResearchPrerequisite.techLevel > currentTechLevel)
+                    if (techLevel > currentTechLevel)
                     {
-                        currentTechLevel = validThingResearchPrerequisite.techLevel;
+                        currentTechLevel = techLevel;
                     }
                 }
             }

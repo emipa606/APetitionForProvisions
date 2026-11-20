@@ -11,9 +11,9 @@ public class RequestSession(World world) : WorldComponent(world)
 
     private List<RequestDeal> destinationTileDeals;
 
-    private Dictionary<RequestDeal, int> destinationTiles = new();
-
     private List<int> destinationTileValues;
+
+    private Dictionary<RequestDeal, int> destinationTiles = new();
 
     private Faction faction;
 

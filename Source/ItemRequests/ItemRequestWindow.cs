@@ -50,7 +50,11 @@ public class ItemRequestWindow : Window
 
     private readonly HashSet<ThingDef> stuffFilterSet = [];
 
+    private readonly List<ThingEntry> searchResults = [];
+
+    private bool itemsInitialized;
     private bool noMaterialFilter;
+    private string lastSearchText;
 
     // For UI layout
     private float rightAlignOffset;
@@ -133,7 +137,7 @@ public class ItemRequestWindow : Window
         GUI.color = Color.gray;
         Widgets.DrawLineHorizontal(x, headerRowHeight + rowRect.height - 2, rowWidth);
 
-        if (ThingDatabase.Instance.Loaded && allRequestableItems.Count > 0)
+        if (itemsInitialized)
         {
             // Draw the main scroll view area
             GUI.color = Color.white;
@@ -170,7 +174,13 @@ public class ItemRequestWindow : Window
 
     private void AttemptDatabaseReload()
     {
+        if (itemsInitialized || !ThingDatabase.Instance.Loaded)
+        {
+            return;
+        }
+
         DetermineAllRequestableItems();
+        itemsInitialized = true;
         FilterRequestableItems();
         UpdateAvailableMaterials();
         if (!stuffFilterSet.Any())
@@ -182,15 +192,9 @@ public class ItemRequestWindow : Window
         FilterRequestableItems();
     }
 
-    private float CalcRequestedItemPrice(Tradeable item)
+    private float CalcRequestedItemPrice(ThingEntry item)
     {
-        if (item.IsCurrency)
-        {
-            return item.BaseMarketValue;
-        }
-
-        var basePrice = item.FirstThingTrader?.MarketValue ?? item.BaseMarketValue;
-        basePrice = (float)CostCalculator.CalculateStackCost(item.ThingDef, basePrice);
+        var basePrice = (float)CostCalculator.CalculateStackCost(item.def, item.baseMarketValue);
 
         var negotiatorBonus = negotiator.GetStatValue(StatDefOf.TradePriceImprovement);
         var settlementBonus = GetOfferPriceImprovementOffsetForFaction(faction);
@@ -202,8 +206,6 @@ public class ItemRequestWindow : Window
         return total;
     }
 
-    // MAYBE TODO?: if goodwill > 80 should have change of having more advanced items (some chance 
-    // of containing any number of restricted item on the restricted list)
     private void DetermineAllRequestableItems()
     {
         if (!ThingDatabase.Instance.Loaded)
@@ -211,51 +213,13 @@ public class ItemRequestWindow : Window
             return;
         }
 
-        var thingEntries = (from x in ThingDatabase.Instance.AllThings()
-            where hasMaximumTechLevel(x, faction.def.techLevel)
-            where isBuyableItem(x)
-            select x).ToList();
-
-        foreach (var originalEntry in thingEntries)
+        foreach (var entry in ThingDatabase.Instance.AllThings())
         {
-            var thingEntry = originalEntry.Clone();
-            if (thingEntry.pawnDef != null)
+            if (entry.def != ThingDefOf.Silver && hasMaximumTechLevel(entry, faction.def.techLevel) &&
+                isBuyableItem(entry))
             {
-                var pawn = thingEntry.thing as Pawn;
-                var trad = new Tradeable(pawn, pawn) { thingsColony = [] };
-                thingEntry.tradeable = trad;
+                allRequestableItems.Add(entry);
             }
-            else
-            {
-                var thing = thingEntry.thing;
-                thing.stackCount = int.MaxValue;
-                var trad = new Tradeable(thing, thing);
-                if (trad.IsCurrency)
-                {
-                    continue;
-                }
-
-                trad.thingsColony = [];
-                var key = thing.def.label;
-                if (key != null)
-                {
-                    if (thing.Stuff != null)
-                    {
-                        key += thing.Stuff.label;
-                    }
-
-                    if (colonyItemCount.TryGetValue(key, out var value))
-                    {
-                        var colonyThing = ThingMaker.MakeThing(thing.def, thing.Stuff);
-                        colonyThing.stackCount = value;
-                        trad.thingsColony.Add(colonyThing);
-                    }
-                }
-
-                thingEntry.tradeable = trad;
-            }
-
-            allRequestableItems.Add(thingEntry);
         }
     }
 
@@ -533,7 +497,7 @@ public class ItemRequestWindow : Window
         Find.WindowStack.Add(new FloatMenu(stuffFilterOptions, null));
     }
 
-    private float DrawPrice(Rect rect, Tradeable trad)
+    private float DrawPrice(Rect rect, ThingEntry entry)
     {
         rect = rect.Rounded();
         if (Mouse.IsOver(rect))
@@ -541,10 +505,10 @@ public class ItemRequestWindow : Window
             Widgets.DrawHighlight(rect);
         }
 
-        var priceType = GetPriceTypeFor(trad);
-        var finalPrice = CalcRequestedItemPrice(trad);
+        var priceType = PriceType.Normal;
+        var finalPrice = CalcRequestedItemPrice(entry);
         TooltipHandler.TipRegion(rect,
-            new TipSignal(() => GetPriceTooltip(faction, negotiator, trad, finalPrice), trad.GetHashCode() * 297));
+            new TipSignal(() => GetPriceTooltip(faction, negotiator, entry, finalPrice), entry.GetHashCode() * 297));
         switch (priceType)
         {
             case PriceType.VeryCheap:
@@ -592,26 +556,36 @@ public class ItemRequestWindow : Window
 
         if (!string.IsNullOrEmpty(searchText))
         {
-            filteredItems = filteredItems.Where(entry => entry.Label.ToLower().Contains(searchText.ToLower())).ToList();
+            if (lastSearchText != searchText)
+            {
+                searchResults.Clear();
+                var lowerSearchText = searchText.ToLower();
+                foreach (var entry in filteredRequestableItems)
+                {
+                    if (entry.Label.ToLower().Contains(lowerSearchText))
+                    {
+                        searchResults.Add(entry);
+                    }
+                }
+
+                lastSearchText = searchText;
+            }
+
+            filteredItems = searchResults;
         }
 
         var cumulativeContentHeight = 6f + (filteredItems.Count * 30f);
         var contentRect = new Rect(mainRect.x, 0, mainRect.width - constScrollbarSize, cumulativeContentHeight);
-        var bottom = scrollPosition.y - 30f;
-        var top = scrollPosition.y + mainRect.height;
-        var y = 6f;
-
         Widgets.BeginScrollView(mainRect, ref scrollPosition, contentRect);
 
-        for (var i = 0; i < filteredItems.Count; i++)
+        var bottom = scrollPosition.y - 30f;
+        var top = scrollPosition.y + mainRect.height;
+        var firstRow = Mathf.Clamp(Mathf.FloorToInt((bottom - 6f) / 30f) + 1, 0, filteredItems.Count);
+        var endRow = Mathf.Clamp(Mathf.CeilToInt((top - 6f) / 30f), firstRow, filteredItems.Count);
+        for (var i = firstRow; i < endRow; i++)
         {
-            if (y > bottom && y < top)
-            {
-                var rect = new Rect(mainRect.x, y, contentRect.width, 30f);
-                DrawTradeableRow(rect, filteredItems[i], i);
-            }
-
-            y += 30f;
+            var rect = new Rect(mainRect.x, 6f + (i * 30f), contentRect.width, 30f);
+            DrawTradeableRow(rect, filteredItems[i], i);
         }
 
         Widgets.EndScrollView();
@@ -619,59 +593,31 @@ public class ItemRequestWindow : Window
 
     private static void DrawTradeableLabels(Rect rowRect, ThingEntry entry)
     {
-        var trade = entry.tradeable;
-        if (!trade.HasAnyThing)
-        {
-            return;
-        }
-
         if (Mouse.IsOver(rowRect))
         {
             Widgets.DrawHighlight(rowRect);
         }
 
         var thingIconArea = new Rect(0f, 0f, 27f, 27f);
-        Widgets.ThingIcon(thingIconArea, trade.AnyThing);
-        Widgets.InfoCardButton(40f, 0f, trade.AnyThing);
+        Widgets.ThingIcon(thingIconArea, entry.def, entry.stuffDef);
+        Widgets.InfoCardButton(40f, 0f, entry.def, entry.stuffDef);
 
         Text.Anchor = TextAnchor.MiddleLeft;
         Text.WordWrap = false;
         var itemLabelArea = new Rect(80f, 0f, rowRect.width - 80f, rowRect.height);
 
-        var itemLabel = trade.LabelCap;
+        var itemLabel = entry.LabelNoCount;
         if (entry.animal)
         {
             itemLabel += $" ({entry.GenderString()})";
-        }
-        else if (entry.type.HasQuality() && itemLabel.IndexOf("(normal)", StringComparison.Ordinal) != -1)
-        {
-            itemLabel = itemLabel[..itemLabel.IndexOf("(normal)", StringComparison.Ordinal)];
         }
 
         Widgets.Label(itemLabelArea, itemLabel);
 
         Text.WordWrap = true;
-        Transferable localTrad = trade;
-        TooltipHandler.TipRegion(
-            rowRect,
-            new TipSignal(
-                () =>
-                {
-                    if (!localTrad.HasAnyThing)
-                    {
-                        return string.Empty;
-                    }
-
-                    var text = trade.LabelCap;
-                    var tipDescription = localTrad.TipDescription;
-                    if (!tipDescription.NullOrEmpty())
-                    {
-                        text = $"{text}: {tipDescription}";
-                    }
-
-                    return text;
-                },
-                localTrad.GetHashCode()));
+        TooltipHandler.TipRegion(rowRect, new TipSignal(() =>
+            entry.def.description.NullOrEmpty() ? entry.LabelNoCount : $"{entry.LabelNoCount}: {entry.def.description}",
+            entry.GetHashCode()));
     }
 
     private void DrawTradeableRow(Rect rowRect, ThingEntry entry, int index)
@@ -681,8 +627,6 @@ public class ItemRequestWindow : Window
             Widgets.DrawLightHighlight(rowRect);
         }
 
-        var trade = entry.tradeable;
-
         // Begin Row group
         GUI.BeginGroup(rowRect);
         float x = 0; // starting from left
@@ -690,18 +634,18 @@ public class ItemRequestWindow : Window
         // Draw item icon and info icon
         Text.Anchor = TextAnchor.MiddleLeft;
         var idRect = new Rect(x, 0, iconNameAreaWidth, rowRect.height);
-        TransferableUIUtility.DoExtraIcons(trade, rowRect, ref x);
         DrawTradeableLabels(idRect, entry);
 
         x += iconNameAreaWidth;
 
         // Draw the price for requesting the item
         var priceTextArea = new Rect(x, 0, priceTextAreaWidth, rowRect.height);
-        var price = DrawPrice(priceTextArea, trade);
+        var price = DrawPrice(priceTextArea, entry);
         x += priceTextAreaWidth;
 
         // Draw the number the colony currently has, if any
-        var countHeldBy = trade.CountHeldBy(Transactor.Colony);
+        var countKey = entry.def.label + (entry.stuffDef?.label ?? "");
+        var countHeldBy = !entry.animal && colonyItemCount.TryGetValue(countKey, out var count) ? count : 0;
         if (countHeldBy != 0)
         {
             var colonyItemCountArea = new Rect(x, 0, colonyItemCountAreaWidth, rowRect.height);
@@ -727,7 +671,7 @@ public class ItemRequestWindow : Window
 
         if (requestSession?.Deal != null)
         {
-            var amountRequested = requestSession.Deal.GetCountForItem(thingTypeFilter, trade);
+            var amountRequested = requestSession.Deal.GetCountForItem(thingTypeFilter, entry);
             var amountAsString = amountRequested.ToString();
             Widgets.TextFieldNumeric(paddedNumericFieldArea, ref amountRequested, ref amountAsString, 0,
                 float.MaxValue);
@@ -751,8 +695,6 @@ public class ItemRequestWindow : Window
         GUI.EndGroup();
     }
 
-    // MAYBE TODO: request quality of items as well?
-    // MAYBE TODO: request prisoners (may not always be available)
     private void DrawWindowHeader(Rect headerRowRect, float headerRowHeight)
     {
         // Begin Header group
@@ -819,29 +761,21 @@ public class ItemRequestWindow : Window
         }
 
         filteredRequestableItems.Clear();
-        var thingEntries = (from x in ThingDatabase.Instance.AllThingsOfType(thingTypeFilter)
-            where hasMaximumTechLevel(x, faction.def.techLevel)
-            select x).ToList();
-
-        foreach (var thingEntry in thingEntries)
+        lastSearchText = null;
+        foreach (var entry in allRequestableItems)
         {
-            if (thingEntry.def == ThingDefOf.Silver)
+            if (entry.type != thingTypeFilter || entry.def == ThingDefOf.Silver)
             {
                 continue;
             }
 
-            var foundEntry = GetTradeableThingEntry(thingEntry.thing);
-            if (foundEntry == null)
-            {
-                continue;
-            }
-
+            var material = entry.stuffDef;
             var madeOfRightStuff = noMaterialFilter
-                ? foundEntry.tradeable.FirstThingTrader.Stuff == null
-                : stuffTypeFilter == null || foundEntry.tradeable.FirstThingTrader.Stuff == stuffTypeFilter;
+                ? material == null
+                : stuffTypeFilter == null || material == stuffTypeFilter;
             if (madeOfRightStuff)
             {
-                filteredRequestableItems.Add(foundEntry);
+                filteredRequestableItems.Add(entry);
             }
         }
     }
@@ -856,16 +790,11 @@ public class ItemRequestWindow : Window
         return Mathf.Min(priceImprovementOffset, maxImprovementOffset);
     }
 
-    private string GetPriceTooltip(Faction priceFaction, Pawn priceNegotiator, Tradeable trad, float priceFor)
+    private string GetPriceTooltip(Faction priceFaction, Pawn priceNegotiator, ThingEntry entry, float priceFor)
     {
-        if (!trad.HasAnyThing)
-        {
-            return string.Empty;
-        }
-
         string text = "IR.ItemRequestWindow.PriceUponDelivery".Translate();
         text += "\n\n";
-        text = text + StatDefOf.MarketValue.LabelCap + ": " + trad.BaseMarketValue.ToStringMoney("F2");
+        text = text + StatDefOf.MarketValue.LabelCap + ": " + entry.baseMarketValue.ToStringMoney("F2");
 
         var text2 = text;
 
@@ -908,25 +837,6 @@ public class ItemRequestWindow : Window
         }
 
         return text;
-    }
-
-    private static PriceType GetPriceTypeFor(Tradeable trad)
-    {
-        var thingDef = trad.ThingDef;
-        return thingDef == ThingDefOf.Silver ? PriceType.Undefined : PriceType.Normal;
-    }
-
-    private ThingEntry GetTradeableThingEntry(Thing fromThing)
-    {
-        foreach (var thingEntry in allRequestableItems)
-        {
-            if (thingEntry.tradeable.FirstThingTrader.ThingID == fromThing.ThingID)
-            {
-                return thingEntry;
-            }
-        }
-
-        return null;
     }
 
     private static bool hasMaximumTechLevel(ThingEntry entry, TechLevel tLevel)

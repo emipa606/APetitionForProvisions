@@ -141,12 +141,12 @@ internal class FulfillItemRequestWindow : Window
         Text.Anchor = TextAnchor.MiddleLeft;
         var iconArea = new Rect(x, 0, iconSize, iconSize);
 
-        Widgets.ThingIcon(iconArea, requested.item.tradeable.FirstThingTrader);
+        Widgets.ThingIcon(iconArea, requested.item.def, requested.item.stuffDef);
 
         x += iconSize + (iconSize / 4);
 
         var itemNameArea = new Rect(x, 0, rowRect.width - offsetFromRight - x, rowRect.height);
-        var itemTitle = requested.item.thing.LabelCapNoCount;
+        var itemTitle = requested.item.LabelNoCount;
         if (requested.isPawn)
         {
             itemTitle += $" ({requested.item.GenderString()})";

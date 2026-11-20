@@ -2,46 +2,56 @@
 
 ## Mod Overview and Purpose
 
-**Mod Name:** A Petition for Provisions (Continued)  
-**Author:** ToyWalrus  
-**Description:** This mod allows players of RimWorld to request specific items from non-hostile factions, flipping the script on traditional caravan mechanics. Instead of risking your colonists to fulfill faction requests, you can now demand goods from others. The mod ensures that the cost of items is adjusted based on the distance and tech level of the factions, introducing strategic balance to item requests. The overall goal is to enhance gameplay by offering more interactive and valuable interactions with NPC factions.
+A Petition for Provisions (Continued) is a RimWorld mod that allows players to request items from non-hostile factions. The mod aims to enhance the game's economy and diplomacy by enabling players to make specific item requests, which the factions will then fulfill by sending caravans. The mod provides a more controlled and strategic approach to managing resources and relationships with factions.
 
 ## Key Features and Systems
 
-- **Item Requests:** Players can request items from friendly factions using the comms console. Each faction can have one active request at a time.
-- **Dynamic Pricing:** Item costs are influenced by distance from the player's base and the tech level of the faction, promoting strategic planning.
-- **Improved Trade Interface:** A search bar and tooltips enhance usability in the trade window.
-- **Technical Corrections:** Fixed issues like short-hash errors, infinite caravan bugs, and key bindings in the trade window.
+- **Item Requests:** Players can request specific items from non-hostile factions through the comms console.
+- **Faction Restrictions:** Players cannot request items from factions that do not have traders.
+- **Caravan Management:** The mod manages the travel time and arrival of caravans based on the distance and factions' tech levels.
+- **Search Bar:** A search bar is added to the trade window to help players find specific items.
+- **Tooltips:** Tooltips provide information about the current petitioned caravans.
+- **Language Support:** The mod includes Russian and Chinese translations.
+- **Request Catalogue:** Definitions and their valid material combinations are processed incrementally without creating Things or generating pawns. Request prices use abstract market-value stats; actual items and animals are created when the caravan fulfills the request. Search results are cached until the query or filters change.
 
 ## Coding Patterns and Conventions
 
-- **C# Structure:** The source code is divided into classes and methods that handle window contents, caravan management, cost calculations, and UI interactions efficiently.
-- **Clean Code Practices:** Naming conventions follow CamelCase for methods and properties. Class names are descriptive and relate to their functionality, such as `ConfirmRequestWindow` and `CaravanManager`.
-- **Single-Responsibility Principle:** Each class is focused on a specific aspect of the mod, fostering maintainability.
+- **Modding Framework:** The mod uses the RimWorld modding framework, which includes XML and C# files.
+- **Harmony Patching:** Harmony is used for patching existing game code to integrate new functionality.
+- **XML Integration:** XML files define mod-specific content and are used for localization and incident/job definitions.
+- **Code Organization:** C# files are organized into classes and methods that handle specific functionalities, such as request confirmation, caravan management, and UI extensions.
 
 ## XML Integration
 
-- **XML Files:** 
-  - **About.xml:** Contains metadata about the mod.
-  - **IncidentDef_RequestedCaravanArrival.xml** & **JobDef_FulfillItemRequest.xml:** Define events and jobs related to item requests and fulfillments.
-- **Localization:** Supports multiple languages, including Russian and Chinese, enhancing accessibility.
+The mod includes XML files for defining incident and job definitions. These files are located in the `TranslationTemplate` directory and are used for localization and defining new game events.
+
+- **IncidentDef_RequestedCaravanArrival.xml:** Defines the incident for when a requested caravan arrives.
+- **JobDef_FulfillItemRequest.xml:** Defines the job for fulfilling a specific item request.
 
 ## Harmony Patching
 
-- **Harmony Dependency:** Utilizes Harmony to patch core RimWorld methods without modifying the game's original files directly, ensuring compatibility with updates and other mods.
-- **Focus on Compatibility:** Harmony is used to bridge any gaps between the base game logic and mod mechanics, enhancing the reliability of requested feature integrations.
+Harmony is used to patch existing game code to integrate new functionality. The mod patches methods such as `DetermineCaravanTravelTimeFromFaction` in `CaravanManager` to manage caravan travel times based on faction tech levels.
 
 ## Suggestions for Copilot
 
-When generating code snippets related to this mod, consider the following suggestions:
+1. **C# Class and Method Names:** When generating C# code, use descriptive and meaningful names for classes and methods that reflect their functionalities.
+2. **XML Definitions:** When generating XML content, ensure that the definitions are correctly formatted and adhere to the RimWorld XML schema.
+3. **Localization:** When adding new translations, ensure that the XML files are updated with the correct translations for different languages.
+4. **Harmony Patches:** When creating Harmony patches, ensure that the patches are correctly applied and do not interfere with existing game functionality.
+5. **Error Handling:** When generating code, include appropriate error handling to manage potential issues during runtime.
 
-1. **UI Enhancements:** Consider auto-suggesting methods for improving user interface elements like tooltips and search functions within trade and item request windows.
-2. **Localization Support:** Generate code templates that support adding new language translations smoothly.
-3. **Modularity:** Provide patterns for breaking down complex methods into smaller, more manageable pieces in accordance to Single Responsibility Principle.
-4. **Performance Optimization:** Suggest caching strategies for travel time calculations in the `CaravanManager` to reduce redundant calculations.
-5. **Error Handling:** Emphasize robust error handling in code related to trade requests and interactions with other mods to prevent unexpected crashes or conflicts.
+## Contributing
 
-These instructions aim to maintain consistency, improve the mod's scalability, and assist in achieving a seamless player experience while using GitHub Copilot.
+If you have any issues or suggestions, please report them using the GitHub issue tracker. Contributions are welcome, and feel free to submit pull requests with improvements or new features.
+
+## References
+
+- [RimWorld Modding Guide](https://rimworldwiki.com/wiki/Modding)
+- [Harmony Documentation](https://harmony.pardeike.net/)
+
+---
+
+By following these guidelines, you can contribute effectively to the A Petition for Provisions (Continued) mod and help enhance the RimWorld experience for players.
 
 ## Project Solution Guidelines
 - Relevant mod XML files are included as Solution Items under the solution folder named XML, these can be read and modified from within the solution.
@@ -55,4 +65,6 @@ These instructions aim to maintain consistency, improve the mod's scalability, a
 ## Hard rules (must follow)
 - Do NOT run commands that modify the repo (no git commit, git apply, dotnet format) unless explicitly asked.
 - Prefer minimal reads: read only the smallest code region needed (around the suspicious lines).
+- When mentioning SonarQube issues, automatically use the SonarQube MCP service to fetch and address issues instead of making inferred fixes without querying SonarQube first.
+- When mentioning the rimworld log, automatically use the Rimworld MCP service to fetch the log.
 

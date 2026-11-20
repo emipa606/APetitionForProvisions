@@ -58,36 +58,55 @@ public class RequestDeal : IExposable
 
     public void AdjustItemRequest(ThingType thingTypeFilter, ThingEntry entry, int numRequested, float price)
     {
-        var key = entry.tradeable.GetHashCode();
-        if (!requestedItems[thingTypeFilter].dict.ContainsKey(key))
+        var dictionary = requestedItems[thingTypeFilter].dict;
+        var existingKey = FindItemKey(dictionary, entry);
+        var amount = Mathf.Max(numRequested, 0);
+        if (existingKey == null)
         {
-            if (numRequested > 0)
+            if (amount > 0)
             {
-                requestedItems[thingTypeFilter].dict[key] = new RequestItem
-                    { item = entry, amount = numRequested, pricePerItem = price, isPawn = entry.pawnDef != null };
+                var key = 0;
+                while (dictionary.ContainsKey(key))
+                {
+                    key++;
+                }
+
+                dictionary.Add(key, new RequestItem
+                    { item = entry, amount = amount, pricePerItem = price, isPawn = entry.pawnDef != null });
             }
 
             return;
         }
 
-        var amount = Mathf.Max(numRequested, 0);
         if (amount == 0)
         {
-            requestedItems[thingTypeFilter].dict.Remove(key);
-            return;
+            dictionary.Remove(existingKey.Value);
         }
-
-        if (amount != requestedItems[thingTypeFilter].dict[key].amount)
+        else if (amount != dictionary[existingKey.Value].amount)
         {
-            requestedItems[thingTypeFilter].dict[key] = new RequestItem
+            dictionary[existingKey.Value] = new RequestItem
                 { item = entry, amount = amount, pricePerItem = price, isPawn = entry.pawnDef != null };
         }
     }
 
-    public int GetCountForItem(ThingType thingTypeFilter, Tradeable tradeable)
+    public int GetCountForItem(ThingType thingTypeFilter, ThingEntry entry)
     {
-        var key = tradeable.GetHashCode();
-        return requestedItems[thingTypeFilter].dict.TryGetValue(key, out var value) ? value.amount : 0;
+        var dictionary = requestedItems[thingTypeFilter].dict;
+        var key = FindItemKey(dictionary, entry);
+        return key.HasValue ? dictionary[key.Value].amount : 0;
+    }
+
+    private static int? FindItemKey(Dictionary<int, RequestItem> dictionary, ThingEntry entry)
+    {
+        foreach (var pair in dictionary)
+        {
+            if (pair.Value?.item != null && pair.Value.item.ThingKey.Equals(entry.ThingKey))
+            {
+                return pair.Key;
+            }
+        }
+
+        return null;
     }
 
     public List<RequestItem> GetRequestedItems()

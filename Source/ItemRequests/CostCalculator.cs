@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RimWorld;
 using Verse;
 
 namespace ItemRequests;
@@ -87,20 +88,26 @@ public class CostCalculator
 
     public static double GetBaseThingCost(ThingDef def, ThingDef stuffDef)
     {
+        return GetBaseThingCost(def, stuffDef, null);
+    }
+
+    internal static double GetBaseThingCost(ThingDef def, ThingDef stuffDef, float? knownBaseMarketValue)
+    {
         if (def == null)
         {
             Log.Warning("Trying to calculate the cost of a null ThingDef");
             return 0;
         }
 
-        if (!(def.BaseMarketValue > 0))
+        var baseMarketValue = knownBaseMarketValue ?? def.BaseMarketValue;
+        if (!(baseMarketValue > 0))
         {
             return 0;
         }
 
         if (stuffDef == null)
         {
-            return def.BaseMarketValue;
+            return baseMarketValue;
         }
 
         if (def.thingClass == null)
@@ -111,19 +118,11 @@ public class CostCalculator
 
         try
         {
-            var thing = ThingMaker.MakeThing(def, stuffDef);
-            if (thing != null)
-            {
-                return thing.MarketValue;
-            }
-
-            Log.Warning($"Failed when calling MakeThing({def.defName}, ...) to calculate a ThingDef's market value");
-            return 0;
+            return def.GetStatValueAbstract(StatDefOf.MarketValue, stuffDef);
         }
         catch (Exception e)
         {
-            Log.Warning($"Failed to calculate the cost of a ThingDef ({def.defName}): ");
-            Log.Warning(e.ToString());
+            Log.Warning($"Failed to calculate the cost of {def.defName} made from {stuffDef.defName}: {e}");
             return 0;
         }
     }
